@@ -54,6 +54,7 @@ def init_db():
             comment TEXT,
             created TEXT
         );
+        CREATE TABLE IF NOT EXISTS leads (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             service_type TEXT,
             urgency TEXT,
@@ -75,7 +76,8 @@ def init_db():
         cols = [r[1] for r in db.execute("PRAGMA table_info(contractors)").fetchall()]
         for col in ["license_number", "insurance", "insurance_expires", "years_in_business",
                     "services_offered", "avg_job_size", "preferred_contact", "website",
-                    "google_profile", "contractor_refs", "exclusive_only", "status", "stripe_customer_id"]:
+                    "google_profile", "contractor_refs", "exclusive_only", "status", "stripe_customer_id",
+                    "license_verified", "insurance_verified", "background_checked"]:
             if col not in cols:
                 db.execute(f"ALTER TABLE contractors ADD COLUMN {col} TEXT")
 
