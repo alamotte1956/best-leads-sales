@@ -26,6 +26,17 @@ def init_db():
             phone TEXT,
             email TEXT,
             service_area TEXT,
+            license_number TEXT,
+            insurance TEXT,
+            insurance_expires TEXT,
+            years_in_business TEXT,
+            services_offered TEXT,
+            avg_job_size TEXT,
+            preferred_contact TEXT,
+            website TEXT,
+            google_profile TEXT,
+            references TEXT,
+            exclusive_only TEXT,
             active INTEGER DEFAULT 1,
             created TEXT
         );
@@ -134,9 +145,9 @@ def home():
     <div class="card">
       <h2>Contractors</h2>
       <ul>
-        {''.join(f"<li>{c['name']} — {c['phone']} — {c['service_area']} <a href='/delete_contractor/{c['id']}'>delete</a></li>" for c in contractors) or "<li>None yet</li>"}
+        {''.join(f"<li><strong>{c['name']}</strong> — {c['phone']} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} — Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} <a href='/delete_contractor/{c['id']}'>delete</a></li>" for c in contractors) or "<li>None yet</li>"}
       </ul>
-      <p><a href="/clear_contractors" style="color:#dc2626;">Clear all contractors</a></p>
+      <p><a href="/signup">Contractor Signup Form</a> · <a href="/clear_contractors" style="color:#dc2626;">Clear all contractors</a></p>
       <form method="POST" action="/add_contractor">
         <input name="name" placeholder="Contractor name" required>
         <input name="phone" placeholder="Phone">
@@ -163,8 +174,102 @@ def add_lead():
         ))
     return redirect(url_for("home"))
 
-@app.route("/add_contractor", methods=["POST"])
-def add_contractor():
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        d = request.form
+        with get_db() as db:
+            db.execute(
+                """INSERT INTO contractors
+                   (name, phone, email, service_area, license_number, insurance, insurance_expires,
+                    years_in_business, services_offered, avg_job_size, preferred_contact,
+                    website, google_profile, references, exclusive_only, created)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (d.get("name"), d.get("phone"), d.get("email"), d.get("service_area"),
+                 d.get("license_number"), d.get("insurance"), d.get("insurance_expires"),
+                 d.get("years_in_business"), d.get("services_offered"), d.get("avg_job_size"),
+                 d.get("preferred_contact"), d.get("website"), d.get("google_profile"),
+                 d.get("references"), d.get("exclusive_only"),
+                 datetime.now().strftime("%Y-%m-%d %H:%M"))
+            )
+        return """
+        <h2>Thank you!</h2>
+        <p>Your contractor application has been received. We will review it and contact you.</p>
+        <p><a href="/signup">Submit another</a></p>
+        """
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Contractor Signup — Best Leads</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        body { font-family: system-ui; max-width: 520px; margin: 40px auto; padding: 16px; background: #f8fafc; }
+        .card { background: white; padding: 28px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+        label { display: block; margin: 14px 0 4px; font-weight: 600; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+        button { width: 100%; background: #0ea5e9; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; margin-top: 16px; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <h2>Contractor Signup</h2>
+        <p>Join Best Leads to receive exclusive Twin Cities restoration leads.</p>
+        <form method="POST">
+          <label>Company / Contractor Name *</label>
+          <input name="name" required>
+          <label>Phone *</label>
+          <input name="phone" required>
+          <label>Email *</label>
+          <input name="email" type="email" required>
+          <label>License Number *</label>
+          <input name="license_number" required placeholder="MN contractor license #">
+          <label>Insurance Status *</label>
+          <select name="insurance" required>
+            <option value="">Select...</option>
+            <option value="Yes — Liability & Workers Comp">Yes — Liability & Workers Comp</option>
+            <option value="Yes — Liability only">Yes — Liability only</option>
+            <option value="No">No</option>
+          </select>
+          <label>Insurance Expiration Date</label>
+          <input name="insurance_expires" type="date">
+          <label>Years in Business *</label>
+          <input name="years_in_business" type="number" min="0" required>
+          <label>Services Offered *</label>
+          <input name="services_offered" required placeholder="e.g. water damage, mold, remodeling, roofing">
+          <label>Service Area *</label>
+          <input name="service_area" required placeholder="e.g. Full Twin Cities, Bloomington, Eagan, etc.">
+          <label>Average Job Size</label>
+          <select name="avg_job_size">
+            <option value="">Select...</option>
+            <option value="Under $2,000">Under $2,000</option>
+            <option value="$2,000 – $5,000">$2,000 – $5,000</option>
+            <option value="$5,000 – $15,000">$5,000 – $15,000</option>
+            <option value="$15,000+">$15,000+</option>
+          </select>
+          <label>Preferred Contact Method</label>
+          <select name="preferred_contact">
+            <option value="Phone">Phone</option>
+            <option value="Text">Text</option>
+            <option value="Email">Email</option>
+          </select>
+          <label>Website</label>
+          <input name="website" placeholder="https://">
+          <label>Google Business Profile URL</label>
+          <input name="google_profile" placeholder="https://g.page/...">
+          <label>References or Portfolio Link</label>
+          <input name="references" placeholder="Link or short description">
+          <label>Do you want exclusive leads only?</label>
+          <select name="exclusive_only">
+            <option value="Yes">Yes — exclusive only</option>
+            <option value="Open to shared later">Open to shared later</option>
+          </select>
+          <button type="submit">Apply</button>
+        </form>
+      </div>
+    </body>
+    </html>
+    """
     d = request.form
     with get_db() as db:
         db.execute(
