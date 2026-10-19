@@ -14,7 +14,27 @@ app.secret_key = "best-leads-sales-2026"
 DB = "best_leads.db"
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 
-def calculate_auto_price(service_type, urgency, score):
+def find_best_contractor(service_type, zip_code):
+    """Auto-match: approved contractor whose services include the lead type and service area covers the ZIP."""
+    with get_db() as db:
+        contractors = db.execute(
+            "SELECT * FROM contractors WHERE status='approved' AND active=1"
+        ).fetchall()
+    service = (service_type or "").lower().replace("_", " ")
+    matches = []
+    for c in contractors:
+        services = (c["services_offered"] or "").lower()
+        area = (c["service_area"] or "").lower()
+        if service and service in services:
+            # Prefer exact ZIP or "full" area match
+            if zip_code and (zip_code in area or "full" in area or "twin" in area):
+                matches.append((c, 2))
+            else:
+                matches.append((c, 1))
+    if not matches:
+        return None
+    matches.sort(key=lambda x: -x[1])
+    return matches[0][0]
     """Return competitive price: 20% below typical Angi shared-lead rates."""
     # Typical Angi shared lead ranges (midpoint used)
     base = {
@@ -172,6 +192,12 @@ def home():
     for l in leads:
         status_cls = "sold" if l["status"] == "sold" else "avail"
         sold = l["contractor_name"] or "—"
+        assign_links = ""
+        if l["status"] == "available":
+            assign_links = f"""<a href='/auto_assign/{l['id']}'>auto</a> · """
+            for c in contractors:
+                if c["status"] == "approved" and c["active"]:
+                    assign_links += f"""<a href='/assign/{l['id']}/{c['id']}'>{c['name'][:12]}</a> · """
         rows += f"""
         <tr>
           <td>{l['id']}</td>
@@ -181,7 +207,7 @@ def home():
           <td>{l['score'] or ''}</td>
           <td>${l['price'] or 0}</td>
           <td><span class="badge {status_cls}">{l['status']}</span></td>
-          <td>{sold}</td>
+          <td>{sold}<br><small>{assign_links}</small></td>
         </tr>"""
     if not rows:
         rows = "<tr><td colspan='8'>No leads yet. Add one below or import from the intake form.</td></tr>"
@@ -565,8 +591,30 @@ def delete_contractor(cid):
         db.execute("DELETE FROM contractors WHERE id=?", (cid,))
     return redirect(url_for("home"))
 
-@app.route("/sell/<int:lead_id>/<int:contractor_id>")
-def sell(lead_id, contractor_id):
+@app.route("/assign/<int:lead_id>/<int:contractor_id>")
+def assign_lead(lead_id, contractor_id):
+    with get_db() as db:
+        db.execute(
+            "UPDATE leads SET status='assigned', sold_to=?, sold_at=? WHERE id=? AND status='available'",
+            (contractor_id, datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
+        )
+    return redirect(url_for("home"))
+
+@app.route("/auto_assign/<int:lead_id>")
+def auto_assign(lead_id):
+    with get_db() as db:
+        lead = db.execute("SELECT * FROM leads WHERE id=?", (lead_id,)).fetchone()
+    if not lead:
+        return "Lead not found", 404
+    match = find_best_contractor(lead["service_type"], lead["zip"])
+    if not match:
+        return redirect(url_for("home"))
+    with get_db() as db:
+        db.execute(
+            "UPDATE leads SET status='assigned', sold_to=?, sold_at=? WHERE id=?",
+            (match["id"], datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
+        )
+    return redirect(url_for("home"))
     if not stripe.api_key:
         # No Stripe key — sell without charging
         with get_db() as db:
