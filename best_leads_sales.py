@@ -155,7 +155,7 @@ HTML = """
 </head>
 <body>
   <h1>Best Leads</h1>
-  <p class="sub">Lead sales database — contractors & exclusive restoration leads · <strong>No shared leads.</strong> One contractor per job. · <a href="/available">Contractor Available Leads Page</a></p>
+  <p class="sub">Lead sales database — contractors & exclusive restoration leads · <strong>No shared leads.</strong> One contractor per job. · <a href="/available">Contractor Available Leads Page</a> · <a href="/hub">Hub</a> · <a href="/hub/edit">Edit Hub</a></p>
   {{ content|safe }}
 </body>
 </html>
@@ -727,6 +727,42 @@ def sell_success(lead_id, contractor_id):
 
 @app.route("/hub")
 def hub():
+    with get_db() as db:
+        try:
+            row = db.execute("SELECT content FROM hub_content ORDER BY id DESC LIMIT 1").fetchone()
+            if row and row["content"]:
+                return row["content"]
+        except Exception:
+            pass
+    return default_hub_html()
+
+@app.route("/hub/edit", methods=["GET", "POST"])
+def hub_edit():
+    if request.method == "POST":
+        content = request.form.get("content", "")
+        with get_db() as db:
+            db.execute("CREATE TABLE IF NOT EXISTS hub_content (id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, updated TEXT)")
+            db.execute("INSERT INTO hub_content (content, updated) VALUES (?, ?)",
+                       (content, datetime.now().strftime("%Y-%m-%d %H:%M")))
+        return redirect("/hub")
+    current = default_hub_html()
+    try:
+        with get_db() as db:
+            row = db.execute("SELECT content FROM hub_content ORDER BY id DESC LIMIT 1").fetchone()
+            if row and row["content"]:
+                current = row["content"]
+    except Exception:
+        pass
+    return f"""
+    <h2>Edit Hub Page</h2>
+    <form method="POST">
+      <textarea name="content" rows="30" style="width:100%; font-family:monospace;">{current}</textarea>
+      <br><button type="submit">Save</button>
+    </form>
+    <p><a href="/hub">View hub</a> · <a href="/">Admin</a></p>
+    """
+
+def default_hub_html():
     return """
 <!DOCTYPE html>
 <html lang="en">
@@ -735,17 +771,17 @@ def hub():
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Best Leads — System Hub</title>
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; padding: 40px 16px; color: #0f172a; }
-    .wrap { max-width: 640px; margin: 0 auto; }
-    h1 { font-size: 1.8rem; margin-bottom: 8px; }
-    .sub { color: #64748b; margin-bottom: 32px; }
-    .section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    h2 { font-size: 1.1rem; margin: 0 0 12px; color: #0369a1; }
-    a { display: block; padding: 10px 12px; border-radius: 8px; text-decoration: none; color: #0f172a; margin-bottom: 4px; }
-    a:hover { background: #f1f5f9; }
-    .label { font-weight: 600; }
-    .url { font-size: 0.8rem; color: #64748b; }
+    * {{ box-sizing: border-box; }}
+    body {{ font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; padding: 40px 16px; color: #0f172a; }}
+    .wrap {{ max-width: 640px; margin: 0 auto; }}
+    h1 {{ font-size: 1.8rem; margin-bottom: 8px; }}
+    .sub {{ color: #64748b; margin-bottom: 32px; }}
+    .section {{ background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }}
+    h2 {{ font-size: 1.1rem; margin: 0 0 12px; color: #0369a1; }}
+    a {{ display: block; padding: 10px 12px; border-radius: 8px; text-decoration: none; color: #0f172a; margin-bottom: 4px; }}
+    a:hover {{ background: #f1f5f9; }}
+    .label {{ font-weight: 600; }}
+    .url {{ font-size: 0.8rem; color: #64748b; }}
   </style>
 </head>
 <body>
