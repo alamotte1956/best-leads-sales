@@ -725,6 +725,63 @@ def sell_success(lead_id, contractor_id):
         )
     return redirect(url_for("home"))
 
+@app.route("/hub")
+def hub():
+    return """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Best Leads — System Hub</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; padding: 40px 16px; color: #0f172a; }
+    .wrap { max-width: 640px; margin: 0 auto; }
+    h1 { font-size: 1.8rem; margin-bottom: 8px; }
+    .sub { color: #64748b; margin-bottom: 32px; }
+    .section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    h2 { font-size: 1.1rem; margin: 0 0 12px; color: #0369a1; }
+    a { display: block; padding: 10px 12px; border-radius: 8px; text-decoration: none; color: #0f172a; margin-bottom: 4px; }
+    a:hover { background: #f1f5f9; }
+    .label { font-weight: 600; }
+    .url { font-size: 0.8rem; color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Best Leads</h1>
+    <p class="sub">System hub — all links in one place</p>
+    <div class="section">
+      <h2>Homeowners</h2>
+      <a href="https://web-production-ac750.up.railway.app/">
+        <div class="label">Submit a Request</div>
+        <div class="url">web-production-ac750.up.railway.app</div>
+      </a>
+    </div>
+    <div class="section">
+      <h2>Contractors</h2>
+      <a href="https://best-leads-sales-production.up.railway.app/signup">
+        <div class="label">Sign Up as a Contractor</div>
+        <div class="url">best-leads-sales-production.up.railway.app/signup</div>
+      </a>
+      <a href="https://best-leads-sales-production.up.railway.app/available">
+        <div class="label">Available Exclusive Leads</div>
+        <div class="url">best-leads-sales-production.up.railway.app/available</div>
+      </a>
+    </div>
+    <div class="section">
+      <h2>Admin</h2>
+      <a href="https://best-leads-sales-production.up.railway.app/">
+        <div class="label">Admin Dashboard</div>
+        <div class="url">best-leads-sales-production.up.railway.app</div>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
+"""
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port)
