@@ -431,7 +431,7 @@ def available_leads():
       <h1>Available Exclusive Leads</h1>
       <p><strong>World-class exclusive leads.</strong> One contractor only. No shared leads like Angi. Higher close rates. Competitive pricing (20% below Angi). Volume discount: 10% off after 10 leads/month. Respond within 15 minutes.</p>
       <table>
-        <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Quality</th><th>Price</th><th>Buy</th></tr>
+        <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Quality</th><th>Price</th><th>Status</th><th>Buy</th></tr>
         {rows}
       </table>
       <p><a href="/">Admin</a> · <a href="/signup">Become a contractor</a></p>
@@ -781,12 +781,25 @@ def hub_edit():
     except Exception:
         pass
     return f"""
-    <h2>Edit Hub Page</h2>
-    <form method="POST">
-      <textarea name="content" rows="30" style="width:100%; font-family:monospace;">{current}</textarea>
-      <br><button type="submit">Save</button>
-    </form>
-    <p><a href="/hub">View hub</a> · <a href="/">Admin</a></p>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Edit Hub</title>
+      <style>
+        body {{ font-family: system-ui; max-width: 900px; margin: 40px auto; padding: 16px; background: #f8fafc; }}
+        textarea {{ width: 100%; height: 400px; font-family: monospace; font-size: 13px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; }}
+        button {{ background: #0ea5e9; color: white; border: none; padding: 12px 24px; border-radius: 6px; margin-top: 12px; cursor: pointer; }}
+      </style>
+    </head>
+    <body>
+      <h2>Edit Hub Page</h2>
+      <form method="POST">
+        <textarea name="content">{current}</textarea>
+        <br><button type="submit">Save</button>
+      </form>
+      <p><a href="/hub">View hub</a> · <a href="/admin">Admin</a></p>
+    </body>
+    </html>
     """
 
 def default_hub_html():
@@ -798,17 +811,17 @@ def default_hub_html():
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Best Leads — System Hub</title>
   <style>
-    * {{ box-sizing: border-box; }}
-    body {{ font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; padding: 40px 16px; color: #0f172a; }}
-    .wrap {{ max-width: 640px; margin: 0 auto; }}
-    h1 {{ font-size: 1.8rem; margin-bottom: 8px; }}
-    .sub {{ color: #64748b; margin-bottom: 32px; }}
-    .section {{ background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }}
-    h2 {{ font-size: 1.1rem; margin: 0 0 12px; color: #0369a1; }}
-    a {{ display: block; padding: 10px 12px; border-radius: 8px; text-decoration: none; color: #0f172a; margin-bottom: 4px; }}
-    a:hover {{ background: #f1f5f9; }}
-    .label {{ font-weight: 600; }}
-    .url {{ font-size: 0.8rem; color: #64748b; }}
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; padding: 40px 16px; color: #0f172a; }
+    .wrap { max-width: 640px; margin: 0 auto; }
+    h1 { font-size: 1.8rem; margin-bottom: 8px; }
+    .sub { color: #64748b; margin-bottom: 32px; }
+    .section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    h2 { font-size: 1.1rem; margin: 0 0 12px; color: #0369a1; }
+    a { display: block; padding: 10px 12px; border-radius: 8px; text-decoration: none; color: #0f172a; margin-bottom: 4px; }
+    a:hover { background: #f1f5f9; }
+    .label { font-weight: 600; }
+    .url { font-size: 0.8rem; color: #64748b; }
   </style>
 </head>
 <body>
@@ -835,9 +848,9 @@ def default_hub_html():
     </div>
     <div class="section">
       <h2>Admin</h2>
-      <a href="https://best-leads-sales-production.up.railway.app/">
+      <a href="https://best-leads-sales-production.up.railway.app/admin">
         <div class="label">Admin Dashboard</div>
-        <div class="url">best-leads-sales-production.up.railway.app</div>
+        <div class="url">best-leads-sales-production.up.railway.app/admin</div>
       </a>
     </div>
   </div>
