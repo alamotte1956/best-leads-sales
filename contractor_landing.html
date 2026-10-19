@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Best Leads — Exclusive Contractor Leads</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; color: #0f172a; background: #fff; }
+    .nav { padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; }
+    .logo { font-weight: 700; font-size: 1.2rem; }
+    .hero { background: linear-gradient(160deg, #0f172a 0%, #0e7490 100%); color: white; padding: 100px 24px 80px; text-align: center; }
+    .hero h1 { font-size: 2.8rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 16px; line-height: 1.1; }
+    .hero p { font-size: 1.2rem; opacity: 0.9; max-width: 540px; margin: 0 auto 36px; }
+    .badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 36px; }
+    .badge { background: rgba(255,255,255,0.12); padding: 8px 18px; border-radius: 999px; font-size: 0.9rem; font-weight: 500; }
+    .cta { display: inline-block; background: #0ea5e9; color: white; padding: 18px 36px; border-radius: 10px; font-weight: 600; text-decoration: none; font-size: 1.1rem; }
+    .cta:hover { background: #0284c7; }
+    .section { max-width: 960px; margin: 0 auto; padding: 80px 24px; }
+    h2 { text-align: center; font-size: 2rem; margin-bottom: 48px; }
+    .benefits { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+    .benefit { padding: 28px; background: #f8fafc; border-radius: 16px; }
+    .benefit strong { display: block; margin-bottom: 8px; font-size: 1.05rem; }
+    .price { text-align: center; padding: 48px 24px; background: #f0fdf4; }
+    .price strong { font-size: 1.5rem; color: #166534; }
+    .form-wrap { background: #f8fafc; padding: 80px 24px; }
+    .form-card { background: white; border-radius: 20px; padding: 40px; max-width: 540px; margin: 0 auto; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+    label { display: block; font-weight: 500; margin: 16px 0 6px; font-size: 0.95rem; }
+    input, select { width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 1rem; }
+    button { width: 100%; background: #0ea5e9; color: white; border: none; padding: 16px; border-radius: 10px; font-weight: 600; margin-top: 24px; cursor: pointer; }
+    button:hover { background: #0284c7; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <div class="logo">Best Leads</div>
+    <a href="#signup" style="color:#0ea5e9; font-weight:600; text-decoration:none;">Sign Up</a>
+  </div>
+  <div class="hero">
+    <h1>Exclusive Leads.<br>Higher Close Rates.</h1>
+    <p>One contractor per job. No shared leads like Angi. 20% below Angi pricing. Twin Cities only.</p>
+    <div class="badges">
+      <span class="badge">No Shared Leads</span>
+      <span class="badge">20% Below Angi</span>
+      <span class="badge">No Monthly Fee</span>
+    </div>
+    <a href="#signup" class="cta">Sign Up Free</a>
+  </div>
+  <div class="section">
+    <h2>Why Contractors Choose Best Leads</h2>
+    <div class="benefits">
+      <div class="benefit">
+        <strong>Exclusive Only</strong>
+        <p style="color:#64748b;">One contractor per lead. No competition for the same job.</p>
+      </div>
+      <div class="benefit">
+        <strong>Higher Close Rates</strong>
+        <p style="color:#64748b;">Homeowners expect one call. They answer. You close more.</p>
+      </div>
+      <div class="benefit">
+        <strong>20% Below Angi</strong>
+        <p style="color:#64748b;">Pay less per lead. No annual fee. No monthly subscription.</p>
+      </div>
+      <div class="benefit">
+        <strong>Quality Gated</strong>
+        <p style="color:#64748b;">Leads are scored. Low quality stays out. You get real jobs.</p>
+      </div>
+    </div>
+  </div>
+  <div class="price">
+    <strong>No monthly fee. Pay only for the leads you want.</strong>
+    <p style="color:#64748b; margin-top:8px;">Volume discount: 10% off after 10 leads/month.</p>
+  </div>
+  <div class="form-wrap" id="signup">
+    <div class="form-card">
+      <h2 style="text-align:left; font-size:1.6rem; margin-bottom:8px;">Become a Contractor</h2>
+      <p style="color:#64748b; margin-bottom:20px;">License and insurance required. Approved contractors get exclusive leads.</p>
+      <form method="POST" action="/signup">
+        <label>Company Name</label>
+        <input name="name" required>
+        <label>Phone</label>
+        <input name="phone" required>
+        <label>Email</label>
+        <input name="email" type="email" required>
+        <label>License Number</label>
+        <input name="license_number" required>
+        <label>Insurance Provider</label>
+        <input name="insurance" required>
+        <label>Services Offered</label>
+        <input name="services_offered" placeholder="water damage, mold, remodeling">
+        <label>Service Area (ZIPs)</label>
+        <input name="service_area" placeholder="55416, 55345, 55331">
+        <label>Years in Business</label>
+        <input name="years_in_business" type="number">
+        <button type="submit">Apply Now</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,606 @@
+2026-10-19T19:26:15.416961473Z [err]  [2026-10-19 19:26:15 +0000] [1] [INFO] Starting gunicorn 26.2.0
+2026-10-19T19:26:15.416967523Z [err]  [2026-10-19 19:26:15 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2026-10-19T19:26:15.416971993Z [err]  [2026-10-19 19:26:15 +0000] [1] [INFO] Using worker: sync
+2026-10-19T19:26:15.416976633Z [err]  [2026-10-19 19:26:15 +0000] [2] [INFO] Booting worker with pid: 2
+2026-10-19T19:26:15.416981292Z [err]  [2026-10-19 19:26:15 +0000] [2] [ERROR] Exception in worker process
+2026-10-19T19:26:15.416987012Z [err]  Traceback (most recent call last):
+2026-10-19T19:26:15.416991772Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/arbiter.py", line 753, in spawn_worker
+2026-10-19T19:26:15.416996562Z [err]      worker.init_process()
+2026-10-19T19:26:15.417001472Z [err]      ~~~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:15.417005942Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 137, in init_process
+2026-10-19T19:26:15.417009842Z [err]      self.load_wsgi()
+2026-10-19T19:26:15.417013982Z [err]      ~~~~~~~~~~~~~~^^
+2026-10-19T19:26:15.417018072Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 149, in load_wsgi
+2026-10-19T19:26:15.417021842Z [err]      self.wsgi = self.app.wsgi()
+2026-10-19T19:26:15.417026502Z [err]                  ~~~~~~~~~~~~~^^
+2026-10-19T19:26:15.417030392Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2026-10-19T19:26:15.417037982Z [err]      self.callable = self.load()
+2026-10-19T19:26:15.417042672Z [err]                      ~~~~~~~~~^^
+2026-10-19T19:26:15.417047692Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2026-10-19T19:26:15.417052472Z [err]      return self.load_wsgiapp()
+2026-10-19T19:26:15.417056222Z [err]             ~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:15.417307410Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2026-10-19T19:26:15.417318020Z [err]      return util.import_app(self.app_uri)
+2026-10-19T19:26:15.417322700Z [err]             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2026-10-19T19:26:15.417326080Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/util.py", line 420, in import_app
+2026-10-19T19:26:15.417329250Z [err]      mod = importlib.import_module(module)
+2026-10-19T19:26:15.417331680Z [err]    File "/mise/installs/python/3.13.16/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2026-10-19T19:26:15.417334370Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-19T19:26:15.417338190Z [err]             ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:15.417342849Z [err]    File "<frozen importlib._bootstrap>", line 1404, in _gcd_import
+2026-10-19T19:26:15.417346129Z [err]    File "<frozen importlib._bootstrap>", line 1369, in _find_and_load
+2026-10-19T19:26:15.417348729Z [err]    File "<frozen importlib._bootstrap>", line 1340, in _find_and_load_unlocked
+2026-10-19T19:26:15.417351249Z [err]    File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-19T19:26:15.417354039Z [err]    File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+2026-10-19T19:26:15.417356479Z [err]    File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-19T19:26:15.417359359Z [err]    File "/app/best_leads_sales.py", line 63, in <module>
+2026-10-19T19:26:15.417361959Z [err]      init_db()
+2026-10-19T19:26:15.417364569Z [err]      ~~~~~~~^^
+2026-10-19T19:26:15.417368689Z [err]    File "/app/best_leads_sales.py", line 22, in init_db
+2026-10-19T19:26:15.417371209Z [err]      db.executescript("""
+2026-10-19T19:26:15.417374059Z [err]      ~~~~~~~~~~~~~~~~^^^^
+2026-10-19T19:26:15.417380869Z [err]      CREATE TABLE IF NOT EXISTS contractors (
+2026-10-19T19:26:15.417383229Z [err]      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:15.417385569Z [err]      ...<35 lines>...
+2026-10-19T19:26:15.417388039Z [err]      );
+2026-10-19T19:26:15.417392409Z [err]      ^^
+2026-10-19T19:26:15.417395659Z [err]      """)
+2026-10-19T19:26:15.417399549Z [err]      ^^^^
+2026-10-19T19:26:15.417403129Z [err]  sqlite3.OperationalError: near "references": syntax error
+2026-10-19T19:26:15.417406609Z [err]  near "references": syntax error
+2026-10-19T19:26:15.417409989Z [err]  [2026-10-19 19:26:15 +0000] [2] [INFO] Worker exiting (pid: 2)
+2026-10-19T19:26:15.417413529Z [err]  [2026-10-19 19:26:15 +0000] [1] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+2026-10-19T19:26:15.417417669Z [err]  [2026-10-19 19:26:15 +0000] [1] [ERROR] Worker (pid:2) exited with code 3.
+2026-10-19T19:26:15.417421799Z [err]  [2026-10-19 19:26:15 +0000] [1] [ERROR] Shutting down: Master
+2026-10-19T19:26:15.417426519Z [err]  [2026-10-19 19:26:15 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2026-10-19T19:26:15.571425188Z [inf]  Starting Container
+2026-10-19T19:26:16.176113195Z [err]  [2026-10-19 19:26:16 +0000] [1] [INFO] Starting gunicorn 26.2.0
+2026-10-19T19:26:16.176116035Z [err]  [2026-10-19 19:26:16 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2026-10-19T19:26:16.176119075Z [err]  [2026-10-19 19:26:16 +0000] [1] [INFO] Using worker: sync
+2026-10-19T19:26:16.176122035Z [err]  [2026-10-19 19:26:16 +0000] [2] [INFO] Booting worker with pid: 2
+2026-10-19T19:26:16.260305679Z [err]  [2026-10-19 19:26:16 +0000] [2] [ERROR] Exception in worker process
+2026-10-19T19:26:16.260315599Z [err]  Traceback (most recent call last):
+2026-10-19T19:26:16.260319759Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/arbiter.py", line 753, in spawn_worker
+2026-10-19T19:26:16.260326409Z [err]      worker.init_process()
+2026-10-19T19:26:16.260331319Z [err]      ~~~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:16.260340439Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 137, in init_process
+2026-10-19T19:26:16.260343969Z [err]      self.load_wsgi()
+2026-10-19T19:26:16.260347508Z [err]      ~~~~~~~~~~~~~~^^
+2026-10-19T19:26:16.260351168Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 149, in load_wsgi
+2026-10-19T19:26:16.260354978Z [err]      self.wsgi = self.app.wsgi()
+2026-10-19T19:26:16.260358258Z [err]                  ~~~~~~~~~~~~~^^
+2026-10-19T19:26:16.260361478Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2026-10-19T19:26:16.260364828Z [err]      self.callable = self.load()
+2026-10-19T19:26:16.260367838Z [err]                      ~~~~~~~~~^^
+2026-10-19T19:26:16.260370698Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2026-10-19T19:26:16.260373718Z [err]      return self.load_wsgiapp()
+2026-10-19T19:26:16.260376548Z [err]             ~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:16.260379838Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2026-10-19T19:26:16.260382828Z [err]      return util.import_app(self.app_uri)
+2026-10-19T19:26:16.260386908Z [err]             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2026-10-19T19:26:16.260389628Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/util.py", line 420, in import_app
+2026-10-19T19:26:16.260602557Z [err]      mod = importlib.import_module(module)
+2026-10-19T19:26:16.260608787Z [err]    File "/mise/installs/python/3.13.16/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2026-10-19T19:26:16.260613277Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-19T19:26:16.260617256Z [err]             ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:16.260621296Z [err]    File "<frozen importlib._bootstrap>", line 1404, in _gcd_import
+2026-10-19T19:26:16.260624676Z [err]    File "<frozen importlib._bootstrap>", line 1369, in _find_and_load
+2026-10-19T19:26:16.260629056Z [err]    File "<frozen importlib._bootstrap>", line 1340, in _find_and_load_unlocked
+2026-10-19T19:26:16.260632546Z [err]    File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-19T19:26:16.260635906Z [err]    File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+2026-10-19T19:26:16.260639506Z [err]    File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-19T19:26:16.260643036Z [err]    File "/app/best_leads_sales.py", line 63, in <module>
+2026-10-19T19:26:16.260646306Z [err]      init_db()
+2026-10-19T19:26:16.260650856Z [err]      ~~~~~~~^^
+2026-10-19T19:26:16.260654376Z [err]    File "/app/best_leads_sales.py", line 22, in init_db
+2026-10-19T19:26:16.260664606Z [err]      db.executescript("""
+2026-10-19T19:26:16.260668026Z [err]      ~~~~~~~~~~~~~~~~^^^^
+2026-10-19T19:26:16.260671136Z [err]      CREATE TABLE IF NOT EXISTS contractors (
+2026-10-19T19:26:16.260675146Z [err]      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:16.260678336Z [err]      ...<35 lines>...
+2026-10-19T19:26:16.260681486Z [err]      );
+2026-10-19T19:26:16.260684506Z [err]      ^^
+2026-10-19T19:26:16.260688576Z [err]      """)
+2026-10-19T19:26:16.260692106Z [err]      ^^^^
+2026-10-19T19:26:16.261030623Z [err]  sqlite3.OperationalError: near "references": syntax error
+2026-10-19T19:26:16.261036313Z [err]  near "references": syntax error
+2026-10-19T19:26:16.261039463Z [err]  [2026-10-19 19:26:16 +0000] [2] [INFO] Worker exiting (pid: 2)
+2026-10-19T19:26:16.332055004Z [err]  [2026-10-19 19:26:16 +0000] [1] [ERROR] Shutting down: Master
+2026-10-19T19:26:16.332060434Z [err]  [2026-10-19 19:26:16 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2026-10-19T19:26:16.332100733Z [err]  [2026-10-19 19:26:16 +0000] [1] [ERROR] Worker (pid:2) exited with code 3.
+2026-10-19T19:26:16.332105463Z [err]  [2026-10-19 19:26:16 +0000] [1] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+2026-10-19T19:26:17.142739190Z [err]  [2026-10-19 19:26:17 +0000] [1] [INFO] Starting gunicorn 26.2.0
+2026-10-19T19:26:17.142748720Z [err]  [2026-10-19 19:26:17 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2026-10-19T19:26:17.142754229Z [err]  [2026-10-19 19:26:17 +0000] [1] [INFO] Using worker: sync
+2026-10-19T19:26:17.142759049Z [err]  [2026-10-19 19:26:17 +0000] [2] [INFO] Booting worker with pid: 2
+2026-10-19T19:26:17.220193963Z [err]  [2026-10-19 19:26:17 +0000] [1] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+2026-10-19T19:26:17.226657575Z [err]  [2026-10-19 19:26:17 +0000] [2] [ERROR] Exception in worker process
+2026-10-19T19:26:17.226666805Z [err]  Traceback (most recent call last):
+2026-10-19T19:26:17.226670725Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/arbiter.py", line 753, in spawn_worker
+2026-10-19T19:26:17.226675905Z [err]      worker.init_process()
+2026-10-19T19:26:17.226679315Z [err]      ~~~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:17.226682895Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 137, in init_process
+2026-10-19T19:26:17.226685925Z [err]      self.load_wsgi()
+2026-10-19T19:26:17.226688725Z [err]      ~~~~~~~~~~~~~~^^
+2026-10-19T19:26:17.226691695Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 149, in load_wsgi
+2026-10-19T19:26:17.226694995Z [err]      self.wsgi = self.app.wsgi()
+2026-10-19T19:26:17.226698085Z [err]                  ~~~~~~~~~~~~~^^
+2026-10-19T19:26:17.226701155Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2026-10-19T19:26:17.226703985Z [err]      self.callable = self.load()
+2026-10-19T19:26:17.226706815Z [err]                      ~~~~~~~~~^^
+2026-10-19T19:26:17.226709965Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2026-10-19T19:26:17.226712945Z [err]      return self.load_wsgiapp()
+2026-10-19T19:26:17.226715755Z [err]             ~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:17.226718995Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2026-10-19T19:26:17.226722465Z [err]      return util.import_app(self.app_uri)
+2026-10-19T19:26:17.226725515Z [err]             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2026-10-19T19:26:17.226729065Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/util.py", line 420, in import_app
+2026-10-19T19:26:17.227561447Z [err]      mod = importlib.import_module(module)
+2026-10-19T19:26:17.227568547Z [err]      );
+2026-10-19T19:26:17.227570397Z [err]    File "/mise/installs/python/3.13.16/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2026-10-19T19:26:17.227577387Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-19T19:26:17.227577907Z [err]      ^^
+2026-10-19T19:26:17.227584197Z [err]             ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:17.227586547Z [err]      """)
+2026-10-19T19:26:17.227589907Z [err]    File "<frozen importlib._bootstrap>", line 1404, in _gcd_import
+2026-10-19T19:26:17.227593797Z [err]      ^^^^
+2026-10-19T19:26:17.227596507Z [err]    File "<frozen importlib._bootstrap>", line 1369, in _find_and_load
+2026-10-19T19:26:17.227600097Z [err]    File "<frozen importlib._bootstrap>", line 1340, in _find_and_load_unlocked
+2026-10-19T19:26:17.227602817Z [err]    File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-19T19:26:17.227618088Z [err]    File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+2026-10-19T19:26:17.227626868Z [err]    File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-19T19:26:17.227633468Z [err]    File "/app/best_leads_sales.py", line 63, in <module>
+2026-10-19T19:26:17.227638797Z [err]      init_db()
+2026-10-19T19:26:17.227642677Z [err]      ~~~~~~~^^
+2026-10-19T19:26:17.227648937Z [err]    File "/app/best_leads_sales.py", line 22, in init_db
+2026-10-19T19:26:17.227649267Z [err]  sqlite3.OperationalError: near "references": syntax error
+2026-10-19T19:26:17.227657347Z [err]      db.executescript("""
+2026-10-19T19:26:17.227657517Z [err]  near "references": syntax error
+2026-10-19T19:26:17.227664507Z [err]  [2026-10-19 19:26:17 +0000] [2] [INFO] Worker exiting (pid: 2)
+2026-10-19T19:26:17.227664857Z [err]      ~~~~~~~~~~~~~~~~^^^^
+2026-10-19T19:26:17.227670267Z [err]      CREATE TABLE IF NOT EXISTS contractors (
+2026-10-19T19:26:17.227673797Z [err]      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:17.227677457Z [err]      ...<35 lines>...
+2026-10-19T19:26:17.256491151Z [err]  [2026-10-19 19:26:17 +0000] [1] [ERROR] Worker (pid:2) exited with code 3.
+2026-10-19T19:26:17.256494511Z [err]  [2026-10-19 19:26:17 +0000] [1] [ERROR] Shutting down: Master
+2026-10-19T19:26:17.256497181Z [err]  [2026-10-19 19:26:17 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2026-10-19T19:26:18.053850925Z [err]  [2026-10-19 19:26:18 +0000] [1] [INFO] Starting gunicorn 26.2.0
+2026-10-19T19:26:18.053854765Z [err]  [2026-10-19 19:26:18 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2026-10-19T19:26:18.053857675Z [err]  [2026-10-19 19:26:18 +0000] [1] [INFO] Using worker: sync
+2026-10-19T19:26:18.053861565Z [err]  [2026-10-19 19:26:18 +0000] [2] [INFO] Booting worker with pid: 2
+2026-10-19T19:26:18.154155257Z [err]  [2026-10-19 19:26:18 +0000] [2] [ERROR] Exception in worker process
+2026-10-19T19:26:18.154162597Z [err]  Traceback (most recent call last):
+2026-10-19T19:26:18.154166407Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/arbiter.py", line 753, in spawn_worker
+2026-10-19T19:26:18.154169847Z [err]      worker.init_process()
+2026-10-19T19:26:18.154172357Z [err]      ~~~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:18.154175297Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 137, in init_process
+2026-10-19T19:26:18.154177647Z [err]      self.load_wsgi()
+2026-10-19T19:26:18.154180147Z [err]      ~~~~~~~~~~~~~~^^
+2026-10-19T19:26:18.154182267Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 149, in load_wsgi
+2026-10-19T19:26:18.154187487Z [err]      self.wsgi = self.app.wsgi()
+2026-10-19T19:26:18.154193177Z [err]                  ~~~~~~~~~~~~~^^
+2026-10-19T19:26:18.154195747Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2026-10-19T19:26:18.154198697Z [err]      self.callable = self.load()
+2026-10-19T19:26:18.154201106Z [err]                      ~~~~~~~~~^^
+2026-10-19T19:26:18.154203356Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2026-10-19T19:26:18.154205566Z [err]      return self.load_wsgiapp()
+2026-10-19T19:26:18.154208676Z [err]             ~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:18.154211076Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2026-10-19T19:26:18.154213976Z [err]      return util.import_app(self.app_uri)
+2026-10-19T19:26:18.154216136Z [err]             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2026-10-19T19:26:18.154218296Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/util.py", line 420, in import_app
+2026-10-19T19:26:18.155259927Z [err]      mod = importlib.import_module(module)
+2026-10-19T19:26:18.155265357Z [err]  near "references": syntax error
+2026-10-19T19:26:18.155308186Z [err]  [2026-10-19 19:26:18 +0000] [2] [INFO] Worker exiting (pid: 2)
+2026-10-19T19:26:18.155312616Z [err]      ^^
+2026-10-19T19:26:18.155312796Z [err]      ~~~~~~~^^
+2026-10-19T19:26:18.155319486Z [err]      """)
+2026-10-19T19:26:18.155321656Z [err]    File "/app/best_leads_sales.py", line 22, in init_db
+2026-10-19T19:26:18.155323656Z [err]      ^^^^
+2026-10-19T19:26:18.155325906Z [err]      db.executescript("""
+2026-10-19T19:26:18.155326946Z [err]  sqlite3.OperationalError: near "references": syntax error
+2026-10-19T19:26:18.155330406Z [err]      ~~~~~~~~~~~~~~~~^^^^
+2026-10-19T19:26:18.155337656Z [err]      CREATE TABLE IF NOT EXISTS contractors (
+2026-10-19T19:26:18.155341076Z [err]      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:18.155344066Z [err]      ...<35 lines>...
+2026-10-19T19:26:18.155348266Z [err]    File "/mise/installs/python/3.13.16/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2026-10-19T19:26:18.155349046Z [err]      );
+2026-10-19T19:26:18.155354976Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-19T19:26:18.155359385Z [err]             ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:18.155363345Z [err]    File "<frozen importlib._bootstrap>", line 1404, in _gcd_import
+2026-10-19T19:26:18.155367025Z [err]    File "<frozen importlib._bootstrap>", line 1369, in _find_and_load
+2026-10-19T19:26:18.155370265Z [err]    File "<frozen importlib._bootstrap>", line 1340, in _find_and_load_unlocked
+2026-10-19T19:26:18.155373455Z [err]    File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-19T19:26:18.155377066Z [err]    File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+2026-10-19T19:26:18.155380586Z [err]    File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-19T19:26:18.155384026Z [err]    File "/app/best_leads_sales.py", line 63, in <module>
+2026-10-19T19:26:18.155387926Z [err]      init_db()
+2026-10-19T19:26:18.218156759Z [err]  [2026-10-19 19:26:18 +0000] [1] [ERROR] Worker (pid:2) exited with code 3.
+2026-10-19T19:26:18.218160809Z [err]  [2026-10-19 19:26:18 +0000] [1] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+2026-10-19T19:26:18.218164639Z [err]  [2026-10-19 19:26:18 +0000] [1] [ERROR] Shutting down: Master
+2026-10-19T19:26:18.218167979Z [err]  [2026-10-19 19:26:18 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2026-10-19T19:26:18.985972785Z [err]  [2026-10-19 19:26:18 +0000] [1] [INFO] Starting gunicorn 26.2.0
+2026-10-19T19:26:18.985977125Z [err]  [2026-10-19 19:26:18 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2026-10-19T19:26:18.985980695Z [err]  [2026-10-19 19:26:18 +0000] [1] [INFO] Using worker: sync
+2026-10-19T19:26:18.985984275Z [err]  [2026-10-19 19:26:18 +0000] [2] [INFO] Booting worker with pid: 2
+2026-10-19T19:26:19.059957270Z [err]  [2026-10-19 19:26:19 +0000] [1] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+2026-10-19T19:26:19.079274089Z [err]  [2026-10-19 19:26:19 +0000] [2] [ERROR] Exception in worker process
+2026-10-19T19:26:19.079279139Z [err]  Traceback (most recent call last):
+2026-10-19T19:26:19.079281849Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/arbiter.py", line 753, in spawn_worker
+2026-10-19T19:26:19.079284469Z [err]      worker.init_process()
+2026-10-19T19:26:19.079287079Z [err]      ~~~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:19.079289899Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 137, in init_process
+2026-10-19T19:26:19.079292289Z [err]      self.load_wsgi()
+2026-10-19T19:26:19.079294959Z [err]      ~~~~~~~~~~~~~~^^
+2026-10-19T19:26:19.079297159Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 149, in load_wsgi
+2026-10-19T19:26:19.079299219Z [err]      self.wsgi = self.app.wsgi()
+2026-10-19T19:26:19.079301319Z [err]                  ~~~~~~~~~~~~~^^
+2026-10-19T19:26:19.079303479Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2026-10-19T19:26:19.079305659Z [err]      self.callable = self.load()
+2026-10-19T19:26:19.079307799Z [err]                      ~~~~~~~~~^^
+2026-10-19T19:26:19.079311569Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2026-10-19T19:26:19.079313749Z [err]      return self.load_wsgiapp()
+2026-10-19T19:26:19.079316189Z [err]             ~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:19.079318639Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2026-10-19T19:26:19.079321509Z [err]      return util.import_app(self.app_uri)
+2026-10-19T19:26:19.079323949Z [err]             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2026-10-19T19:26:19.079326079Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/util.py", line 420, in import_app
+2026-10-19T19:26:19.080447998Z [err]      mod = importlib.import_module(module)
+2026-10-19T19:26:19.080453138Z [err]    File "/mise/installs/python/3.13.16/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2026-10-19T19:26:19.080455598Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-19T19:26:19.080457948Z [err]             ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:19.080460858Z [err]    File "<frozen importlib._bootstrap>", line 1404, in _gcd_import
+2026-10-19T19:26:19.080463168Z [err]    File "<frozen importlib._bootstrap>", line 1369, in _find_and_load
+2026-10-19T19:26:19.080465538Z [err]    File "<frozen importlib._bootstrap>", line 1340, in _find_and_load_unlocked
+2026-10-19T19:26:19.080468258Z [err]    File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-19T19:26:19.080470588Z [err]    File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+2026-10-19T19:26:19.080472868Z [err]    File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-19T19:26:19.080475208Z [err]    File "/app/best_leads_sales.py", line 63, in <module>
+2026-10-19T19:26:19.080477868Z [err]      init_db()
+2026-10-19T19:26:19.080480058Z [err]      ~~~~~~~^^
+2026-10-19T19:26:19.080482288Z [err]    File "/app/best_leads_sales.py", line 22, in init_db
+2026-10-19T19:26:19.080484488Z [err]      db.executescript("""
+2026-10-19T19:26:19.080486598Z [err]      ~~~~~~~~~~~~~~~~^^^^
+2026-10-19T19:26:19.080489438Z [err]      CREATE TABLE IF NOT EXISTS contractors (
+2026-10-19T19:26:19.080492158Z [err]      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:19.080495728Z [err]      ...<35 lines>...
+2026-10-19T19:26:19.080497918Z [err]      );
+2026-10-19T19:26:19.080500138Z [err]      ^^
+2026-10-19T19:26:19.080502318Z [err]      """)
+2026-10-19T19:26:19.080504658Z [err]      ^^^^
+2026-10-19T19:26:19.080567508Z [err]  sqlite3.OperationalError: near "references": syntax error
+2026-10-19T19:26:19.080570058Z [err]  near "references": syntax error
+2026-10-19T19:26:19.080572408Z [err]  [2026-10-19 19:26:19 +0000] [2] [INFO] Worker exiting (pid: 2)
+2026-10-19T19:26:19.099376981Z [err]  [2026-10-19 19:26:19 +0000] [1] [ERROR] Worker (pid:2) exited with code 3.
+2026-10-19T19:26:19.103299456Z [err]  [2026-10-19 19:26:19 +0000] [1] [ERROR] Shutting down: Master
+2026-10-19T19:26:19.103304896Z [err]  [2026-10-19 19:26:19 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2026-10-19T19:26:19.932530958Z [err]  [2026-10-19 19:26:19 +0000] [1] [INFO] Starting gunicorn 26.2.0
+2026-10-19T19:26:19.932533768Z [err]  [2026-10-19 19:26:19 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2026-10-19T19:26:19.932536228Z [err]  [2026-10-19 19:26:19 +0000] [1] [INFO] Using worker: sync
+2026-10-19T19:26:19.932538628Z [err]  [2026-10-19 19:26:19 +0000] [2] [INFO] Booting worker with pid: 2
+2026-10-19T19:26:20.019443278Z [err]  [2026-10-19 19:26:20 +0000] [2] [ERROR] Exception in worker process
+2026-10-19T19:26:20.019452988Z [err]  Traceback (most recent call last):
+2026-10-19T19:26:20.019457887Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/arbiter.py", line 753, in spawn_worker
+2026-10-19T19:26:20.019462587Z [err]      worker.init_process()
+2026-10-19T19:26:20.019468467Z [err]      ~~~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:20.019472687Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 137, in init_process
+2026-10-19T19:26:20.019477697Z [err]      self.load_wsgi()
+2026-10-19T19:26:20.019481127Z [err]      ~~~~~~~~~~~~~~^^
+2026-10-19T19:26:20.019484867Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 149, in load_wsgi
+2026-10-19T19:26:20.019488687Z [err]      self.wsgi = self.app.wsgi()
+2026-10-19T19:26:20.019492367Z [err]                  ~~~~~~~~~~~~~^^
+2026-10-19T19:26:20.019496477Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2026-10-19T19:26:20.019500197Z [err]      self.callable = self.load()
+2026-10-19T19:26:20.019503897Z [err]                      ~~~~~~~~~^^
+2026-10-19T19:26:20.019507647Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2026-10-19T19:26:20.019511147Z [err]      return self.load_wsgiapp()
+2026-10-19T19:26:20.019514527Z [err]             ~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:20.019517927Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2026-10-19T19:26:20.019522717Z [err]      return util.import_app(self.app_uri)
+2026-10-19T19:26:20.019526417Z [err]             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2026-10-19T19:26:20.019530097Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/util.py", line 420, in import_app
+2026-10-19T19:26:20.019950163Z [err]      mod = importlib.import_module(module)
+2026-10-19T19:26:20.019954913Z [err]    File "/mise/installs/python/3.13.16/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2026-10-19T19:26:20.019958523Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-19T19:26:20.019962253Z [err]             ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:20.019965703Z [err]    File "<frozen importlib._bootstrap>", line 1404, in _gcd_import
+2026-10-19T19:26:20.019969313Z [err]    File "<frozen importlib._bootstrap>", line 1369, in _find_and_load
+2026-10-19T19:26:20.019973433Z [err]    File "<frozen importlib._bootstrap>", line 1340, in _find_and_load_unlocked
+2026-10-19T19:26:20.019977903Z [err]    File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-19T19:26:20.019981313Z [err]    File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+2026-10-19T19:26:20.019984693Z [err]    File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-19T19:26:20.019987893Z [err]    File "/app/best_leads_sales.py", line 63, in <module>
+2026-10-19T19:26:20.019991082Z [err]      init_db()
+2026-10-19T19:26:20.019994792Z [err]      ~~~~~~~^^
+2026-10-19T19:26:20.019998182Z [err]    File "/app/best_leads_sales.py", line 22, in init_db
+2026-10-19T19:26:20.020002192Z [err]      db.executescript("""
+2026-10-19T19:26:20.020005992Z [err]      ~~~~~~~~~~~~~~~~^^^^
+2026-10-19T19:26:20.020009372Z [err]      CREATE TABLE IF NOT EXISTS contractors (
+2026-10-19T19:26:20.020012872Z [err]      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:20.020016212Z [err]      ...<35 lines>...
+2026-10-19T19:26:20.020019532Z [err]      );
+2026-10-19T19:26:20.020022992Z [err]      ^^
+2026-10-19T19:26:20.020026393Z [err]      """)
+2026-10-19T19:26:20.020029273Z [err]      ^^^^
+2026-10-19T19:26:20.020417849Z [err]  sqlite3.OperationalError: near "references": syntax error
+2026-10-19T19:26:20.020422879Z [err]  near "references": syntax error
+2026-10-19T19:26:20.020426289Z [err]  [2026-10-19 19:26:20 +0000] [2] [INFO] Worker exiting (pid: 2)
+2026-10-19T19:26:20.020429509Z [err]  [2026-10-19 19:26:20 +0000] [1] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+2026-10-19T19:26:20.047317620Z [err]  [2026-10-19 19:26:20 +0000] [1] [ERROR] Worker (pid:2) exited with code 3.
+2026-10-19T19:26:20.051490664Z [err]  [2026-10-19 19:26:20 +0000] [1] [ERROR] Shutting down: Master
+2026-10-19T19:26:20.051495864Z [err]  [2026-10-19 19:26:20 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2026-10-19T19:26:20.877267396Z [err]  [2026-10-19 19:26:20 +0000] [1] [INFO] Starting gunicorn 26.2.0
+2026-10-19T19:26:20.877271346Z [err]  [2026-10-19 19:26:20 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2026-10-19T19:26:20.877274966Z [err]  [2026-10-19 19:26:20 +0000] [1] [INFO] Using worker: sync
+2026-10-19T19:26:20.877279146Z [err]  [2026-10-19 19:26:20 +0000] [2] [INFO] Booting worker with pid: 2
+2026-10-19T19:26:20.939502064Z [err]  [2026-10-19 19:26:20 +0000] [1] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+2026-10-19T19:26:20.958009591Z [err]  [2026-10-19 19:26:20 +0000] [2] [ERROR] Exception in worker process
+2026-10-19T19:26:20.958018171Z [err]  Traceback (most recent call last):
+2026-10-19T19:26:20.958022401Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/arbiter.py", line 753, in spawn_worker
+2026-10-19T19:26:20.958026661Z [err]      worker.init_process()
+2026-10-19T19:26:20.958029891Z [err]      ~~~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:20.958033651Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 137, in init_process
+2026-10-19T19:26:20.958037931Z [err]      self.load_wsgi()
+2026-10-19T19:26:20.958041411Z [err]      ~~~~~~~~~~~~~~^^
+2026-10-19T19:26:20.958046201Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 149, in load_wsgi
+2026-10-19T19:26:20.958049831Z [err]      self.wsgi = self.app.wsgi()
+2026-10-19T19:26:20.958053761Z [err]                  ~~~~~~~~~~~~~^^
+2026-10-19T19:26:20.958057410Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2026-10-19T19:26:20.958060420Z [err]      self.callable = self.load()
+2026-10-19T19:26:20.958063870Z [err]                      ~~~~~~~~~^^
+2026-10-19T19:26:20.958066980Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2026-10-19T19:26:20.958070060Z [err]      return self.load_wsgiapp()
+2026-10-19T19:26:20.958073040Z [err]             ~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:20.958076330Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2026-10-19T19:26:20.958079480Z [err]      return util.import_app(self.app_uri)
+2026-10-19T19:26:20.958083220Z [err]             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2026-10-19T19:26:20.958086940Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/util.py", line 420, in import_app
+2026-10-19T19:26:20.958400158Z [err]      mod = importlib.import_module(module)
+2026-10-19T19:26:20.958412998Z [err]    File "/mise/installs/python/3.13.16/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2026-10-19T19:26:20.958416887Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-19T19:26:20.958421797Z [err]             ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:20.958425057Z [err]    File "<frozen importlib._bootstrap>", line 1404, in _gcd_import
+2026-10-19T19:26:20.958444537Z [err]    File "<frozen importlib._bootstrap>", line 1369, in _find_and_load
+2026-10-19T19:26:20.958447997Z [err]    File "<frozen importlib._bootstrap>", line 1340, in _find_and_load_unlocked
+2026-10-19T19:26:20.958450957Z [err]    File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-19T19:26:20.958453987Z [err]    File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+2026-10-19T19:26:20.958457287Z [err]    File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-19T19:26:20.958460877Z [err]    File "/app/best_leads_sales.py", line 63, in <module>
+2026-10-19T19:26:20.958464307Z [err]      init_db()
+2026-10-19T19:26:20.958467747Z [err]      ~~~~~~~^^
+2026-10-19T19:26:20.958470817Z [err]    File "/app/best_leads_sales.py", line 22, in init_db
+2026-10-19T19:26:20.958474187Z [err]      db.executescript("""
+2026-10-19T19:26:20.958477437Z [err]      ~~~~~~~~~~~~~~~~^^^^
+2026-10-19T19:26:20.958480707Z [err]      CREATE TABLE IF NOT EXISTS contractors (
+2026-10-19T19:26:20.958484127Z [err]      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:20.958487197Z [err]      ...<35 lines>...
+2026-10-19T19:26:20.958491177Z [err]      );
+2026-10-19T19:26:20.958493917Z [err]      ^^
+2026-10-19T19:26:20.958497267Z [err]      """)
+2026-10-19T19:26:20.958500787Z [err]      ^^^^
+2026-10-19T19:26:20.958679376Z [err]  sqlite3.OperationalError: near "references": syntax error
+2026-10-19T19:26:20.958682635Z [err]  near "references": syntax error
+2026-10-19T19:26:20.958685165Z [err]  [2026-10-19 19:26:20 +0000] [2] [INFO] Worker exiting (pid: 2)
+2026-10-19T19:26:20.983925141Z [err]  [2026-10-19 19:26:20 +0000] [1] [ERROR] Worker (pid:2) exited with code 3.
+2026-10-19T19:26:20.984187748Z [err]  [2026-10-19 19:26:20 +0000] [1] [ERROR] Shutting down: Master
+2026-10-19T19:26:20.984192118Z [err]  [2026-10-19 19:26:20 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2026-10-19T19:26:21.792743174Z [err]  [2026-10-19 19:26:21 +0000] [1] [INFO] Starting gunicorn 26.2.0
+2026-10-19T19:26:21.792750234Z [err]  [2026-10-19 19:26:21 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2026-10-19T19:26:21.792753954Z [err]  [2026-10-19 19:26:21 +0000] [1] [INFO] Using worker: sync
+2026-10-19T19:26:21.797127625Z [err]  [2026-10-19 19:26:21 +0000] [2] [INFO] Booting worker with pid: 2
+2026-10-19T19:26:21.898714115Z [err]  [2026-10-19 19:26:21 +0000] [2] [ERROR] Exception in worker process
+2026-10-19T19:26:21.898717105Z [err]  Traceback (most recent call last):
+2026-10-19T19:26:21.898719725Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/arbiter.py", line 753, in spawn_worker
+2026-10-19T19:26:21.898723285Z [err]      worker.init_process()
+2026-10-19T19:26:21.898725845Z [err]      ~~~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:21.898728505Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 137, in init_process
+2026-10-19T19:26:21.898730915Z [err]      self.load_wsgi()
+2026-10-19T19:26:21.898734005Z [err]      ~~~~~~~~~~~~~~^^
+2026-10-19T19:26:21.898737235Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 149, in load_wsgi
+2026-10-19T19:26:21.898739885Z [err]      self.wsgi = self.app.wsgi()
+2026-10-19T19:26:21.898742645Z [err]                  ~~~~~~~~~~~~~^^
+2026-10-19T19:26:21.898745585Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2026-10-19T19:26:21.898748325Z [err]      self.callable = self.load()
+2026-10-19T19:26:21.898751035Z [err]                      ~~~~~~~~~^^
+2026-10-19T19:26:21.898753685Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2026-10-19T19:26:21.898756195Z [err]      return self.load_wsgiapp()
+2026-10-19T19:26:21.898758805Z [err]             ~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:21.898761345Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2026-10-19T19:26:21.898764155Z [err]      return util.import_app(self.app_uri)
+2026-10-19T19:26:21.898766655Z [err]             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2026-10-19T19:26:21.898769305Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/util.py", line 420, in import_app
+2026-10-19T19:26:21.899122492Z [err]      mod = importlib.import_module(module)
+2026-10-19T19:26:21.899128512Z [err]    File "/mise/installs/python/3.13.16/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2026-10-19T19:26:21.899131812Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-19T19:26:21.899135721Z [err]             ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:21.899139551Z [err]    File "<frozen importlib._bootstrap>", line 1404, in _gcd_import
+2026-10-19T19:26:21.899143691Z [err]    File "<frozen importlib._bootstrap>", line 1369, in _find_and_load
+2026-10-19T19:26:21.899155741Z [err]    File "<frozen importlib._bootstrap>", line 1340, in _find_and_load_unlocked
+2026-10-19T19:26:21.899159831Z [err]    File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-19T19:26:21.899165101Z [err]    File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+2026-10-19T19:26:21.899168751Z [err]    File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-19T19:26:21.899172941Z [err]    File "/app/best_leads_sales.py", line 63, in <module>
+2026-10-19T19:26:21.899186841Z [err]      init_db()
+2026-10-19T19:26:21.899190681Z [err]      ~~~~~~~^^
+2026-10-19T19:26:21.899194981Z [err]    File "/app/best_leads_sales.py", line 22, in init_db
+2026-10-19T19:26:21.899198481Z [err]      db.executescript("""
+2026-10-19T19:26:21.899211881Z [err]      ~~~~~~~~~~~~~~~~^^^^
+2026-10-19T19:26:21.899215641Z [err]      CREATE TABLE IF NOT EXISTS contractors (
+2026-10-19T19:26:21.899219251Z [err]      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:21.899222731Z [err]      ...<35 lines>...
+2026-10-19T19:26:21.899226480Z [err]      );
+2026-10-19T19:26:21.899230130Z [err]      ^^
+2026-10-19T19:26:21.899233180Z [err]      """)
+2026-10-19T19:26:21.899236560Z [err]      ^^^^
+2026-10-19T19:26:21.899719756Z [err]  sqlite3.OperationalError: near "references": syntax error
+2026-10-19T19:26:21.899724576Z [err]  near "references": syntax error
+2026-10-19T19:26:21.899727656Z [err]  [2026-10-19 19:26:21 +0000] [2] [INFO] Worker exiting (pid: 2)
+2026-10-19T19:26:21.899730356Z [err]  [2026-10-19 19:26:21 +0000] [1] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+2026-10-19T19:26:21.937383042Z [err]  [2026-10-19 19:26:21 +0000] [1] [ERROR] Worker (pid:2) exited with code 3.
+2026-10-19T19:26:21.937388482Z [err]  [2026-10-19 19:26:21 +0000] [1] [ERROR] Shutting down: Master
+2026-10-19T19:26:21.937391682Z [err]  [2026-10-19 19:26:21 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2026-10-19T19:26:22.819773743Z [err]  [2026-10-19 19:26:22 +0000] [1] [INFO] Starting gunicorn 26.2.0
+2026-10-19T19:26:22.819776023Z [err]  [2026-10-19 19:26:22 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2026-10-19T19:26:22.819778363Z [err]  [2026-10-19 19:26:22 +0000] [1] [INFO] Using worker: sync
+2026-10-19T19:26:22.819782263Z [err]  [2026-10-19 19:26:22 +0000] [2] [INFO] Booting worker with pid: 2
+2026-10-19T19:26:22.889696024Z [err]  [2026-10-19 19:26:22 +0000] [1] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+2026-10-19T19:26:22.898264488Z [err]  [2026-10-19 19:26:22 +0000] [2] [ERROR] Exception in worker process
+2026-10-19T19:26:22.898267758Z [err]  Traceback (most recent call last):
+2026-10-19T19:26:22.898270858Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/arbiter.py", line 753, in spawn_worker
+2026-10-19T19:26:22.898273388Z [err]      worker.init_process()
+2026-10-19T19:26:22.898276938Z [err]      ~~~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:22.898279378Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 137, in init_process
+2026-10-19T19:26:22.898283148Z [err]      self.load_wsgi()
+2026-10-19T19:26:22.898285728Z [err]      ~~~~~~~~~~~~~~^^
+2026-10-19T19:26:22.898288088Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 149, in load_wsgi
+2026-10-19T19:26:22.898290448Z [err]      self.wsgi = self.app.wsgi()
+2026-10-19T19:26:22.898292898Z [err]                  ~~~~~~~~~~~~~^^
+2026-10-19T19:26:22.898295598Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2026-10-19T19:26:22.898298238Z [err]      self.callable = self.load()
+2026-10-19T19:26:22.898300758Z [err]                      ~~~~~~~~~^^
+2026-10-19T19:26:22.898303118Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2026-10-19T19:26:22.898305458Z [err]      return self.load_wsgiapp()
+2026-10-19T19:26:22.898308078Z [err]             ~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:22.898310838Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2026-10-19T19:26:22.898313648Z [err]      return util.import_app(self.app_uri)
+2026-10-19T19:26:22.898316008Z [err]             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2026-10-19T19:26:22.898318348Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/util.py", line 420, in import_app
+2026-10-19T19:26:22.898484406Z [err]      mod = importlib.import_module(module)
+2026-10-19T19:26:22.898486766Z [err]    File "/mise/installs/python/3.13.16/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2026-10-19T19:26:22.898488966Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-19T19:26:22.898491666Z [err]             ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:22.898494646Z [err]    File "<frozen importlib._bootstrap>", line 1404, in _gcd_import
+2026-10-19T19:26:22.898497376Z [err]    File "<frozen importlib._bootstrap>", line 1369, in _find_and_load
+2026-10-19T19:26:22.898499776Z [err]    File "<frozen importlib._bootstrap>", line 1340, in _find_and_load_unlocked
+2026-10-19T19:26:22.898502046Z [err]    File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-19T19:26:22.898504356Z [err]    File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+2026-10-19T19:26:22.898506816Z [err]    File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-19T19:26:22.898509696Z [err]    File "/app/best_leads_sales.py", line 63, in <module>
+2026-10-19T19:26:22.898512116Z [err]      init_db()
+2026-10-19T19:26:22.898514726Z [err]      ~~~~~~~^^
+2026-10-19T19:26:22.898517466Z [err]    File "/app/best_leads_sales.py", line 22, in init_db
+2026-10-19T19:26:22.898519806Z [err]      db.executescript("""
+2026-10-19T19:26:22.898522406Z [err]      ~~~~~~~~~~~~~~~~^^^^
+2026-10-19T19:26:22.898524826Z [err]      CREATE TABLE IF NOT EXISTS contractors (
+2026-10-19T19:26:22.898527236Z [err]      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:22.898529415Z [err]      ...<35 lines>...
+2026-10-19T19:26:22.898531575Z [err]      );
+2026-10-19T19:26:22.898539265Z [err]      ^^
+2026-10-19T19:26:22.898542005Z [err]      """)
+2026-10-19T19:26:22.898544595Z [err]      ^^^^
+2026-10-19T19:26:22.898580915Z [err]  sqlite3.OperationalError: near "references": syntax error
+2026-10-19T19:26:22.898583335Z [err]  near "references": syntax error
+2026-10-19T19:26:22.898586105Z [err]  [2026-10-19 19:26:22 +0000] [2] [INFO] Worker exiting (pid: 2)
+2026-10-19T19:26:22.928133993Z [err]  [2026-10-19 19:26:22 +0000] [1] [ERROR] Worker (pid:2) exited with code 3.
+2026-10-19T19:26:22.928136923Z [err]  [2026-10-19 19:26:22 +0000] [1] [ERROR] Shutting down: Master
+2026-10-19T19:26:22.928139593Z [err]  [2026-10-19 19:26:22 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2026-10-19T19:26:23.777057302Z [err]  [2026-10-19 19:26:23 +0000] [1] [INFO] Starting gunicorn 26.2.0
+2026-10-19T19:26:23.777059842Z [err]  [2026-10-19 19:26:23 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2026-10-19T19:26:23.777062302Z [err]  [2026-10-19 19:26:23 +0000] [1] [INFO] Using worker: sync
+2026-10-19T19:26:23.777065092Z [err]  [2026-10-19 19:26:23 +0000] [2] [INFO] Booting worker with pid: 2
+2026-10-19T19:26:23.853928440Z [err]  [2026-10-19 19:26:23 +0000] [1] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+2026-10-19T19:26:23.862767111Z [err]  [2026-10-19 19:26:23 +0000] [2] [ERROR] Exception in worker process
+2026-10-19T19:26:23.862772741Z [err]  Traceback (most recent call last):
+2026-10-19T19:26:23.862775691Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/arbiter.py", line 753, in spawn_worker
+2026-10-19T19:26:23.862778831Z [err]      worker.init_process()
+2026-10-19T19:26:23.862781431Z [err]      ~~~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:23.862784151Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 137, in init_process
+2026-10-19T19:26:23.862786651Z [err]      self.load_wsgi()
+2026-10-19T19:26:23.862789451Z [err]      ~~~~~~~~~~~~~~^^
+2026-10-19T19:26:23.862791951Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 149, in load_wsgi
+2026-10-19T19:26:23.862794381Z [err]      self.wsgi = self.app.wsgi()
+2026-10-19T19:26:23.862797041Z [err]                  ~~~~~~~~~~~~~^^
+2026-10-19T19:26:23.862799671Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2026-10-19T19:26:23.862802181Z [err]      self.callable = self.load()
+2026-10-19T19:26:23.862804661Z [err]                      ~~~~~~~~~^^
+2026-10-19T19:26:23.862807621Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2026-10-19T19:26:23.862810271Z [err]      return self.load_wsgiapp()
+2026-10-19T19:26:23.862813491Z [err]             ~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:23.862816221Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2026-10-19T19:26:23.862818591Z [err]      return util.import_app(self.app_uri)
+2026-10-19T19:26:23.862821201Z [err]             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2026-10-19T19:26:23.862823861Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/util.py", line 420, in import_app
+2026-10-19T19:26:23.863176978Z [err]      mod = importlib.import_module(module)
+2026-10-19T19:26:23.863181328Z [err]    File "/mise/installs/python/3.13.16/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2026-10-19T19:26:23.863184948Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-19T19:26:23.863188517Z [err]             ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:23.863192207Z [err]    File "<frozen importlib._bootstrap>", line 1404, in _gcd_import
+2026-10-19T19:26:23.863359057Z [err]      );
+2026-10-19T19:26:23.863362927Z [err]      ^^
+2026-10-19T19:26:23.863368416Z [err]      """)
+2026-10-19T19:26:23.863372986Z [err]    File "/app/best_leads_sales.py", line 22, in init_db
+2026-10-19T19:26:23.863374536Z [err]      ^^^^
+2026-10-19T19:26:23.863380996Z [err]      ~~~~~~~~~~~~~~~~^^^^
+2026-10-19T19:26:23.863386006Z [err]      CREATE TABLE IF NOT EXISTS contractors (
+2026-10-19T19:26:23.863393076Z [err]      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:23.863396256Z [err]      db.executescript("""
+2026-10-19T19:26:23.863400516Z [err]      ...<35 lines>...
+2026-10-19T19:26:23.863415136Z [err]      ~~~~~~~^^
+2026-10-19T19:26:23.863415726Z [err]    File "<frozen importlib._bootstrap>", line 1369, in _find_and_load
+2026-10-19T19:26:23.863421886Z [err]    File "<frozen importlib._bootstrap>", line 1340, in _find_and_load_unlocked
+2026-10-19T19:26:23.863425416Z [err]    File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-19T19:26:23.863429846Z [err]    File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+2026-10-19T19:26:23.863432706Z [err]    File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-19T19:26:23.863435546Z [err]    File "/app/best_leads_sales.py", line 63, in <module>
+2026-10-19T19:26:23.863438556Z [err]      init_db()
+2026-10-19T19:26:23.863851092Z [err]  sqlite3.OperationalError: near "references": syntax error
+2026-10-19T19:26:23.863854532Z [err]  near "references": syntax error
+2026-10-19T19:26:23.863857752Z [err]  [2026-10-19 19:26:23 +0000] [2] [INFO] Worker exiting (pid: 2)
+2026-10-19T19:26:23.891250999Z [err]  [2026-10-19 19:26:23 +0000] [1] [ERROR] Worker (pid:2) exited with code 3.
+2026-10-19T19:26:23.891255639Z [err]  [2026-10-19 19:26:23 +0000] [1] [ERROR] Shutting down: Master
+2026-10-19T19:26:23.891258709Z [err]  [2026-10-19 19:26:23 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2026-10-19T19:26:24.706419916Z [err]  [2026-10-19 19:26:24 +0000] [1] [INFO] Starting gunicorn 26.2.0
+2026-10-19T19:26:24.706422506Z [err]  [2026-10-19 19:26:24 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2026-10-19T19:26:24.706425006Z [err]  [2026-10-19 19:26:24 +0000] [1] [INFO] Using worker: sync
+2026-10-19T19:26:24.706427096Z [err]  [2026-10-19 19:26:24 +0000] [2] [INFO] Booting worker with pid: 2
+2026-10-19T19:26:24.800638402Z [err]  [2026-10-19 19:26:24 +0000] [2] [ERROR] Exception in worker process
+2026-10-19T19:26:24.800642852Z [err]  Traceback (most recent call last):
+2026-10-19T19:26:24.800645492Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/arbiter.py", line 753, in spawn_worker
+2026-10-19T19:26:24.800647852Z [err]      worker.init_process()
+2026-10-19T19:26:24.800650232Z [err]      ~~~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:24.800652892Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 137, in init_process
+2026-10-19T19:26:24.800655832Z [err]      self.load_wsgi()
+2026-10-19T19:26:24.800658682Z [err]      ~~~~~~~~~~~~~~^^
+2026-10-19T19:26:24.800661152Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/workers/base.py", line 149, in load_wsgi
+2026-10-19T19:26:24.800663771Z [err]      self.wsgi = self.app.wsgi()
+2026-10-19T19:26:24.800666501Z [err]                  ~~~~~~~~~~~~~^^
+2026-10-19T19:26:24.800668841Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2026-10-19T19:26:24.800671781Z [err]      self.callable = self.load()
+2026-10-19T19:26:24.800674321Z [err]                      ~~~~~~~~~^^
+2026-10-19T19:26:24.800676661Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2026-10-19T19:26:24.800678971Z [err]      return self.load_wsgiapp()
+2026-10-19T19:26:24.800681221Z [err]             ~~~~~~~~~~~~~~~~~^^
+2026-10-19T19:26:24.800683801Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2026-10-19T19:26:24.800686291Z [err]      return util.import_app(self.app_uri)
+2026-10-19T19:26:24.800688821Z [err]             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2026-10-19T19:26:24.800691081Z [err]    File "/app/.venv/lib/python3.13/site-packages/gunicorn/util.py", line 420, in import_app
+2026-10-19T19:26:24.800878649Z [err]      mod = importlib.import_module(module)
+2026-10-19T19:26:24.800881229Z [err]    File "/mise/installs/python/3.13.16/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2026-10-19T19:26:24.800885199Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-19T19:26:24.800888319Z [err]             ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:24.800890929Z [err]    File "<frozen importlib._bootstrap>", line 1404, in _gcd_import
+2026-10-19T19:26:24.800893579Z [err]    File "<frozen importlib._bootstrap>", line 1369, in _find_and_load
+2026-10-19T19:26:24.800895749Z [err]    File "<frozen importlib._bootstrap>", line 1340, in _find_and_load_unlocked
+2026-10-19T19:26:24.800897959Z [err]    File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-19T19:26:24.800900059Z [err]    File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+2026-10-19T19:26:24.800902329Z [err]    File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-19T19:26:24.800905519Z [err]    File "/app/best_leads_sales.py", line 63, in <module>
+2026-10-19T19:26:24.800907699Z [err]      init_db()
+2026-10-19T19:26:24.800910759Z [err]      ~~~~~~~^^
+2026-10-19T19:26:24.800913099Z [err]    File "/app/best_leads_sales.py", line 22, in init_db
+2026-10-19T19:26:24.800915459Z [err]      db.executescript("""
+2026-10-19T19:26:24.800917729Z [err]      ~~~~~~~~~~~~~~~~^^^^
+2026-10-19T19:26:24.800920069Z [err]      CREATE TABLE IF NOT EXISTS contractors (
+2026-10-19T19:26:24.800922819Z [err]      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T19:26:24.800925249Z [err]      ...<35 lines>...
+2026-10-19T19:26:24.800928789Z [err]      );
+2026-10-19T19:26:24.800931149Z [err]      ^^
+2026-10-19T19:26:24.800933628Z [err]      """)
+2026-10-19T19:26:24.800935948Z [err]      ^^^^
+2026-10-19T19:26:24.800985578Z [err]  sqlite3.OperationalError: near "references": syntax error
+2026-10-19T19:26:24.800990538Z [err]  near "references": syntax error
+2026-10-19T19:26:24.800993658Z [err]  [2026-10-19 19:26:24 +0000] [2] [INFO] Worker exiting (pid: 2)
+2026-10-19T19:26:24.839028771Z [err]  [2026-10-19 19:26:24 +0000] [1] [ERROR] Worker (pid:2) exited with code 3.
+2026-10-19T19:26:24.839031131Z [err]  [2026-10-19 19:26:24 +0000] [1] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+2026-10-19T19:26:24.839033421Z [err]  [2026-10-19 19:26:24 +0000] [1] [ERROR] Shutting down: Master
+2026-10-19T19:26:24.839035641Z [err]  [2026-10-19 19:26:24 +0000] [1] [ERROR] Reason: Worker failed to boot.
