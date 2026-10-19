@@ -107,7 +107,7 @@ HTML = """
 </head>
 <body>
   <h1>Best Leads</h1>
-  <p class="sub">Lead sales database — contractors & exclusive restoration leads · <a href="/available">Contractor Available Leads Page</a></p>
+  <p class="sub">Lead sales database — contractors & exclusive restoration leads · <strong>No shared leads.</strong> One contractor per job. · <a href="/available">Contractor Available Leads Page</a></p>
   {{ content|safe }}
 </body>
 </html>
@@ -303,7 +303,7 @@ def available_leads():
     </head>
     <body>
       <h1>Available Exclusive Leads</h1>
-      <p>One contractor only. Higher close rates than shared Angi/Thumbtack leads.</p>
+      <p><strong>No shared leads.</strong> Each lead is sold to one contractor only. The homeowner's phone does not blow up with calls from multiple companies.</p>
       <table>
         <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Quality</th><th>Price</th><th>Buy</th></tr>
         {rows}
