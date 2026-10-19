@@ -53,8 +53,20 @@ def calculate_auto_price(service_type, urgency, score):
         "mold_inspection": 45,
         "mold_remediation": 70,
         "iaq_testing": 40,
+        "iaq": 40,
         "remodeling": 60,
+        "kitchen": 70,
+        "bathroom": 65,
+        "addition": 80,
         "roofing": 85,
+        "siding": 70,
+        "windows": 60,
+        "painting": 45,
+        "flooring": 50,
+        "hvac": 55,
+        "plumbing": 50,
+        "electrical": 50,
+        "landscaping": 40,
         "other": 50,
     }
     price = base.get((service_type or "").lower(), 55)
@@ -438,8 +450,43 @@ def available_leads():
     </html>
     """
 
-@app.route("/add_lead", methods=["POST"])
-def add_lead():
+@app.route("/seed_demo")
+def seed_demo():
+    """Add demo contractors and leads for testing."""
+    with get_db() as db:
+        # Demo contractors
+        contractors = [
+            ("Twin Cities Roofing", "612-555-0101", "roof@example.com", "55416, 55345", "MN-ROOF-123", "Yes — Liability & Workers Comp", "2027-01-01", "12", "roofing, siding", "approved", 1),
+            ("Minneapolis Mold Pros", "612-555-0102", "mold@example.com", "55406, 55407", "MN-MOLD-456", "Yes — Liability & Workers Comp", "2026-12-15", "8", "mold_remediation, water_damage", "approved", 1),
+            ("Suburban Remodel Co", "952-555-0103", "remodel@example.com", "55345, 55331", "MN-REM-789", "Yes — Liability only", "2026-11-01", "15", "remodeling, kitchen, bathroom", "pending", 0),
+            ("West Metro Windows", "952-555-0104", "windows@example.com", "55345, 55316", "MN-WIN-321", "Yes — Liability & Workers Comp", "2027-03-01", "6", "windows, siding", "approved", 1),
+            ("Emergency Dry Out", "612-555-0105", "dry@example.com", "full twin cities", "MN-DRY-654", "Yes — Liability & Workers Comp", "2026-10-01", "10", "dry_out, water_damage", "approved", 1),
+        ]
+        for c in contractors:
+            db.execute("""
+                INSERT INTO contractors (name, phone, email, service_area, license_number, insurance, insurance_expires, years_in_business, services_offered, status, active, created)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (*c, datetime.now().strftime("%Y-%m-%d %H:%M")))
+
+        # Demo leads
+        leads = [
+            ("roofing", "asap", "55345", "Jane Smith", "612-555-1001", "jane@example.com", 82, 68),
+            ("water_damage", "emergency", "55406", "John Doe", "612-555-1002", "john@example.com", 90, 81),
+            ("mold_remediation", "this_week", "55416", "Mary Johnson", "952-555-1003", "mary@example.com", 65, 56),
+            ("kitchen", "asap", "55331", "Bob Wilson", "952-555-1004", "bob@example.com", 70, 56),
+            ("windows", "this_week", "55316", "Sara Lee", "612-555-1005", "sara@example.com", 55, 48),
+        ]
+        for l in leads:
+            db.execute("""
+                INSERT INTO leads (service_type, urgency, zip, name, phone, email, score, price, status, created)
+                VALUES (?,?,?,?,?,?,?,?, 'available', ?)
+            """, (*l, datetime.now().strftime("%Y-%m-%d %H:%M")))
+
+    return """
+    <h2>Demo data added</h2>
+    <p>5 contractors and 5 leads created.</p>
+    <p><a href="/admin">View admin</a> · <a href="/available">View available leads</a></p>
+    """
     d = request.form
     service = d.get("service_type")
     urgency = d.get("urgency")
