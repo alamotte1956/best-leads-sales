@@ -14,7 +14,33 @@ app.secret_key = "best-leads-sales-2026"
 DB = "best_leads.db"
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 
-def get_db():
+def calculate_auto_price(service_type, urgency, score):
+    """Return competitive price: 20% below typical Angi shared-lead rates."""
+    # Typical Angi shared lead ranges (midpoint used)
+    base = {
+        "water_damage": 75,
+        "dry_out": 65,
+        "mold_mitigation": 55,
+        "mold_inspection": 45,
+        "mold_remediation": 70,
+        "iaq_testing": 40,
+        "remodeling": 60,
+        "roofing": 85,
+        "other": 50,
+    }
+    price = base.get((service_type or "").lower(), 55)
+    # Urgency multiplier
+    if urgency == "emergency":
+        price = int(price * 1.35)
+    elif urgency == "asap":
+        price = int(price * 1.15)
+    # Quality multiplier
+    if (score or 0) >= 80:
+        price = int(price * 1.2)
+    elif (score or 0) >= 60:
+        price = int(price * 1.05)
+    # 20% discount vs Angi
+    return max(25, int(price * 0.80))
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
     return conn
@@ -176,8 +202,9 @@ def home():
         <input name="phone" placeholder="Phone">
         <input name="email" placeholder="Email">
         <input name="score" type="number" placeholder="Score" value="75">
-        <input name="price" type="number" placeholder="Price $" required>
+        <input name="price" type="number" placeholder="Price $ (leave blank for auto)">
         <button type="submit">Add Lead</button>
+        <p style="font-size:0.85rem; color:#64748b; margin-top:8px;">Leave price blank for automatic 20% below Angi rates. Or enter a number to override.</p>
       </form>
     </div>
     <div class="card">
@@ -316,14 +343,19 @@ def available_leads():
 @app.route("/add_lead", methods=["POST"])
 def add_lead():
     d = request.form
+    service = d.get("service_type")
+    urgency = d.get("urgency")
+    score = int(d.get("score") or 0)
+    auto = calculate_auto_price(service, urgency, score)
+    price = int(d.get("price") or auto)
     with get_db() as db:
         db.execute("""
             INSERT INTO leads (service_type, urgency, zip, name, phone, email, score, price, status, created)
             VALUES (?,?,?,?,?,?,?,?, 'available', ?)
         """, (
-            d.get("service_type"), d.get("urgency"), d.get("zip"),
+            service, urgency, d.get("zip"),
             d.get("name"), d.get("phone"), d.get("email"),
-            int(d.get("score") or 0), int(d.get("price") or 0),
+            score, price,
             datetime.now().strftime("%Y-%m-%d %H:%M")
         ))
     return redirect(url_for("home"))
