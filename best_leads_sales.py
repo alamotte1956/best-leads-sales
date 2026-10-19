@@ -233,6 +233,45 @@ def contractor_profile(cid):
             return "Contractor not found", 404
         reviews = db.execute("SELECT * FROM reviews WHERE contractor_id=? ORDER BY id DESC", (cid,)).fetchall()
         avg = db.execute("SELECT AVG(rating) FROM reviews WHERE contractor_id=?", (cid,)).fetchone()[0]
+        sold = db.execute("SELECT COUNT(*) FROM leads WHERE sold_to=? AND status='sold'", (cid,)).fetchone()[0]
+    rev_html = "".join(
+        f"<div style='border-bottom:1px solid #eee; padding:8px 0;'><strong>{r['rating']}/5</strong> — {r['comment'] or ''} <small>({r['created']})</small></div>"
+        for r in reviews
+    ) or "<p>No reviews yet.</p>"
+    badges = []
+    if c['license_verified']: badges.append("License Verified")
+    if c['insurance_verified']: badges.append("Insurance Verified")
+    if c['background_checked']: badges.append("Background Checked")
+    if avg and avg >= 4.5: badges.append("Top Rated")
+    badge_html = " · ".join(f"<span style='background:#dcfce7; color:#166534; padding:2px 8px; border-radius:999px; font-size:0.8rem;'>{b}</span>" for b in badges) or "Pending verification"
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head><title>{c['name']} — Best Leads</title>
+    <style>body{{font-family:system-ui; max-width:720px; margin:40px auto; padding:16px; background:#f8fafc;}} .card{{background:white; padding:28px; border-radius:12px;}}</style>
+    </head>
+    <body>
+      <div class="card">
+        <h1>{c['name']}</h1>
+        <p>{badge_html}</p>
+        <p><strong>Services:</strong> {c['services_offered'] or '—'}</p>
+        <p><strong>Service Area:</strong> {c['service_area'] or '—'}</p>
+        <p><strong>License:</strong> {c['license_number'] or '—'} · <strong>Insurance:</strong> {c['insurance'] or '—'}</p>
+        <p><strong>Years in business:</strong> {c['years_in_business'] or '—'}</p>
+        <p><strong>Leads purchased:</strong> {sold} · <strong>Average rating:</strong> {round(avg,1) if avg else 'No ratings yet'}</p>
+        <h3>Reviews</h3>
+        {rev_html}
+        <p><a href="/available">Back to available leads</a></p>
+      </div>
+    </body>
+    </html>
+    """
+    with get_db() as db:
+        c = db.execute("SELECT * FROM contractors WHERE id=?", (cid,)).fetchone()
+        if not c:
+            return "Contractor not found", 404
+        reviews = db.execute("SELECT * FROM reviews WHERE contractor_id=? ORDER BY id DESC", (cid,)).fetchall()
+        avg = db.execute("SELECT AVG(rating) FROM reviews WHERE contractor_id=?", (cid,)).fetchone()[0]
     rev_html = "".join(
         f"<div style='border-bottom:1px solid #eee; padding:8px 0;'><strong>{r['rating']}/5</strong> — {r['comment'] or ''} <small>({r['created']})</small></div>"
         for r in reviews
@@ -330,7 +369,7 @@ def available_leads():
     </head>
     <body>
       <h1>Available Exclusive Leads</h1>
-      <p><strong>No shared leads.</strong> Each lead is sold to one contractor only. The homeowner's phone does not blow up with calls from multiple companies.</p>
+      <p><strong>World-class exclusive leads.</strong> One contractor only. No shared leads like Angi or Thumbtack. Higher close rates. Competitive pricing (20% below Angi). Respond within 15 minutes for best results.</p>
       <table>
         <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Quality</th><th>Price</th><th>Buy</th></tr>
         {rows}
