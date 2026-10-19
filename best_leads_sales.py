@@ -351,7 +351,7 @@ def leave_review(contractor_id, lead_id):
 @app.route("/available")
 def available_leads():
     with get_db() as db:
-        leads = db.execute("SELECT * FROM leads WHERE status='available' ORDER BY score DESC, id DESC").fetchall()
+        leads = db.execute("SELECT * FROM leads WHERE status IN ('available','assigned') ORDER BY score DESC, id DESC").fetchall()
         contractors = db.execute("SELECT id, name, services_offered, service_area FROM contractors WHERE active=1").fetchall()
     rows = ""
     for l in leads:
@@ -365,10 +365,13 @@ def available_leads():
             if match_score > 0:
                 matches.append((match_score, c))
         matches.sort(key=lambda x: -x[0])
-        buy_links = " ".join(
-            f"<a href='/sell/{l['id']}/{c['id']}' style='margin-right:6px; background:#0ea5e9; color:white; padding:4px 8px; border-radius:4px; text-decoration:none; font-size:0.85rem;'>Buy ${l['price'] or 0}</a>"
-            for _, c in matches[:3]
-        ) or "No matching contractors"
+        if l["status"] == "available":
+            buy_links = " ".join(
+                f"<a href='/sell/{l['id']}/{c['id']}' style='margin-right:6px; background:#0ea5e9; color:white; padding:4px 8px; border-radius:4px; text-decoration:none; font-size:0.85rem;'>Buy ${l['price'] or 0}</a>"
+                for _, c in matches[:3]
+            ) or "No matching contractors"
+        else:
+            buy_links = f"<span style='color:#854d0e;'>Assigned</span> · <a href='/decline/{l['id']}' style='color:#dc2626;'>Decline</a>"
         quality = "High" if (l['score'] or 0) >= 75 else "Medium" if (l['score'] or 0) >= 50 else "Standard"
         rows += f"""
         <tr>
