@@ -198,6 +198,8 @@ def home():
             for c in contractors:
                 if c["status"] == "approved" and c["active"]:
                     assign_links += f"""<a href='/assign/{l['id']}/{c['id']}'>{c['name'][:12]}</a> · """
+        elif l["status"] == "assigned":
+            assign_links = f"""<a href='/decline/{l['id']}' style='color:#dc2626;'>decline</a>"""
         rows += f"""
         <tr>
           <td>{l['id']}</td>
@@ -636,8 +638,15 @@ def assign_lead(lead_id, contractor_id):
         )
     return redirect(url_for("home"))
 
-@app.route("/auto_assign/<int:lead_id>")
-def auto_assign(lead_id):
+@app.route("/decline/<int:lead_id>")
+def decline_lead(lead_id):
+    """Contractor refuses the assignment. Lead returns to available."""
+    with get_db() as db:
+        db.execute(
+            "UPDATE leads SET status='available', sold_to=NULL, sold_at=NULL WHERE id=? AND status='assigned'",
+            (lead_id,)
+        )
+    return redirect(url_for("home"))
     with get_db() as db:
         lead = db.execute("SELECT * FROM leads WHERE id=?", (lead_id,)).fetchone()
     if not lead:
