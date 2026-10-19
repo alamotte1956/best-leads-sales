@@ -14,7 +14,14 @@ app.secret_key = "best-leads-sales-2026"
 DB = "best_leads.db"
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 
-def find_best_contractor(service_type, zip_code):
+def expire_old_assignments():
+    """Return assigned leads to available if not paid within 2 hours."""
+    cutoff = (datetime.now() - __import__('datetime').timedelta(hours=2)).strftime("%Y-%m-%d %H:%M")
+    with get_db() as db:
+        db.execute(
+            "UPDATE leads SET status='available', sold_to=NULL, sold_at=NULL WHERE status='assigned' AND sold_at < ?",
+            (cutoff,)
+        )
     """Auto-match: approved contractor whose services include the lead type and service area covers the ZIP."""
     with get_db() as db:
         contractors = db.execute(
@@ -163,6 +170,7 @@ HTML = """
 
 @app.route("/")
 def home():
+    expire_old_assignments()
     with get_db() as db:
         leads = db.execute("""
             SELECT l.*, c.name as contractor_name
@@ -174,8 +182,8 @@ def home():
             pending = db.execute("SELECT * FROM contractors WHERE active=0 OR status='pending'").fetchall()
             contractor_html = "".join(
                 f"<li><strong><a href='/contractor/{c['id']}'>{c['name']}</a></strong> — {c['phone'] or ''} — "
-                f"License {'✓' if c['license_verified'] else '✗'} · Insurance {'✓' if c['insurance_verified'] else '✗'} · BG {'✓' if c['background_checked'] else '✗'} — "
-                f"Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} "
+                f"License {'✓' if c['license_verified'] else '✗'} · Insurance {'✓' if c['insurance_verified'] else '✗'} — "
+                f"Bought: {db.execute('SELECT COUNT(*) FROM leads WHERE sold_to=? AND status=\"sold\"', (c['id'],)).fetchone()[0]} — "
                 f"<a href='/toggle_contractor/{c['id']}'>{'turn off' if c['active'] else 'turn on'}</a> · "
                 f"<a href='/delete_contractor/{c['id']}'>delete</a></li>"
                 for c in contractors
@@ -350,6 +358,7 @@ def leave_review(contractor_id, lead_id):
 
 @app.route("/available")
 def available_leads():
+    expire_old_assignments()
     with get_db() as db:
         leads = db.execute("SELECT * FROM leads WHERE status IN ('available','assigned') ORDER BY score DESC, id DESC").fetchall()
         contractors = db.execute("SELECT id, name, services_offered, service_area FROM contractors WHERE active=1").fetchall()
@@ -402,7 +411,7 @@ def available_leads():
     </head>
     <body>
       <h1>Available Exclusive Leads</h1>
-      <p><strong>World-class exclusive leads.</strong> One contractor only. No shared leads like Angi or Thumbtack. Higher close rates. Competitive pricing (20% below Angi). Respond within 15 minutes for best results.</p>
+      <p><strong>World-class exclusive leads.</strong> One contractor only. No shared leads like Angi. Higher close rates. Competitive pricing (20% below Angi). Volume discount: 10% off after 10 leads/month. Respond within 15 minutes.</p>
       <table>
         <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Quality</th><th>Price</th><th>Buy</th></tr>
         {rows}
