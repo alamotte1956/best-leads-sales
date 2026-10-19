@@ -41,6 +41,9 @@ def init_db():
             exclusive_only TEXT,
             active INTEGER DEFAULT 0,
             status TEXT DEFAULT 'pending',
+            license_verified INTEGER DEFAULT 0,
+            insurance_verified INTEGER DEFAULT 0,
+            background_checked INTEGER DEFAULT 0,
             created TEXT
         );
         CREATE TABLE IF NOT EXISTS reviews (
@@ -120,7 +123,9 @@ def home():
             contractors = db.execute("SELECT * FROM contractors WHERE status IN ('approved','paused') OR active=1").fetchall()
             pending = db.execute("SELECT * FROM contractors WHERE active=0 OR status='pending'").fetchall()
             contractor_html = "".join(
-                f"<li><strong><a href='/contractor/{c['id']}'>{c['name']}</a></strong> — {c['phone'] or ''} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} — Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} "
+                f"<li><strong><a href='/contractor/{c['id']}'>{c['name']}</a></strong> — {c['phone'] or ''} — "
+                f"License {'✓' if c['license_verified'] else '✗'} · Insurance {'✓' if c['insurance_verified'] else '✗'} · BG {'✓' if c['background_checked'] else '✗'} — "
+                f"Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} "
                 f"<a href='/toggle_contractor/{c['id']}'>{'turn off' if c['active'] else 'turn on'}</a> · "
                 f"<a href='/delete_contractor/{c['id']}'>delete</a></li>"
                 for c in contractors
@@ -440,6 +445,16 @@ def toggle_contractor(cid):
             new_active = 0 if row["active"] else 1
             new_status = "approved" if new_active else "paused"
             db.execute("UPDATE contractors SET active=?, status=? WHERE id=?", (new_active, new_status, cid))
+    return redirect(url_for("home"))
+
+@app.route("/verify/<int:cid>/<field>")
+def verify_field(cid, field):
+    allowed = {"license": "license_verified", "insurance": "insurance_verified", "background": "background_checked"}
+    col = allowed.get(field)
+    if not col:
+        return redirect(url_for("home"))
+    with get_db() as db:
+        db.execute(f"UPDATE contractors SET {col}=1 WHERE id=?", (cid,))
     return redirect(url_for("home"))
 
 @app.route("/approve_contractor/<int:cid>")
