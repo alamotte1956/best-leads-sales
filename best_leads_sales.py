@@ -251,22 +251,36 @@ def leave_review(contractor_id, lead_id):
       <button type="submit">Submit Review</button>
     </form>
     """
+
+@app.route("/available")
+def available_leads():
     with get_db() as db:
-        leads = db.execute("SELECT * FROM leads WHERE status='available' ORDER BY id DESC").fetchall()
-        contractors = db.execute("SELECT id, name FROM contractors WHERE active=1").fetchall()
+        leads = db.execute("SELECT * FROM leads WHERE status='available' ORDER BY score DESC, id DESC").fetchall()
+        contractors = db.execute("SELECT id, name, services_offered, service_area FROM contractors WHERE active=1").fetchall()
     rows = ""
     for l in leads:
+        matches = []
+        for c in contractors:
+            match_score = 0
+            if l['service_type'] and c['services_offered'] and l['service_type'].lower() in (c['services_offered'] or '').lower():
+                match_score += 2
+            if l['zip'] and c['service_area'] and l['zip'] in (c['service_area'] or ''):
+                match_score += 1
+            if match_score > 0:
+                matches.append((match_score, c))
+        matches.sort(key=lambda x: -x[0])
         buy_links = " ".join(
-            f"<a href='/sell/{l['id']}/{c['id']}' style='margin-right:8px;'>Buy as {c['name']}</a>"
-            for c in contractors
-        ) or "No approved contractors yet"
+            f"<a href='/sell/{l['id']}/{c['id']}' style='margin-right:6px; background:#0ea5e9; color:white; padding:4px 8px; border-radius:4px; text-decoration:none; font-size:0.85rem;'>Buy ${l['price'] or 0}</a>"
+            for _, c in matches[:3]
+        ) or "No matching contractors"
+        quality = "High" if (l['score'] or 0) >= 75 else "Medium" if (l['score'] or 0) >= 50 else "Standard"
         rows += f"""
         <tr>
           <td>{l['id']}</td>
           <td>{l['service_type'] or ''}<br><small>{l['urgency'] or ''}</small></td>
           <td>{l['zip'] or ''}</td>
           <td>{l['name'] or ''}<br><small>{l['phone'] or ''}</small></td>
-          <td>{l['score'] or ''}</td>
+          <td><span class="badge">{quality}</span><br>{l['score'] or ''}</td>
           <td><strong>${l['price'] or 0}</strong></td>
           <td>{buy_links}</td>
         </tr>"""
@@ -276,27 +290,31 @@ def leave_review(contractor_id, lead_id):
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Available Leads — Best Leads</title>
+      <title>Available Exclusive Leads — Best Leads</title>
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <style>
-        body {{ font-family: system-ui; max-width: 1000px; margin: 30px auto; padding: 16px; background: #f8fafc; }}
-        table {{ width: 100%; border-collapse: collapse; background: white; }}
+        body {{ font-family: system-ui; max-width: 1100px; margin: 30px auto; padding: 16px; background: #f8fafc; }}
+        table {{ width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }}
         th, td {{ padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 0.9rem; }}
         th {{ background: #0f172a; color: white; }}
-        a {{ color: #0ea5e9; text-decoration: none; }}
+        .badge {{ display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; background: #dcfce7; color: #166534; }}
+        a {{ color: #0ea5e9; }}
       </style>
     </head>
     <body>
       <h1>Available Exclusive Leads</h1>
-      <p>Approved contractors only. Click “Buy” to purchase via Stripe.</p>
+      <p>One contractor only. Higher close rates than shared Angi/Thumbtack leads.</p>
       <table>
-        <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Score</th><th>Price</th><th>Buy</th></tr>
+        <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Quality</th><th>Price</th><th>Buy</th></tr>
         {rows}
       </table>
-      <p><a href="/">Admin dashboard</a> · <a href="/signup">Contractor signup</a></p>
+      <p><a href="/">Admin</a> · <a href="/signup">Become a contractor</a></p>
     </body>
     </html>
     """
+
+@app.route("/add_lead", methods=["POST"])
+def add_lead():
     d = request.form
     with get_db() as db:
         db.execute("""
