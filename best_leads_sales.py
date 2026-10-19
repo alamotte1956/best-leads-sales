@@ -426,9 +426,9 @@ def add_lead():
             datetime.now().strftime("%Y-%m-%d %H:%M")
         ))
         lead_id = cur.lastrowid
-    # Auto-assign if a strong match exists
+    # Auto-assign if a match exists (quality gate: score < 50 stays available for review)
     match = find_best_contractor(service, d.get("zip"))
-    if match and score >= 60:
+    if match and score >= 50:
         with get_db() as db:
             db.execute(
                 "UPDATE leads SET status='assigned', sold_to=?, sold_at=? WHERE id=?",
