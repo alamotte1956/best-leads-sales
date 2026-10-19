@@ -35,7 +35,7 @@ def init_db():
             preferred_contact TEXT,
             website TEXT,
             google_profile TEXT,
-            references TEXT,
+            contractor_refs TEXT,
             exclusive_only TEXT,
             active INTEGER DEFAULT 1,
             created TEXT
@@ -62,7 +62,7 @@ def init_db():
         cols = [r[1] for r in db.execute("PRAGMA table_info(contractors)").fetchall()]
         for col in ["license_number", "insurance", "insurance_expires", "years_in_business",
                     "services_offered", "avg_job_size", "preferred_contact", "website",
-                    "google_profile", "references", "exclusive_only"]:
+                    "google_profile", "contractor_refs", "exclusive_only"]:
             if col not in cols:
                 db.execute(f"ALTER TABLE contractors ADD COLUMN {col} TEXT")
 
@@ -106,7 +106,14 @@ def home():
             FROM leads l LEFT JOIN contractors c ON l.sold_to = c.id
             ORDER BY l.id DESC
         """).fetchall()
+        try:
         contractors = db.execute("SELECT * FROM contractors WHERE active=1").fetchall()
+        contractor_html = "".join(
+            f"<li><strong>{c['name']}</strong> — {c['phone'] or ''} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} — Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} <a href='/delete_contractor/{c['id']}'>delete</a></li>"
+            for c in contractors
+        ) or "<li>None yet</li>"
+    except Exception:
+        contractor_html = "<li>Error loading contractors</li>"
 
     rows = ""
     for l in leads:
@@ -151,7 +158,7 @@ def home():
     <div class="card">
       <h2>Contractors</h2>
       <ul>
-        {''.join(f"<li><strong>{c['name']}</strong> — {c['phone']} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} — Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} <a href='/delete_contractor/{c['id']}'>delete</a></li>" for c in contractors) or "<li>None yet</li>"}
+        {contractor_html}
       </ul>
       <p><a href="/signup">Contractor Signup Form</a> · <a href="/clear_contractors" style="color:#dc2626;">Clear all contractors</a></p>
       <form method="POST" action="/add_contractor">
@@ -189,13 +196,13 @@ def signup():
                 """INSERT INTO contractors
                    (name, phone, email, service_area, license_number, insurance, insurance_expires,
                     years_in_business, services_offered, avg_job_size, preferred_contact,
-                    website, google_profile, references, exclusive_only, created)
+                    website, google_profile, contractor_refs, exclusive_only, created)
                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (d.get("name"), d.get("phone"), d.get("email"), d.get("service_area"),
                  d.get("license_number"), d.get("insurance"), d.get("insurance_expires"),
                  d.get("years_in_business"), d.get("services_offered"), d.get("avg_job_size"),
                  d.get("preferred_contact"), d.get("website"), d.get("google_profile"),
-                 d.get("references"), d.get("exclusive_only"),
+                 d.get("contractor_refs"), d.get("exclusive_only"),
                  datetime.now().strftime("%Y-%m-%d %H:%M"))
             )
         return """
@@ -264,7 +271,7 @@ def signup():
           <label>Google Business Profile URL</label>
           <input name="google_profile" placeholder="https://g.page/...">
           <label>References or Portfolio Link</label>
-          <input name="references" placeholder="Link or short description">
+          <input name="contractor_refs" placeholder="Link or short description">
           <label>Do you want exclusive leads only?</label>
           <select name="exclusive_only">
             <option value="Yes">Yes — exclusive only</option>
