@@ -58,7 +58,13 @@ def init_db():
             FOREIGN KEY(sold_to) REFERENCES contractors(id)
         );
         """)
-        # No auto-seeded contractors
+        # Add new columns if they don't exist (safe for existing DBs)
+        cols = [r[1] for r in db.execute("PRAGMA table_info(contractors)").fetchall()]
+        for col in ["license_number", "insurance", "insurance_expires", "years_in_business",
+                    "services_offered", "avg_job_size", "preferred_contact", "website",
+                    "google_profile", "references", "exclusive_only"]:
+            if col not in cols:
+                db.execute(f"ALTER TABLE contractors ADD COLUMN {col} TEXT")
 
 init_db()
 
