@@ -41,6 +41,8 @@ def calculate_auto_price(service_type, urgency, score):
         price = int(price * 1.05)
     # 20% discount vs Angi
     return max(25, int(price * 0.80))
+
+def get_db():
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
     return conn
