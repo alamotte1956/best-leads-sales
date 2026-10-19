@@ -3,7 +3,7 @@ Best Leads — Lead Sales Database
 Separate server for selling exclusive restoration leads to contractors.
 SQLite database tracks contractors, available leads, and sales.
 """
-from flask import Flask, render_template_string, request, redirect, url_for, jsonify
+from flask import Flask, render_template_string, request, redirect, url_for
 import sqlite3
 from datetime import datetime
 import os
@@ -47,13 +47,7 @@ def init_db():
             FOREIGN KEY(sold_to) REFERENCES contractors(id)
         );
         """)
-        # Seed sample contractor if empty
-        if db.execute("SELECT COUNT(*) FROM contractors").fetchone()[0] == 0:
-            db.execute(
-                "INSERT INTO contractors (name, phone, email, service_area, created) VALUES (?,?,?,?,?)",
-                ("Diamond Restoration Services", "(612) 555-0199", "leads@diamondrestoration.example",
-                 "South suburbs of Minneapolis", datetime.now().strftime("%Y-%m-%d %H:%M"))
-            )
+        # No auto-seeded contractors
 
 init_db()
 
@@ -140,8 +134,9 @@ def home():
     <div class="card">
       <h2>Contractors</h2>
       <ul>
-        {''.join(f"<li>{c['name']} — {c['phone']} — {c['service_area']}</li>" for c in contractors) or "<li>None yet</li>"}
+        {''.join(f"<li>{c['name']} — {c['phone']} — {c['service_area']} <a href='/delete_contractor/{c['id']}'>delete</a></li>" for c in contractors) or "<li>None yet</li>"}
       </ul>
+      <p><a href="/clear_contractors" style="color:#dc2626;">Clear all contractors</a></p>
       <form method="POST" action="/add_contractor">
         <input name="name" placeholder="Contractor name" required>
         <input name="phone" placeholder="Phone">
@@ -177,6 +172,18 @@ def add_contractor():
             (d.get("name"), d.get("phone"), d.get("email"), d.get("service_area"),
              datetime.now().strftime("%Y-%m-%d %H:%M"))
         )
+    return redirect(url_for("home"))
+
+@app.route("/clear_contractors")
+def clear_contractors():
+    with get_db() as db:
+        db.execute("DELETE FROM contractors")
+    return redirect(url_for("home"))
+
+@app.route("/delete_contractor/<int:cid>")
+def delete_contractor(cid):
+    with get_db() as db:
+        db.execute("DELETE FROM contractors WHERE id=?", (cid,))
     return redirect(url_for("home"))
 
 @app.route("/sell/<int:lead_id>/<int:contractor_id>")
