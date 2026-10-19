@@ -107,13 +107,13 @@ def home():
             ORDER BY l.id DESC
         """).fetchall()
         try:
-        contractors = db.execute("SELECT * FROM contractors WHERE active=1").fetchall()
-        contractor_html = "".join(
-            f"<li><strong>{c['name']}</strong> — {c['phone'] or ''} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} — Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} <a href='/delete_contractor/{c['id']}'>delete</a></li>"
-            for c in contractors
-        ) or "<li>None yet</li>"
-    except Exception:
-        contractor_html = "<li>Error loading contractors</li>"
+            contractors = db.execute("SELECT * FROM contractors WHERE active=1").fetchall()
+            contractor_html = "".join(
+                f"<li><strong>{c['name']}</strong> — {c['phone'] or ''} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} — Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} <a href='/delete_contractor/{c['id']}'>delete</a></li>"
+                for c in contractors
+            ) or "<li>None yet</li>"
+        except Exception:
+            contractor_html = "<li>Error loading contractors</li>"
 
     rows = ""
     for l in leads:
