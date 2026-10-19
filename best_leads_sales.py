@@ -95,7 +95,7 @@ HTML = """
 </head>
 <body>
   <h1>Best Leads</h1>
-  <p class="sub">Lead sales database — contractors & exclusive restoration leads</p>
+  <p class="sub">Lead sales database — contractors & exclusive restoration leads · <a href="/available">Contractor Available Leads Page</a></p>
   {{ content|safe }}
 </body>
 </html>
@@ -184,8 +184,54 @@ def home():
     """
     return render_template_string(HTML, content=content)
 
-@app.route("/add_lead", methods=["POST"])
-def add_lead():
+@app.route("/available")
+def available_leads():
+    with get_db() as db:
+        leads = db.execute("SELECT * FROM leads WHERE status='available' ORDER BY id DESC").fetchall()
+        contractors = db.execute("SELECT id, name FROM contractors WHERE active=1").fetchall()
+    rows = ""
+    for l in leads:
+        buy_links = " ".join(
+            f"<a href='/sell/{l['id']}/{c['id']}' style='margin-right:8px;'>Buy as {c['name']}</a>"
+            for c in contractors
+        ) or "No approved contractors yet"
+        rows += f"""
+        <tr>
+          <td>{l['id']}</td>
+          <td>{l['service_type'] or ''}<br><small>{l['urgency'] or ''}</small></td>
+          <td>{l['zip'] or ''}</td>
+          <td>{l['name'] or ''}<br><small>{l['phone'] or ''}</small></td>
+          <td>{l['score'] or ''}</td>
+          <td><strong>${l['price'] or 0}</strong></td>
+          <td>{buy_links}</td>
+        </tr>"""
+    if not rows:
+        rows = "<tr><td colspan='7'>No available leads right now.</td></tr>"
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Available Leads — Best Leads</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        body {{ font-family: system-ui; max-width: 1000px; margin: 30px auto; padding: 16px; background: #f8fafc; }}
+        table {{ width: 100%; border-collapse: collapse; background: white; }}
+        th, td {{ padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 0.9rem; }}
+        th {{ background: #0f172a; color: white; }}
+        a {{ color: #0ea5e9; text-decoration: none; }}
+      </style>
+    </head>
+    <body>
+      <h1>Available Exclusive Leads</h1>
+      <p>Approved contractors only. Click “Buy” to purchase via Stripe.</p>
+      <table>
+        <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Score</th><th>Price</th><th>Buy</th></tr>
+        {rows}
+      </table>
+      <p><a href="/">Admin dashboard</a> · <a href="/signup">Contractor signup</a></p>
+    </body>
+    </html>
+    """
     d = request.form
     with get_db() as db:
         db.execute("""
