@@ -37,7 +37,8 @@ def init_db():
             google_profile TEXT,
             contractor_refs TEXT,
             exclusive_only TEXT,
-            active INTEGER DEFAULT 1,
+            active INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'pending',
             created TEXT
         );
         CREATE TABLE IF NOT EXISTS leads (
@@ -62,7 +63,7 @@ def init_db():
         cols = [r[1] for r in db.execute("PRAGMA table_info(contractors)").fetchall()]
         for col in ["license_number", "insurance", "insurance_expires", "years_in_business",
                     "services_offered", "avg_job_size", "preferred_contact", "website",
-                    "google_profile", "contractor_refs", "exclusive_only"]:
+                    "google_profile", "contractor_refs", "exclusive_only", "status"]:
             if col not in cols:
                 db.execute(f"ALTER TABLE contractors ADD COLUMN {col} TEXT")
 
@@ -108,12 +109,18 @@ def home():
         """).fetchall()
         try:
             contractors = db.execute("SELECT * FROM contractors WHERE active=1").fetchall()
+            pending = db.execute("SELECT * FROM contractors WHERE active=0 OR status='pending'").fetchall()
             contractor_html = "".join(
                 f"<li><strong>{c['name']}</strong> — {c['phone'] or ''} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} — Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} <a href='/delete_contractor/{c['id']}'>delete</a></li>"
                 for c in contractors
-            ) or "<li>None yet</li>"
+            ) or "<li>None approved yet</li>"
+            pending_html = "".join(
+                f"<li><strong>{c['name']}</strong> — {c['phone'] or ''} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} <a href='/approve_contractor/{c['id']}'>approve</a> · <a href='/delete_contractor/{c['id']}'>reject</a></li>"
+                for c in pending
+            ) or "<li>None pending</li>"
         except Exception:
             contractor_html = "<li>Error loading contractors</li>"
+            pending_html = ""
 
     rows = ""
     for l in leads:
@@ -157,9 +164,10 @@ def home():
     </div>
     <div class="card">
       <h2>Contractors</h2>
-      <ul>
-        {contractor_html}
-      </ul>
+      <h3>Pending Approval</h3>
+      <ul>{pending_html}</ul>
+      <h3>Approved</h3>
+      <ul>{contractor_html}</ul>
       <p><a href="/signup">Contractor Signup Form</a> · <a href="/clear_contractors" style="color:#dc2626;">Clear all contractors</a></p>
       <form method="POST" action="/add_contractor">
         <input name="name" placeholder="Contractor name" required>
@@ -207,7 +215,7 @@ def signup():
             )
         return """
         <h2>Thank you!</h2>
-        <p>Your contractor application has been received. We will review it and contact you.</p>
+        <p>Your contractor application has been received and is pending approval. We will contact you once reviewed.</p>
         <p><a href="/signup">Submit another</a></p>
         """
     return """
@@ -298,8 +306,17 @@ def clear_contractors():
         db.execute("DELETE FROM contractors")
     return redirect(url_for("home"))
 
+@app.route("/approve_contractor/<int:cid>")
+def approve_contractor(cid):
+    with get_db() as db:
+        db.execute("UPDATE contractors SET active=1, status='approved' WHERE id=?", (cid,))
+    return redirect(url_for("home"))
+
 @app.route("/delete_contractor/<int:cid>")
 def delete_contractor(cid):
+    with get_db() as db:
+        db.execute("DELETE FROM contractors WHERE id=?", (cid,))
+    return redirect(url_for("home"))
     with get_db() as db:
         db.execute("DELETE FROM contractors WHERE id=?", (cid,))
     return redirect(url_for("home"))
