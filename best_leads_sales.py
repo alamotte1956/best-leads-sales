@@ -22,6 +22,8 @@ def expire_old_assignments():
             "UPDATE leads SET status='available', sold_to=NULL, sold_at=NULL WHERE status='assigned' AND sold_at < ?",
             (cutoff,)
         )
+
+def find_best_contractor(service_type, zip_code):
     """Auto-match: approved contractor whose services include the lead type and service area covers the ZIP."""
     with get_db() as db:
         contractors = db.execute(
@@ -33,7 +35,6 @@ def expire_old_assignments():
         services = (c["services_offered"] or "").lower()
         area = (c["service_area"] or "").lower()
         if service and service in services:
-            # Prefer exact ZIP or "full" area match
             if zip_code and (zip_code in area or "full" in area or "twin" in area):
                 matches.append((c, 2))
             else:
@@ -42,8 +43,9 @@ def expire_old_assignments():
         return None
     matches.sort(key=lambda x: -x[1])
     return matches[0][0]
+
+def calculate_auto_price(service_type, urgency, score):
     """Return competitive price: 20% below typical Angi shared-lead rates."""
-    # Typical Angi shared lead ranges (midpoint used)
     base = {
         "water_damage": 75,
         "dry_out": 65,
@@ -56,17 +58,14 @@ def expire_old_assignments():
         "other": 50,
     }
     price = base.get((service_type or "").lower(), 55)
-    # Urgency multiplier
     if urgency == "emergency":
         price = int(price * 1.35)
     elif urgency == "asap":
         price = int(price * 1.15)
-    # Quality multiplier
     if (score or 0) >= 80:
         price = int(price * 1.2)
     elif (score or 0) >= 60:
         price = int(price * 1.05)
-    # 20% discount vs Angi
     return max(25, int(price * 0.80))
 
 def get_db():
