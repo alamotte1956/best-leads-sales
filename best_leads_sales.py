@@ -222,9 +222,39 @@ def home():
     if not rows:
         rows = "<tr><td colspan='8'>No leads yet. Add one below or import from the intake form.</td></tr>"
 
+    sold_rows = ""
+    sold_count = 0
+    sold_revenue = 0
+    for l in leads:
+        if l["status"] == "sold":
+            sold_count += 1
+            sold_revenue += l["price"] or 0
+            sold_rows += f"""
+            <tr>
+              <td>{l['id']}</td>
+              <td>{l['service_type'] or ''}</td>
+              <td>{l['name'] or ''}</td>
+              <td>${l['price'] or 0}</td>
+              <td>{l['contractor_name'] or '—'}</td>
+              <td>{l['sold_at'] or ''}</td>
+            </tr>"""
+    if not sold_rows:
+        sold_rows = "<tr><td colspan='6'>No leads sold yet.</td></tr>"
+
     content = f"""
     <div class="card">
-      <h2>Available & Sold Leads</h2>
+      <h2>Sales Summary</h2>
+      <p><strong>{sold_count}</strong> leads sold · <strong>${sold_revenue}</strong> revenue</p>
+    </div>
+    <div class="card">
+      <h2>Sold Leads</h2>
+      <table>
+        <tr><th>ID</th><th>Service</th><th>Homeowner</th><th>Price</th><th>Sold To</th><th>Sold At</th></tr>
+        {sold_rows}
+      </table>
+    </div>
+    <div class="card">
+      <h2>All Leads</h2>
       <table>
         <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Score</th><th>Price</th><th>Status</th><th>Sold To</th></tr>
         {rows}
