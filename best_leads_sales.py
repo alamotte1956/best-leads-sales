@@ -169,8 +169,12 @@ HTML = """
 """
 
 @app.route("/")
+@app.route("/admin")
 def home():
-    expire_old_assignments()
+    try:
+        expire_old_assignments()
+    except Exception:
+        pass
     with get_db() as db:
         leads = db.execute("""
             SELECT l.*, c.name as contractor_name
