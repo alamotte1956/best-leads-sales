@@ -43,7 +43,14 @@ def init_db():
             status TEXT DEFAULT 'pending',
             created TEXT
         );
-        CREATE TABLE IF NOT EXISTS leads (
+        CREATE TABLE IF NOT EXISTS reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            contractor_id INTEGER,
+            lead_id INTEGER,
+            rating INTEGER,
+            comment TEXT,
+            created TEXT
+        );
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             service_type TEXT,
             urgency TEXT,
@@ -113,7 +120,7 @@ def home():
             contractors = db.execute("SELECT * FROM contractors WHERE status IN ('approved','paused') OR active=1").fetchall()
             pending = db.execute("SELECT * FROM contractors WHERE active=0 OR status='pending'").fetchall()
             contractor_html = "".join(
-                f"<li><strong>{c['name']}</strong> — {c['phone'] or ''} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} — Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} "
+                f"<li><strong><a href='/contractor/{c['id']}'>{c['name']}</a></strong> — {c['phone'] or ''} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} — Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} "
                 f"<a href='/toggle_contractor/{c['id']}'>{'turn off' if c['active'] else 'turn on'}</a> · "
                 f"<a href='/delete_contractor/{c['id']}'>delete</a></li>"
                 for c in contractors
@@ -184,8 +191,59 @@ def home():
     """
     return render_template_string(HTML, content=content)
 
-@app.route("/available")
-def available_leads():
+@app.route("/contractor/<int:cid>")
+def contractor_profile(cid):
+    with get_db() as db:
+        c = db.execute("SELECT * FROM contractors WHERE id=?", (cid,)).fetchone()
+        if not c:
+            return "Contractor not found", 404
+        reviews = db.execute("SELECT * FROM reviews WHERE contractor_id=? ORDER BY id DESC", (cid,)).fetchall()
+        avg = db.execute("SELECT AVG(rating) FROM reviews WHERE contractor_id=?", (cid,)).fetchone()[0]
+    rev_html = "".join(
+        f"<div style='border-bottom:1px solid #eee; padding:8px 0;'><strong>{r['rating']}/5</strong> — {r['comment'] or ''} <small>({r['created']})</small></div>"
+        for r in reviews
+    ) or "<p>No reviews yet.</p>"
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head><title>{c['name']} — Best Leads</title>
+    <style>body{{font-family:system-ui; max-width:700px; margin:40px auto; padding:16px;}} .card{{background:white; padding:24px; border-radius:12px;}}</style>
+    </head>
+    <body>
+      <div class="card">
+        <h1>{c['name']}</h1>
+        <p><strong>Services:</strong> {c['services_offered'] or '—'}</p>
+        <p><strong>Service Area:</strong> {c['service_area'] or '—'}</p>
+        <p><strong>License:</strong> {c['license_number'] or '—'} · <strong>Insurance:</strong> {c['insurance'] or '—'}</p>
+        <p><strong>Years in business:</strong> {c['years_in_business'] or '—'}</p>
+        <p><strong>Average rating:</strong> {round(avg,1) if avg else 'No ratings yet'}</p>
+        <h3>Reviews</h3>
+        {rev_html}
+        <p><a href="/available">Back to available leads</a></p>
+      </div>
+    </body>
+    </html>
+    """
+
+@app.route("/review/<int:contractor_id>/<int:lead_id>", methods=["GET", "POST"])
+def leave_review(contractor_id, lead_id):
+    if request.method == "POST":
+        rating = int(request.form.get("rating", 5))
+        comment = request.form.get("comment", "")
+        with get_db() as db:
+            db.execute("INSERT INTO reviews (contractor_id, lead_id, rating, comment, created) VALUES (?,?,?,?,?)",
+                       (contractor_id, lead_id, rating, comment, datetime.now().strftime("%Y-%m-%d %H:%M")))
+        return "<h2>Thank you for your review!</h2><p><a href='/'>Back</a></p>"
+    return f"""
+    <h2>Leave a Review</h2>
+    <form method="POST">
+      <label>Rating (1-5)</label><br>
+      <input name="rating" type="number" min="1" max="5" value="5" required><br><br>
+      <label>Comment</label><br>
+      <textarea name="comment" rows="4" style="width:100%;"></textarea><br>
+      <button type="submit">Submit Review</button>
+    </form>
+    """
     with get_db() as db:
         leads = db.execute("SELECT * FROM leads WHERE status='available' ORDER BY id DESC").fetchall()
         contractors = db.execute("SELECT id, name FROM contractors WHERE active=1").fetchall()
