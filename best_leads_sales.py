@@ -416,7 +416,7 @@ def add_lead():
     auto = calculate_auto_price(service, urgency, score)
     price = int(d.get("price") or auto)
     with get_db() as db:
-        db.execute("""
+        cur = db.execute("""
             INSERT INTO leads (service_type, urgency, zip, name, phone, email, score, price, status, created)
             VALUES (?,?,?,?,?,?,?,?, 'available', ?)
         """, (
@@ -425,29 +425,44 @@ def add_lead():
             score, price,
             datetime.now().strftime("%Y-%m-%d %H:%M")
         ))
+        lead_id = cur.lastrowid
+    # Auto-assign if a strong match exists
+    match = find_best_contractor(service, d.get("zip"))
+    if match and score >= 60:
+        with get_db() as db:
+            db.execute(
+                "UPDATE leads SET status='assigned', sold_to=?, sold_at=? WHERE id=?",
+                (match["id"], datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
+            )
     return redirect(url_for("home"))
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
         d = request.form
+        has_license = bool(d.get("license_number"))
+        has_insurance = d.get("insurance", "").startswith("Yes")
+        # Auto-approve if licensed + insured; otherwise pending
+        status = "approved" if (has_license and has_insurance) else "pending"
+        active = 1 if status == "approved" else 0
         with get_db() as db:
             db.execute(
                 """INSERT INTO contractors
                    (name, phone, email, service_area, license_number, insurance, insurance_expires,
                     years_in_business, services_offered, avg_job_size, preferred_contact,
-                    website, google_profile, contractor_refs, exclusive_only, created)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                    website, google_profile, contractor_refs, exclusive_only, status, active, created)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (d.get("name"), d.get("phone"), d.get("email"), d.get("service_area"),
                  d.get("license_number"), d.get("insurance"), d.get("insurance_expires"),
                  d.get("years_in_business"), d.get("services_offered"), d.get("avg_job_size"),
                  d.get("preferred_contact"), d.get("website"), d.get("google_profile"),
-                 d.get("contractor_refs"), d.get("exclusive_only"),
+                 d.get("contractor_refs"), d.get("exclusive_only"), status, active,
                  datetime.now().strftime("%Y-%m-%d %H:%M"))
             )
-        return """
+        msg = "approved and can receive leads" if status == "approved" else "pending review"
+        return f"""
         <h2>Thank you!</h2>
-        <p>Your contractor application has been received and is pending approval. We will contact you once reviewed.</p>
+        <p>Your contractor application has been received and is {msg}.</p>
         <p><a href="/signup">Submit another</a></p>
         """
     return """
