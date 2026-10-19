@@ -426,14 +426,35 @@ def add_lead():
             datetime.now().strftime("%Y-%m-%d %H:%M")
         ))
         lead_id = cur.lastrowid
-    # Auto-assign if a match exists (quality gate: score < 50 stays available for review)
+    # Auto-assign if a match exists and create payment link
     match = find_best_contractor(service, d.get("zip"))
+    payment_url = None
     if match and score >= 50:
         with get_db() as db:
             db.execute(
                 "UPDATE leads SET status='assigned', sold_to=?, sold_at=? WHERE id=?",
                 (match["id"], datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
             )
+        # Create Stripe Checkout for the contractor to pay
+        if stripe.api_key and price > 0:
+            try:
+                session = stripe.checkout.Session.create(
+                    mode="payment",
+                    line_items=[{
+                        "price_data": {
+                            "currency": "usd",
+                            "product_data": {"name": f"Exclusive Lead #{lead_id} — {service}"},
+                            "unit_amount": int(price * 100),
+                        },
+                        "quantity": 1,
+                    }],
+                    success_url=request.host_url + f"sell_success/{lead_id}/{match['id']}?session_id={{CHECKOUT_SESSION_ID}}",
+                    cancel_url=request.host_url,
+                    metadata={"lead_id": lead_id, "contractor_id": match["id"]},
+                )
+                payment_url = session.url
+            except Exception:
+                payment_url = None
     return redirect(url_for("home"))
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -629,6 +650,26 @@ def auto_assign(lead_id):
             "UPDATE leads SET status='assigned', sold_to=?, sold_at=? WHERE id=?",
             (match["id"], datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
         )
+    # Create payment link
+    if stripe.api_key and lead["price"] and lead["price"] > 0:
+        try:
+            session = stripe.checkout.Session.create(
+                mode="payment",
+                line_items=[{
+                    "price_data": {
+                        "currency": "usd",
+                        "product_data": {"name": f"Exclusive Lead #{lead_id}"},
+                        "unit_amount": int(lead["price"] * 100),
+                    },
+                    "quantity": 1,
+                }],
+                success_url=request.host_url + f"sell_success/{lead_id}/{match['id']}?session_id={{CHECKOUT_SESSION_ID}}",
+                cancel_url=request.host_url,
+                metadata={"lead_id": lead_id, "contractor_id": match["id"]},
+            )
+            return redirect(session.url)
+        except Exception:
+            pass
     return redirect(url_for("home"))
     if not stripe.api_key:
         # No Stripe key — sell without charging
