@@ -7,10 +7,12 @@ from flask import Flask, render_template_string, request, redirect, url_for
 import sqlite3
 from datetime import datetime
 import os
+import stripe
 
 app = Flask(__name__)
 app.secret_key = "best-leads-sales-2026"
 DB = "best_leads.db"
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 
 def get_db():
     conn = sqlite3.connect(DB)
@@ -63,7 +65,7 @@ def init_db():
         cols = [r[1] for r in db.execute("PRAGMA table_info(contractors)").fetchall()]
         for col in ["license_number", "insurance", "insurance_expires", "years_in_business",
                     "services_offered", "avg_job_size", "preferred_contact", "website",
-                    "google_profile", "contractor_refs", "exclusive_only", "status"]:
+                    "google_profile", "contractor_refs", "exclusive_only", "status", "stripe_customer_id"]:
             if col not in cols:
                 db.execute(f"ALTER TABLE contractors ADD COLUMN {col} TEXT")
 
@@ -304,6 +306,24 @@ def signup():
 
 @app.route("/clear_contractors")
 def clear_contractors():
+    return """
+    <h2>Clear all contractors?</h2>
+    <p>This will delete every contractor (approved, paused, and pending).</p>
+    <p><a href="/clear_contractors/confirm" style="color:#dc2626; font-weight:bold;">Yes, delete all contractors</a></p>
+    <p><a href="/">Cancel</a></p>
+    """
+
+@app.route("/clear_contractors/confirm")
+def clear_contractors_confirm():
+    return """
+    <h2>Are you absolutely sure?</h2>
+    <p>This cannot be undone. All contractor records will be permanently deleted.</p>
+    <p><a href="/clear_contractors/final" style="color:#dc2626; font-weight:bold;">Yes, permanently delete all</a></p>
+    <p><a href="/">Cancel</a></p>
+    """
+
+@app.route("/clear_contractors/final")
+def clear_contractors_final():
     with get_db() as db:
         db.execute("DELETE FROM contractors")
     return redirect(url_for("home"))
@@ -335,6 +355,41 @@ def delete_contractor(cid):
 
 @app.route("/sell/<int:lead_id>/<int:contractor_id>")
 def sell(lead_id, contractor_id):
+    if not stripe.api_key:
+        # No Stripe key — sell without charging
+        with get_db() as db:
+            db.execute(
+                "UPDATE leads SET status='sold', sold_to=?, sold_at=? WHERE id=? AND status='available'",
+                (contractor_id, datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
+            )
+        return redirect(url_for("home"))
+
+    with get_db() as db:
+        lead = db.execute("SELECT * FROM leads WHERE id=? AND status='available'", (lead_id,)).fetchone()
+        contractor = db.execute("SELECT * FROM contractors WHERE id=? AND active=1", (contractor_id,)).fetchone()
+    if not lead or not contractor:
+        return redirect(url_for("home"))
+
+    # Create Stripe Checkout session for the lead price
+    session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        line_items=[{
+            "price_data": {
+                "currency": "usd",
+                "product_data": {"name": f"Exclusive Lead #{lead_id} — {lead['service_type'] or 'Restoration'}"},
+                "unit_amount": int(lead["price"] or 0) * 100,
+            },
+            "quantity": 1,
+        }],
+        mode="payment",
+        success_url=request.host_url + f"sell_success/{lead_id}/{contractor_id}?session_id={{CHECKOUT_SESSION_ID}}",
+        cancel_url=request.host_url,
+        metadata={"lead_id": str(lead_id), "contractor_id": str(contractor_id)},
+    )
+    return redirect(session.url, code=303)
+
+@app.route("/sell_success/<int:lead_id>/<int:contractor_id>")
+def sell_success(lead_id, contractor_id):
     with get_db() as db:
         db.execute(
             "UPDATE leads SET status='sold', sold_to=?, sold_at=? WHERE id=? AND status='available'",
