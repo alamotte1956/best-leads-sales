@@ -315,52 +315,32 @@ def contractor_profile(cid):
     return f"""
     <!DOCTYPE html>
     <html>
-    <head><title>{c['name']} — Best Leads</title>
-    <style>body{{font-family:system-ui; max-width:720px; margin:40px auto; padding:16px; background:#f8fafc;}} .card{{background:white; padding:28px; border-radius:12px;}}</style>
+    <head>
+      <title>{c['name']} — Best Leads</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        body {{ font-family: system-ui; max-width: 800px; margin: 40px auto; padding: 16px; background: #f8fafc; }}
+        .card {{ background: white; padding: 32px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }}
+        .badge {{ display: inline-block; background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; margin-right: 6px; }}
+        .stat {{ display: inline-block; margin-right: 24px; }}
+        .stat strong {{ display: block; font-size: 1.4rem; }}
+      </style>
     </head>
     <body>
       <div class="card">
         <h1>{c['name']}</h1>
         <p>{badge_html}</p>
+        <div style="margin: 20px 0; padding: 16px; background: #f1f5f9; border-radius: 8px;">
+          <span class="stat"><strong>{sold}</strong> Leads Bought</span>
+          <span class="stat"><strong>{round(avg,1) if avg else '—'}</strong> Avg Rating</span>
+          <span class="stat"><strong>{c['years_in_business'] or '—'}</strong> Years</span>
+        </div>
         <p><strong>Services:</strong> {c['services_offered'] or '—'}</p>
         <p><strong>Service Area:</strong> {c['service_area'] or '—'}</p>
         <p><strong>License:</strong> {c['license_number'] or '—'} · <strong>Insurance:</strong> {c['insurance'] or '—'}</p>
-        <p><strong>Years in business:</strong> {c['years_in_business'] or '—'}</p>
-        <p><strong>Leads purchased:</strong> {sold} · <strong>Average rating:</strong> {round(avg,1) if avg else 'No ratings yet'}</p>
         <h3>Reviews</h3>
         {rev_html}
-        <p><a href="/available">Back to available leads</a></p>
-      </div>
-    </body>
-    </html>
-    """
-    with get_db() as db:
-        c = db.execute("SELECT * FROM contractors WHERE id=?", (cid,)).fetchone()
-        if not c:
-            return "Contractor not found", 404
-        reviews = db.execute("SELECT * FROM reviews WHERE contractor_id=? ORDER BY id DESC", (cid,)).fetchall()
-        avg = db.execute("SELECT AVG(rating) FROM reviews WHERE contractor_id=?", (cid,)).fetchone()[0]
-    rev_html = "".join(
-        f"<div style='border-bottom:1px solid #eee; padding:8px 0;'><strong>{r['rating']}/5</strong> — {r['comment'] or ''} <small>({r['created']})</small></div>"
-        for r in reviews
-    ) or "<p>No reviews yet.</p>"
-    return f"""
-    <!DOCTYPE html>
-    <html>
-    <head><title>{c['name']} — Best Leads</title>
-    <style>body{{font-family:system-ui; max-width:700px; margin:40px auto; padding:16px;}} .card{{background:white; padding:24px; border-radius:12px;}}</style>
-    </head>
-    <body>
-      <div class="card">
-        <h1>{c['name']}</h1>
-        <p><strong>Services:</strong> {c['services_offered'] or '—'}</p>
-        <p><strong>Service Area:</strong> {c['service_area'] or '—'}</p>
-        <p><strong>License:</strong> {c['license_number'] or '—'} · <strong>Insurance:</strong> {c['insurance'] or '—'}</p>
-        <p><strong>Years in business:</strong> {c['years_in_business'] or '—'}</p>
-        <p><strong>Average rating:</strong> {round(avg,1) if avg else 'No ratings yet'}</p>
-        <h3>Reviews</h3>
-        {rev_html}
-        <p><a href="/available">Back to available leads</a></p>
+        <p style="margin-top:24px;"><a href="/available">← Available Leads</a> · <a href="/">Admin</a></p>
       </div>
     </body>
     </html>
@@ -391,7 +371,7 @@ def available_leads():
     expire_old_assignments()
     with get_db() as db:
         leads = db.execute("SELECT * FROM leads WHERE status IN ('available','assigned') ORDER BY score DESC, id DESC").fetchall()
-        contractors = db.execute("SELECT id, name, services_offered, service_area FROM contractors WHERE active=1").fetchall()
+        contractors = db.execute("SELECT id, name, services_offered, service_area FROM contractors WHERE active=1 AND status='approved'").fetchall()
     rows = ""
     for l in leads:
         matches = []
@@ -404,22 +384,26 @@ def available_leads():
             if match_score > 0:
                 matches.append((match_score, c))
         matches.sort(key=lambda x: -x[0])
+        quality = "High" if (l['score'] or 0) >= 75 else "Medium" if (l['score'] or 0) >= 50 else "Standard"
+        quality_color = "#166534" if quality == "High" else "#854d0e" if quality == "Medium" else "#64748b"
         if l["status"] == "available":
             buy_links = " ".join(
-                f"<a href='/sell/{l['id']}/{c['id']}' style='margin-right:6px; background:#0ea5e9; color:white; padding:4px 8px; border-radius:4px; text-decoration:none; font-size:0.85rem;'>Buy ${l['price'] or 0}</a>"
+                f"<a href='/sell/{l['id']}/{c['id']}' style='margin-right:6px; background:#0ea5e9; color:white; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.85rem; font-weight:600;'>Buy ${l['price'] or 0}</a>"
                 for _, c in matches[:3]
-            ) or "No matching contractors"
+            ) or "<span style='color:#64748b;'>No matching contractors</span>"
+            status_html = f"<span style='background:#dcfce7; color:#166534; padding:2px 8px; border-radius:999px; font-size:0.75rem;'>Available</span>"
         else:
-            buy_links = f"<span style='color:#854d0e;'>Assigned</span> · <a href='/decline/{l['id']}' style='color:#dc2626;'>Decline</a>"
-        quality = "High" if (l['score'] or 0) >= 75 else "Medium" if (l['score'] or 0) >= 50 else "Standard"
+            buy_links = f"<a href='/decline/{l['id']}' style='color:#dc2626; font-weight:600;'>Decline</a>"
+            status_html = f"<span style='background:#fef3c7; color:#854d0e; padding:2px 8px; border-radius:999px; font-size:0.75rem;'>Assigned</span>"
         rows += f"""
         <tr>
           <td>{l['id']}</td>
-          <td>{l['service_type'] or ''}<br><small>{l['urgency'] or ''}</small></td>
+          <td><strong>{l['service_type'] or ''}</strong><br><small style='color:#64748b;'>{l['urgency'] or ''}</small></td>
           <td>{l['zip'] or ''}</td>
           <td>{l['name'] or ''}<br><small>{l['phone'] or ''}</small></td>
-          <td><span class="badge">{quality}</span><br>{l['score'] or ''}</td>
-          <td><strong>${l['price'] or 0}</strong></td>
+          <td><span style='background:{quality_color}22; color:{quality_color}; padding:2px 8px; border-radius:999px; font-size:0.75rem; font-weight:600;'>{quality}</span><br><small>{l['score'] or ''}</small></td>
+          <td><strong style='font-size:1.1rem;'>${l['price'] or 0}</strong></td>
+          <td>{status_html}</td>
           <td>{buy_links}</td>
         </tr>"""
     if not rows:
