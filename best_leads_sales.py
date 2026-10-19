@@ -108,10 +108,12 @@ def home():
             ORDER BY l.id DESC
         """).fetchall()
         try:
-            contractors = db.execute("SELECT * FROM contractors WHERE active=1").fetchall()
+            contractors = db.execute("SELECT * FROM contractors WHERE status IN ('approved','paused') OR active=1").fetchall()
             pending = db.execute("SELECT * FROM contractors WHERE active=0 OR status='pending'").fetchall()
             contractor_html = "".join(
-                f"<li><strong>{c['name']}</strong> — {c['phone'] or ''} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} — Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} <a href='/delete_contractor/{c['id']}'>delete</a></li>"
+                f"<li><strong>{c['name']}</strong> — {c['phone'] or ''} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} — Years: {c['years_in_business'] or '—'} — Services: {c['services_offered'] or '—'} "
+                f"<a href='/toggle_contractor/{c['id']}'>{'turn off' if c['active'] else 'turn on'}</a> · "
+                f"<a href='/delete_contractor/{c['id']}'>delete</a></li>"
                 for c in contractors
             ) or "<li>None approved yet</li>"
             pending_html = "".join(
@@ -304,6 +306,16 @@ def signup():
 def clear_contractors():
     with get_db() as db:
         db.execute("DELETE FROM contractors")
+    return redirect(url_for("home"))
+
+@app.route("/toggle_contractor/<int:cid>")
+def toggle_contractor(cid):
+    with get_db() as db:
+        row = db.execute("SELECT active FROM contractors WHERE id=?", (cid,)).fetchone()
+        if row:
+            new_active = 0 if row["active"] else 1
+            new_status = "approved" if new_active else "paused"
+            db.execute("UPDATE contractors SET active=?, status=? WHERE id=?", (new_active, new_status, cid))
     return redirect(url_for("home"))
 
 @app.route("/approve_contractor/<int:cid>")
