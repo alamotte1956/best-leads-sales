@@ -849,6 +849,28 @@ def decline_lead(lead_id):
     )
     return redirect(session.url, code=303)
 
+@app.route("/sell/<int:lead_id>/<int:contractor_id>")
+def sell_lead(lead_id, contractor_id):
+    """Demo buy: mark lead as sold without real payment."""
+    with get_db() as db:
+        lead = db.execute("SELECT * FROM leads WHERE id=?", (lead_id,)).fetchone()
+        contractor = db.execute("SELECT * FROM contractors WHERE id=?", (contractor_id,)).fetchone()
+        if not lead or not contractor:
+            return "Lead or contractor not found", 404
+        if lead["status"] != "available":
+            return "Lead is no longer available", 400
+        # Demo mode: mark as sold immediately
+        db.execute(
+            "UPDATE leads SET status='sold', sold_to=?, sold_at=? WHERE id=?",
+            (contractor_id, datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
+        )
+    return f"""
+    <h2>Lead purchased (demo)</h2>
+    <p>Lead #{lead_id} sold to {contractor['name']}.</p>
+    <p><strong>Contact:</strong> {lead['name']} — {lead['phone']}</p>
+    <p><a href="/available">Back to available leads</a> · <a href="/admin">Admin</a></p>
+    """
+
 @app.route("/sell_success/<int:lead_id>/<int:contractor_id>")
 def sell_success(lead_id, contractor_id):
     with get_db() as db:
