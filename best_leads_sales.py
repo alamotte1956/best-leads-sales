@@ -258,7 +258,11 @@ def home():
 
     content = f"""
     <div class="card">
-      <h2>Sales Summary</h2>
+      <h2>Verification Tools</h2>
+      <p><a href="https://secure.doli.state.mn.us/lookup/licensing.aspx" target="_blank">MN License Lookup</a> · 
+         <a href="https://www.inslookup.doli.state.mn.us" target="_blank">Workers Comp Verification</a></p>
+      <p style="font-size:0.85rem; color:#64748b;">Use these to verify pending contractors before approving.</p>
+    </div>
       <p><strong>{sold_count}</strong> leads sold · <strong>${sold_revenue}</strong> revenue</p>
     </div>
     <div class="card">
