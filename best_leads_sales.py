@@ -660,8 +660,9 @@ def contractor_agreement():
       <li>Pricing is as displayed at the time of purchase. First 5 leads are 50% off until November 30, 2026.</li>
       <li>You may decline an assigned lead within 24 hours. After acceptance, the lead is yours.</li>
       <li>Albert R LaMotte dba: Restoration Contractors MN may suspend or remove your account for non-compliance.</li>
+      <li>This agreement is governed by the laws of the State of Minnesota.</li>
     </ol>
-    <p>This agreement is between you and Albert R LaMotte dba: Restoration Contractors MN.</p>
+    <p>This agreement is between you and Albert R LaMotte dba: Restoration Contractors MN and is subject to Minnesota law.</p>
     <p><a href="/signup">Back to signup</a></p>
     </body>
     </html>
