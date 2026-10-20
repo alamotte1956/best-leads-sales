@@ -151,12 +151,15 @@ init_db()
 
 HTML = """
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Best Leads — Sales Database</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 30px auto; padding: 16px; background: #f8fafc; color: #1e293b; }
+  * { -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 1100px; margin: 30px auto; padding: 16px; background: #f8fafc; color: #1e293b; }
   h1 { margin: 0 0 8px; }
   .sub { color: #64748b; margin-bottom: 24px; }
   table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
