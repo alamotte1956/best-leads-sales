@@ -435,6 +435,14 @@ def add_lead():
             VALUES (?,?,?,?,?,?,?,?, 'available', ?)
         """, (d.get("service_type"), d.get("urgency"), d.get("zip"), d.get("name"),
               d.get("phone"), d.get("email"), score, price, datetime.now().strftime("%Y-%m-%d %H:%M")))
+        lead_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+        # Notify matching contractors
+        contractors = db.execute("""
+            SELECT id FROM contractors
+            WHERE active=1 AND status='approved' AND services_offered LIKE ?
+        """, (f"%{d.get('service_type','')}%",)).fetchall()
+        for c in contractors:
+            notify_contractor(c["id"], lead_id)
     return """
     <html><head><title>Thank You</title>
     <style>body{font-family:system-ui;max-width:500px;margin:60px auto;padding:20px;text-align:center;}</style>
