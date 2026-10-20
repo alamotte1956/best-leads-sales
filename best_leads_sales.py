@@ -45,6 +45,19 @@ def find_best_contractor(service_type, zip_code):
     return matches[0][0]
 
 def calculate_auto_price(service_type, urgency, score):
+    """Return competitive price: 20% below typical Angi shared-lead rates.
+    Promo: first 5 leads 50% off until 2026-11-30."""
+    base_prices = {
+        'Roofing': 85, 'Addition': 80, 'Kitchen': 70, 'Water damage': 75,
+        'Siding': 70, 'Mold remediation': 70, 'Bathroom': 65,
+        'Windows': 60, 'Remodeling': 60, 'HVAC': 50, 'Plumbing': 50,
+        'Electrical': 50, 'Flooring': 50, 'Painting': 45, 'Landscaping': 40
+    }
+    price = base_prices.get(service_type, 45) * 0.8
+    # Promo discount until Nov 30, 2026
+    if datetime.now() < datetime(2026, 11, 30):
+        price = price * 0.5
+    return round(price, 2)
     """Return competitive price: 20% below typical Angi shared-lead rates."""
     base = {
         "water_damage": 75,
@@ -456,6 +469,7 @@ def available_leads():
     <body>
       <h1>Available Exclusive Leads</h1>
       <p><strong>World-class exclusive leads.</strong> One contractor only. No shared leads like Angi. Higher close rates. Competitive pricing (20% below Angi). Volume discount: 10% off after 10 leads/month. Respond within 15 minutes.</p>
+      <p style="background:#dcfce7; color:#166534; padding:10px 14px; border-radius:8px; font-weight:600;">Limited time: First 5 leads are 50% off until November 30, 2026.</p>
       <p style="background:#fee2e2; color:#991b1b; padding:10px 14px; border-radius:8px; font-weight:600;">Leads expire after 24 hours if not accepted.</p>
       <table>
         <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Quality</th><th>Price</th><th>Status</th><th>Buy</th></tr>
@@ -680,6 +694,7 @@ def signup():
       <div class="card">
         <h2>Contractor Signup</h2>
         <p>Join Best Leads to receive exclusive Twin Cities restoration leads.</p>
+        <p style="background:#dcfce7; color:#166534; padding:12px; border-radius:8px; font-weight:600;">New contractor incentive: Your first lead is 50% off. No monthly fee. Pay only for the leads you want.</p>
         <p style="background:#dbeafe; color:#1e40af; padding:10px; border-radius:6px; font-size:0.9rem;"><strong>Verification:</strong> We check MN contractor licenses and workers comp through the official DLI lookup. Auto-approval requires license + insurance + 3+ years in business.</p>
         <form method="POST" enctype="multipart/form-data">
           <label>Company / Contractor Name *</label>
