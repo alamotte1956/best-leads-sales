@@ -482,7 +482,7 @@ def available_leads():
         <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Quality</th><th>Price</th><th>Status</th><th>Buy</th></tr>
         {rows}
       </table>
-      <p style="font-size:0.85rem; color:#64748b;">Leads and contractor data are retained for operational and legal compliance purposes. Contact information is shared only with the matched contractor.</p>
+      <p style="background:#fef3c7; color:#854d0e; padding:10px; border-radius:8px;">Respond to new leads within 15 minutes when possible. Faster response improves close rates.</p>
     </body>
     </html>
     """
