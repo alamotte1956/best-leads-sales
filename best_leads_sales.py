@@ -441,6 +441,7 @@ def available_leads():
     <body>
       <h1>Available Exclusive Leads</h1>
       <p><strong>World-class exclusive leads.</strong> One contractor only. No shared leads like Angi. Higher close rates. Competitive pricing (20% below Angi). Volume discount: 10% off after 10 leads/month. Respond within 15 minutes.</p>
+      <p style="background:#fef3c7; color:#854d0e; padding:10px 14px; border-radius:8px; font-weight:600;">Leads expire after 24 hours if not accepted.</p>
       <table>
         <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Quality</th><th>Price</th><th>Status</th><th>Buy</th></tr>
         {rows}
