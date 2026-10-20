@@ -415,7 +415,7 @@ def available_leads():
           <td>{l['id']}</td>
           <td><strong>{l['service_type'] or ''}</strong><br><small style='color:#64748b;'>{l['urgency'] or ''}</small></td>
           <td>{l['zip'] or ''}</td>
-          <td>{l['name'] or ''}<br><small>{l['phone'] or ''}</small></td>
+          <td><span style='color:#64748b;'>Hidden until purchase</span></td>
           <td><span style='background:{quality_color}22; color:{quality_color}; padding:2px 8px; border-radius:999px; font-size:0.75rem; font-weight:600;'>{quality}</span><br><small>{l['score'] or ''}</small></td>
           <td><strong style='font-size:1.1rem;'>${l['price'] or 0}</strong></td>
           <td>{status_html}</td>
