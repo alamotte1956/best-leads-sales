@@ -15,8 +15,8 @@ DB = "best_leads.db"
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 
 def expire_old_assignments():
-    """Return assigned leads to available if not paid within 2 hours."""
-    cutoff = (datetime.now() - __import__('datetime').timedelta(hours=2)).strftime("%Y-%m-%d %H:%M")
+    """Return assigned leads to available if not accepted within 24 hours."""
+    cutoff = (datetime.now() - __import__('datetime').timedelta(hours=24)).strftime("%Y-%m-%d %H:%M")
     with get_db() as db:
         db.execute(
             "UPDATE leads SET status='available', sold_to=NULL, sold_at=NULL WHERE status='assigned' AND sold_at < ?",
