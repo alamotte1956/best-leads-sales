@@ -156,7 +156,7 @@ def init_db():
         for col in ["license_number", "insurance", "insurance_expires", "years_in_business",
                     "services_offered", "avg_job_size", "preferred_contact", "website",
                     "google_profile", "contractor_refs", "exclusive_only", "status", "stripe_customer_id",
-                    "license_verified", "insurance_verified", "background_checked"]:
+                    "license_verified", "insurance_verified", "background_checked", "password"]:
             if col not in cols:
                 db.execute(f"ALTER TABLE contractors ADD COLUMN {col} TEXT")
 
@@ -722,6 +722,100 @@ def contractor_agreement():
     </html>
     """
 
+@app.route("/contractor_login", methods=["GET", "POST"])
+def contractor_login():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        with get_db() as db:
+            c = db.execute("SELECT * FROM contractors WHERE lower(email)=? AND password=?", (email, password)).fetchone()
+        if c:
+            session["contractor_id"] = c["id"]
+            return redirect("/contractor_dashboard")
+        return "<h2>Login failed</h2><p><a href='/contractor_login'>Try again</a></p>"
+    return """
+    <html><head><title>Contractor Login</title>
+    <style>body{font-family:system-ui;max-width:400px;margin:80px auto;padding:20px;}
+    input{width:100%;padding:12px;margin:8px 0;border:1px solid #ccc;border-radius:6px;}
+    button{width:100%;padding:14px;background:#0ea5e9;color:white;border:none;border-radius:6px;}</style>
+    </head><body>
+    <h2>Contractor Login</h2>
+    <form method="POST">
+      <input name="email" type="email" placeholder="Email" required>
+      <input name="password" type="password" placeholder="Password" required>
+      <button type="submit">Log in</button>
+    </form>
+    <p><a href="/signup">Sign up</a></p>
+    </body></html>
+    """
+
+@app.route("/contractor_logout")
+def contractor_logout():
+    session.pop("contractor_id", None)
+    return redirect("/contractor_login")
+
+@app.route("/contractor_dashboard")
+def contractor_dashboard():
+    cid = session.get("contractor_id")
+    if not cid:
+        return redirect("/contractor_login")
+    with get_db() as db:
+        c = db.execute("SELECT * FROM contractors WHERE id=?", (cid,)).fetchone()
+        leads = db.execute("SELECT * FROM leads WHERE sold_to=? ORDER BY id DESC", (cid,)).fetchall()
+    lead_rows = "".join(
+        f"<tr><td>{l['id']}</td><td>{l['service_type']}</td><td>{l['zip']}</td><td>{l['name']}<br><small>{l['phone']}</small></td><td>${l['price']}</td><td>{l['status']}</td></tr>"
+        for l in leads
+    ) or "<tr><td colspan='6'>No leads yet.</td></tr>"
+    return f"""
+    <html><head><title>My Leads — {c['name']}</title>
+    <style>body{{font-family:system-ui;max-width:900px;margin:30px auto;padding:16px;}}
+    table{{width:100%;border-collapse:collapse;background:white;}}
+    th,td{{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left;}}
+    th{{background:#0f172a;color:white;}}</style>
+    </head><body>
+    <h1>{c['name']}</h1>
+    <p><a href="/contractor_profile">Edit profile</a> · <a href="/contractor_logout">Log out</a></p>
+    <h2>My Leads</h2>
+    <table>
+      <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Contact</th><th>Price</th><th>Status</th></tr>
+      {lead_rows}
+    </table>
+    </body></html>
+    """
+
+@app.route("/contractor_profile", methods=["GET", "POST"])
+def contractor_profile():
+    cid = session.get("contractor_id")
+    if not cid:
+        return redirect("/contractor_login")
+    if request.method == "POST":
+        with get_db() as db:
+            db.execute("""
+                UPDATE contractors SET phone=?, service_area=?, services_offered=?, website=?
+                WHERE id=?
+            """, (request.form.get("phone"), request.form.get("service_area"),
+                  request.form.get("services_offered"), request.form.get("website"), cid))
+        return redirect("/contractor_dashboard")
+    with get_db() as db:
+        c = db.execute("SELECT * FROM contractors WHERE id=?", (cid,)).fetchone()
+    return f"""
+    <html><head><title>Edit Profile</title>
+    <style>body{{font-family:system-ui;max-width:500px;margin:40px auto;padding:16px;}}
+    input{{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:6px;}}
+    button{{width:100%;padding:12px;background:#0ea5e9;color:white;border:none;border-radius:6px;}}</style>
+    </head><body>
+    <h2>Edit Profile — {c['name']}</h2>
+    <form method="POST">
+      <label>Phone</label><input name="phone" value="{c['phone'] or ''}">
+      <label>Service Area</label><input name="service_area" value="{c['service_area'] or ''}">
+      <label>Services</label><input name="services_offered" value="{c['services_offered'] or ''}">
+      <label>Website</label><input name="website" value="{c['website'] or ''}">
+      <button type="submit">Save</button>
+    </form>
+    <p><a href="/contractor_dashboard">Back</a></p>
+    </body></html>
+    """
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -744,11 +838,11 @@ def signup():
         with get_db() as db:
             db.execute(
                 """INSERT INTO contractors
-                   (name, phone, email, service_area, license_number, insurance, insurance_expires,
+                   (name, phone, email, password, service_area, license_number, insurance, insurance_expires,
                     years_in_business, services_offered, avg_job_size, preferred_contact,
                     website, google_profile, contractor_refs, exclusive_only, status, active, created)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (d.get("name"), d.get("phone"), d.get("email"), d.get("service_area"),
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (d.get("name"), d.get("phone"), d.get("email"), d.get("password"), d.get("service_area"),
                  d.get("license_number"), d.get("insurance"), d.get("insurance_expires"),
                  d.get("years_in_business"), d.get("services_offered"), d.get("avg_job_size"),
                  d.get("preferred_contact"), d.get("website"), d.get("google_profile"),
@@ -759,7 +853,7 @@ def signup():
         return f"""
         <h2>Thank you!</h2>
         <p>Your contractor application has been received and is {msg}.</p>
-        <p><a href="/signup">Submit another</a></p>
+        <p><a href="/contractor_login">Log in to your dashboard</a></p>
         """
     return """
     <!DOCTYPE html>
@@ -792,6 +886,8 @@ def signup():
           <input name="phone" required>
           <label>Email *</label>
           <input name="email" type="email" required>
+          <label>Password *</label>
+          <input name="password" type="password" required minlength="6">
           <label>License Number *</label>
           <input name="license_number" required placeholder="MN contractor license #">
           <label>Liability Insurance Certificate *</label>
