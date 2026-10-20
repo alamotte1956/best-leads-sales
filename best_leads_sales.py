@@ -727,12 +727,15 @@ def contractor_login():
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
-        with get_db() as db:
-            c = db.execute("SELECT * FROM contractors WHERE lower(email)=? AND password=?", (email, password)).fetchone()
-        if c:
-            session["contractor_id"] = c["id"]
-            return redirect("/contractor_dashboard")
-        return "<h2>Login failed</h2><p><a href='/contractor_login'>Try again</a></p>"
+        try:
+            with get_db() as db:
+                c = db.execute("SELECT * FROM contractors WHERE lower(email)=? AND password=?", (email, password)).fetchone()
+            if c:
+                session["contractor_id"] = c["id"]
+                return redirect("/contractor_dashboard")
+            return "<h2>Login failed</h2><p>Email or password incorrect. <a href='/contractor_login'>Try again</a> or <a href='/signup'>sign up</a>.</p>"
+        except Exception as e:
+            return f"<h2>Login error</h2><p>{e}</p><p><a href='/contractor_login'>Try again</a></p>"
     return """
     <html><head><title>Contractor Login</title>
     <style>body{font-family:system-ui;max-width:400px;margin:80px auto;padding:20px;}
