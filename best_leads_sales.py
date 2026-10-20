@@ -783,7 +783,7 @@ def contractor_agreement():
       <li>Leads are exclusive. You will not share or resell them.</li>
       <li>You will contact the homeowner within 15 minutes of receiving a lead when possible.</li>
       <li>You will only purchase leads for services you are licensed and insured to perform under Minnesota law (Minn. Stat. ch. 326B).</li>
-      <li>You will maintain active general liability insurance and workers’ compensation insurance as required by Minnesota Statutes Chapter 176.</li>
+      <li>You will maintain any insurance required by Minnesota law for the services you perform.</li>
       <li>You will comply with all applicable Minnesota laws, including Minn. Stat. ch. 326B (construction codes and licensing), ch. 176 (workers’ compensation), and the Minnesota Consumer Fraud Act (Minn. Stat. § 325F.69).</li>
       <li>You will not misrepresent your license status, insurance coverage, or qualifications to homeowners.</li>
       <li>You will provide homeowners with any required written contracts and cancellation notices under Minnesota’s Home Solicitation Sales Act (Minn. Stat. §§ 325G.06–325G.11) when applicable.</li>
@@ -980,13 +980,6 @@ def signup():
           <label>Liability Insurance Certificate (optional)</label>
           <input type="file" name="insurance_cert" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.bmp,.heic,.heif,image/*,application/pdf">
           <small style="color:#64748b;">Upload certificate of insurance if available (PDF, JPEG, JPG, PNG, or other image)</small>
-            <option value="">Select...</option>
-            <option value="Yes — Liability & Workers Comp">Yes — Liability & Workers Comp</option>
-            <option value="Yes — Liability only">Yes — Liability only</option>
-            <option value="No">No</option>
-          </select>
-          <label>Insurance Expiration Date</label>
-          <input name="insurance_expires" type="date">
           <label>Years in Business *</label>
           <input name="years_in_business" type="number" min="0" required>
           <label>Services Offered *</label>
