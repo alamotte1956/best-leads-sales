@@ -403,6 +403,40 @@ def leave_review(contractor_id, lead_id):
     </form>
     """
 
+@app.route("/add_lead", methods=["POST"])
+def add_lead():
+    """Receive a lead from the consumer form."""
+    d = request.form
+    score = 40
+    if d.get("urgency") == "emergency":
+        score += 35
+    elif d.get("urgency") == "asap":
+        score += 25
+    elif d.get("urgency") == "this_week":
+        score += 10
+    if d.get("decision_maker") == "yes":
+        score += 10
+    if len(d.get("details", "")) > 30:
+        score += 10
+    score = min(score, 100)
+    price = calculate_auto_price(d.get("service_type", ""), d.get("urgency", ""), score)
+    with get_db() as db:
+        db.execute("""
+            INSERT INTO leads (service_type, urgency, zip, name, phone, email, score, price, status, created)
+            VALUES (?,?,?,?,?,?,?,?, 'available', ?)
+        """, (d.get("service_type"), d.get("urgency"), d.get("zip"), d.get("name"),
+              d.get("phone"), d.get("email"), score, price, datetime.now().strftime("%Y-%m-%d %H:%M")))
+    return """
+    <html><head><title>Thank You</title>
+    <style>body{font-family:system-ui;max-width:500px;margin:60px auto;padding:20px;text-align:center;}</style>
+    </head><body>
+    <h2>Thank You!</h2>
+    <p>Your request has been received. A licensed contractor will contact you shortly.</p>
+    <p>Your information was sent to one contractor only — no shared leads.</p>
+    <p><a href="https://web-production-ac750.up.railway.app/">Back</a></p>
+    </body></html>
+    """
+
 @app.route("/available")
 def available_leads():
     expire_old_assignments()
