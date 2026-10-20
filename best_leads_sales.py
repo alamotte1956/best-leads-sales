@@ -610,10 +610,19 @@ def signup():
         d = request.form
         has_license = bool(d.get("license_number"))
         has_insurance = d.get("insurance", "").startswith("Yes")
-        # Auto-approve only if licensed + insured + 3+ years
         years = int(d.get("years_in_business") or 0)
         status = "approved" if (has_license and has_insurance and years >= 3) else "pending"
         active = 1 if status == "approved" else 0
+
+        # Save insurance certificate if uploaded
+        insurance_file = request.files.get("insurance_cert")
+        insurance_path = None
+        if insurance_file and insurance_file.filename:
+            os.makedirs("uploads", exist_ok=True)
+            filename = f"ins_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{insurance_file.filename}"
+            insurance_path = os.path.join("uploads", filename)
+            insurance_file.save(insurance_path)
+
         with get_db() as db:
             db.execute(
                 """INSERT INTO contractors
@@ -653,7 +662,7 @@ def signup():
         <h2>Contractor Signup</h2>
         <p>Join Best Leads to receive exclusive Twin Cities restoration leads.</p>
         <p style="background:#dbeafe; color:#1e40af; padding:10px; border-radius:6px; font-size:0.9rem;"><strong>Verification:</strong> We check MN contractor licenses and workers comp through the official DLI lookup. Auto-approval requires license + insurance + 3+ years in business.</p>
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
           <label>Company / Contractor Name *</label>
           <input name="name" required>
           <label>Phone *</label>
@@ -662,8 +671,9 @@ def signup():
           <input name="email" type="email" required>
           <label>License Number *</label>
           <input name="license_number" required placeholder="MN contractor license #">
-          <label>Insurance Status *</label>
-          <select name="insurance" required>
+          <label>Liability Insurance Certificate *</label>
+          <input type="file" name="insurance_cert" accept=".pdf,.jpg,.jpeg,.png" required>
+          <small style="color:#64748b;">Upload certificate of insurance (PDF or image)</small>
             <option value="">Select...</option>
             <option value="Yes — Liability & Workers Comp">Yes — Liability & Workers Comp</option>
             <option value="Yes — Liability only">Yes — Liability only</option>
