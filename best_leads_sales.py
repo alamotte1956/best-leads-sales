@@ -505,7 +505,7 @@ def seed_large_demo():
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
             """, (name, f"612-555-{1000+i}", f"contractor{i}@example.com", "Twin Cities", f"MN-{1000+i}", "Yes — Liability & Workers Comp", "2027-12-31", str(5 + i % 15), svc, "approved", 1, datetime.now().strftime("%Y-%m-%d %H:%M")))
 
-        # 40 leads
+        # 40 leads, matched to a contractor when possible
         for i in range(40):
             service = services[i % len(services)]
             urgency = ["emergency", "asap", "this_week"][i % 3]
@@ -513,14 +513,22 @@ def seed_large_demo():
             name = f"{first[i % 20]} {last[(i + 3) % 20]}"
             score = 50 + (i % 40)
             price = 40 + (i % 50)
-            db.execute("""
+            cur = db.execute("""
                 INSERT INTO leads (service_type, urgency, zip, name, phone, email, score, price, status, created)
                 VALUES (?,?,?,?,?,?,?,?, 'available', ?)
             """, (service, urgency, zipc, name, f"612-555-{2000+i}", f"lead{i}@example.com", score, price, datetime.now().strftime("%Y-%m-%d %H:%M")))
+            lead_id = cur.lastrowid
+            # Match to a contractor who offers this service
+            c = db.execute("SELECT id FROM contractors WHERE services_offered LIKE ? AND active=1 LIMIT 1", (f"%{service}%",)).fetchone()
+            if c:
+                db.execute(
+                    "UPDATE leads SET status='sold', sold_to=?, sold_at=? WHERE id=?",
+                    (c["id"], datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
+                )
 
     return """
     <h2>Large demo data added</h2>
-    <p>20 contractors and 40 leads created.</p>
+    <p>20 contractors and 40 leads created. Leads are matched to contractors by service type when possible.</p>
     <p><a href="/admin">Admin</a> · <a href="/available">Available leads</a></p>
     """
 
