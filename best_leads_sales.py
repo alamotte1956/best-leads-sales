@@ -1089,6 +1089,28 @@ def delete_contractor(cid):
         db.execute("DELETE FROM contractors WHERE id=?", (cid,))
     return redirect(url_for("home"))
 
+@app.route("/auto_assign/<int:lead_id>")
+def auto_assign(lead_id):
+    """Auto-assign a lead to the best matching contractor."""
+    with get_db() as db:
+        lead = db.execute("SELECT * FROM leads WHERE id=?", (lead_id,)).fetchone()
+        if not lead or lead["status"] != "available":
+            return "Lead not available", 400
+        # Find a contractor who offers this service
+        c = db.execute("""
+            SELECT id, name FROM contractors
+            WHERE active=1 AND status='approved' AND services_offered LIKE ?
+            LIMIT 1
+        """, (f"%{lead['service_type']}%",)).fetchone()
+        if not c:
+            return "No matching contractor found", 404
+        db.execute(
+            "UPDATE leads SET status='assigned', sold_to=?, sold_at=? WHERE id=?",
+            (c["id"], datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
+        )
+        notify_contractor(c["id"], lead_id)
+    return redirect("/admin")
+
 @app.route("/assign/<int:lead_id>/<int:contractor_id>")
 def assign_lead(lead_id, contractor_id):
     with get_db() as db:
