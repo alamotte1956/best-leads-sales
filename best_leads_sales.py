@@ -1105,25 +1105,44 @@ def decline_lead(lead_id):
     return redirect(session.url, code=303)
 
 def notify_contractor(contractor_id, lead_id):
-    """Send email and SMS notification when a contractor is selected for a lead."""
+    """Send email and SMS when a contractor is selected for a lead."""
     with get_db() as db:
         c = db.execute("SELECT name, phone, email FROM contractors WHERE id=?", (contractor_id,)).fetchone()
         l = db.execute("SELECT service_type, zip, price FROM leads WHERE id=?", (lead_id,)).fetchone()
-    if c and l:
-        msg = f"New exclusive lead: {l['service_type']} in {l['zip']} — ${l['price']}. Log in: https://best-leads-sales-production.up.railway.app/contractor_login"
-        print(f"NOTIFY {c['name']} ({c['phone']} / {c['email']}): {msg}")
-        # SMS via Twilio (set TWILIO_SID, TWILIO_TOKEN, TWILIO_FROM on Railway)
-        # from twilio.rest import Client
-        # client = Client(os.environ.get("TWILIO_SID"), os.environ.get("TWILIO_TOKEN"))
-        # client.messages.create(body=msg, from_=os.environ.get("TWILIO_FROM"), to=c["phone"])
-        # Email via SMTP (set SMTP_HOST, SMTP_USER, SMTP_PASS on Railway)
-        # import smtplib
-        # from email.mime.text import MIMEText
-        # server = smtplib.SMTP(os.environ.get("SMTP_HOST"), 587)
-        # server.starttls()
-        # server.login(os.environ.get("SMTP_USER"), os.environ.get("SMTP_PASS"))
-        # server.sendmail(os.environ.get("SMTP_USER"), c["email"], MIMEText(msg).as_string())
-        # server.quit()
+    if not (c and l):
+        return
+    msg = f"New exclusive lead: {l['service_type']} in {l['zip']} — ${l['price']}. Log in: https://best-leads-sales-production.up.railway.app/contractor_login"
+    print(f"NOTIFY {c['name']} ({c['phone']} / {c['email']}): {msg}")
+
+    # SMS via Twilio
+    sid = os.environ.get("TWILIO_SID")
+    token = os.environ.get("TWILIO_TOKEN")
+    from_num = os.environ.get("TWILIO_FROM")
+    if sid and token and from_num and c["phone"]:
+        try:
+            from twilio.rest import Client
+            client = Client(sid, token)
+            client.messages.create(body=msg, from_=from_num, to=c["phone"])
+            print(f"SMS sent to {c['phone']}")
+        except Exception as e:
+            print(f"SMS failed: {e}")
+
+    # Email via SMTP
+    host = os.environ.get("SMTP_HOST")
+    user = os.environ.get("SMTP_USER")
+    password = os.environ.get("SMTP_PASS")
+    if host and user and password and c["email"]:
+        try:
+            import smtplib
+            from email.mime.text import MIMEText
+            server = smtplib.SMTP(host, 587)
+            server.starttls()
+            server.login(user, password)
+            server.sendmail(user, c["email"], MIMEText(msg).as_string())
+            server.quit()
+            print(f"Email sent to {c['email']}")
+        except Exception as e:
+            print(f"Email failed: {e}")
 
 @app.route("/sell/<int:lead_id>/<int:contractor_id>")
 def sell_lead(lead_id, contractor_id):
