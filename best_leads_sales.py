@@ -648,8 +648,8 @@ def contractor_agreement():
     <style>body{font-family:system-ui;max-width:700px;margin:40px auto;padding:20px;line-height:1.6;}</style>
     </head>
     <body>
-    <h1>Restoration Contractors MN<br>Contractor Agreement</h1>
-    <p><strong>DBA:</strong> Restoration Contractors MN</p>
+    <h1>Albert R LaMotte<br>dba: Restoration Contractors MN<br>Contractor Agreement</h1>
+    <p><strong>DBA:</strong> Albert R LaMotte dba: Restoration Contractors MN</p>
     <p>By signing up, you agree to the following:</p>
     <ol>
       <li>Leads are exclusive. You will not share or resell them.</li>
@@ -659,9 +659,9 @@ def contractor_agreement():
       <li>You will not contact homeowners obtained through this system for any purpose other than the specific job requested.</li>
       <li>Pricing is as displayed at the time of purchase. First 5 leads are 50% off until November 30, 2026.</li>
       <li>You may decline an assigned lead within 24 hours. After acceptance, the lead is yours.</li>
-      <li>Restoration Contractors MN may suspend or remove your account for non-compliance.</li>
+      <li>Albert R LaMotte dba: Restoration Contractors MN may suspend or remove your account for non-compliance.</li>
     </ol>
-    <p>This agreement is between you and Restoration Contractors MN.</p>
+    <p>This agreement is between you and Albert R LaMotte dba: Restoration Contractors MN.</p>
     <p><a href="/signup">Back to signup</a></p>
     </body>
     </html>
@@ -782,7 +782,7 @@ def signup():
           </select>
           <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px;">
             <input type="checkbox" name="agree" required style="width:auto; margin-top:4px;">
-            <span>I agree to the <a href="/contractor_agreement" target="_blank">Restoration Contractors MN Contractor Agreement</a> and understand that leads are exclusive and non-shared.</span>
+            <span>I agree to the <a href="/contractor_agreement" target="_blank">Albert R LaMotte dba: Restoration Contractors MN Contractor Agreement</a> and understand that leads are exclusive and non-shared.</span>
           </label>
           <button type="submit">Apply</button>
         </form>
