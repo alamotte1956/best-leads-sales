@@ -784,7 +784,7 @@ def contractor_dashboard():
     """
 
 @app.route("/contractor_profile", methods=["GET", "POST"])
-def contractor_profile():
+def contractor_edit_profile():
     cid = session.get("contractor_id")
     if not cid:
         return redirect("/contractor_login")
