@@ -450,6 +450,46 @@ def available_leads():
     </html>
     """
 
+@app.route("/seed_demo")
+def seed_demo():
+    """Add demo contractors and leads for testing both sides."""
+    with get_db() as db:
+        contractors = [
+            ("Twin Cities Roofing", "612-555-0101", "roof@example.com", "55416, 55345", "MN-ROOF-123", "Yes — Liability & Workers Comp", "2027-01-01", "12", "roofing, siding", "approved", 1),
+            ("Minneapolis Mold Pros", "612-555-0102", "mold@example.com", "55406, 55407", "MN-MOLD-456", "Yes — Liability & Workers Comp", "2026-12-15", "8", "mold_remediation, water_damage", "approved", 1),
+            ("Suburban Remodel Co", "952-555-0103", "remodel@example.com", "55345, 55331", "MN-REM-789", "Yes — Liability only", "2026-11-01", "15", "remodeling, kitchen, bathroom", "pending", 0),
+            ("West Metro Windows", "952-555-0104", "windows@example.com", "55345, 55316", "MN-WIN-321", "Yes — Liability & Workers Comp", "2027-03-01", "6", "windows, siding", "approved", 1),
+            ("Emergency Dry Out", "612-555-0105", "dry@example.com", "full twin cities", "MN-DRY-654", "Yes — Liability & Workers Comp", "2026-10-01", "10", "dry_out, water_damage", "approved", 1),
+        ]
+        for c in contractors:
+            db.execute("""
+                INSERT INTO contractors (name, phone, email, service_area, license_number, insurance, insurance_expires, years_in_business, services_offered, status, active, created)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (*c, datetime.now().strftime("%Y-%m-%d %H:%M")))
+
+        leads = [
+            ("water_damage", "emergency", "55416", "Alex Rivera", "612-555-2001", "alex@example.com", 88, 81),
+            ("mold_remediation", "asap", "55345", "Chris Patel", "952-555-2002", "chris@example.com", 75, 56),
+            ("roofing", "this_week", "55406", "Taylor Kim", "612-555-2003", "taylor@example.com", 62, 68),
+            ("kitchen", "asap", "55331", "Jordan Lee", "952-555-2004", "jordan@example.com", 70, 56),
+            ("windows", "this_week", "55316", "Morgan Chen", "612-555-2005", "morgan@example.com", 58, 48),
+            ("hvac", "asap", "55407", "Riley Brooks", "952-555-2006", "riley@example.com", 80, 44),
+            ("plumbing", "emergency", "55408", "Casey Nguyen", "612-555-2007", "casey@example.com", 85, 50),
+        ]
+        for l in leads:
+            db.execute("""
+                INSERT INTO leads (service_type, urgency, zip, name, phone, email, score, price, status, created)
+                VALUES (?,?,?,?,?,?,?,?, 'available', ?)
+            """, (*l, datetime.now().strftime("%Y-%m-%d %H:%M")))
+
+    return """
+    <h2>Demo data added</h2>
+    <p>5 contractors and 7 leads created.</p>
+    <p><a href="/admin">Admin</a> · <a href="/available">Available leads</a></p>
+    <p>Test the consumer form at:<br>
+    <a href="https://web-production-ac750.up.railway.app/" target="_blank">https://web-production-ac750.up.railway.app/</a></p>
+    """
+
 @app.route("/add_demo_leads")
 def add_demo_leads():
     """Add 7 exclusive demo leads for testing."""
