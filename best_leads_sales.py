@@ -285,6 +285,7 @@ def home():
     <div class="card">
       <h2>Quick Stats</h2>
       <p style="font-size:1.1rem;"><strong>{sold_count}</strong> leads sold · <strong>${sold_revenue}</strong> revenue</p>
+      <p><a href="/auto_match_all" style="background:#0ea5e9; color:white; padding:10px 16px; border-radius:6px; text-decoration:none; font-weight:600;">Auto-match all available leads</a></p>
     </div>
     <div class="card">
       <h2>Verification Tools</h2>
@@ -1085,6 +1086,31 @@ def delete_contractor(cid):
     with get_db() as db:
         db.execute("DELETE FROM contractors WHERE id=?", (cid,))
     return redirect(url_for("home"))
+
+@app.route("/auto_match_all")
+def auto_match_all():
+    """Auto-match all available leads to the best contractor."""
+    matched = 0
+    with get_db() as db:
+        leads = db.execute("SELECT * FROM leads WHERE status='available'").fetchall()
+        for lead in leads:
+            c = db.execute("""
+                SELECT id FROM contractors
+                WHERE active=1 AND status='approved' AND services_offered LIKE ?
+                LIMIT 1
+            """, (f"%{lead['service_type']}%",)).fetchone()
+            if c:
+                db.execute(
+                    "UPDATE leads SET status='assigned', sold_to=?, sold_at=? WHERE id=?",
+                    (c["id"], datetime.now().strftime("%Y-%m-%d %H:%M"), lead["id"])
+                )
+                notify_contractor(c["id"], lead["id"])
+                matched += 1
+    return f"""
+    <h2>Auto-match complete</h2>
+    <p>{matched} leads matched to contractors.</p>
+    <p><a href="/admin">Back to admin</a> · <a href="/available">Available leads</a></p>
+    """
 
 @app.route("/auto_assign/<int:lead_id>")
 def auto_assign(lead_id):
