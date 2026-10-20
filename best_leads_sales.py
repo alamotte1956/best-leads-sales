@@ -211,16 +211,12 @@ def home():
         try:
             contractors = db.execute("SELECT * FROM contractors WHERE status IN ('approved','paused') OR active=1").fetchall()
             pending = db.execute("SELECT * FROM contractors WHERE active=0 OR status='pending'").fetchall()
-            contractor_html = "".join(
-                f"<li><strong><a href='/contractor/{c['id']}'>{c['name']}</a></strong> — {c['phone'] or ''} — "
-                f"License {'✓' if c['license_verified'] else '✗'} · Insurance {'✓' if c['insurance_verified'] else '✗'} — "
-                f"Bought: {db.execute('SELECT COUNT(*) FROM leads WHERE sold_to=? AND status=\"sold\"', (c['id'],)).fetchone()[0]} — "
-                f"<a href='https://secure.doli.state.mn.us/lookup/licensing.aspx' target='_blank' style='background:#0ea5e9; color:white; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:0.8rem; margin-right:4px;'>Check License</a>"
-                f"<a href='https://www.inslookup.doli.state.mn.us' target='_blank' style='background:#16a34a; color:white; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:0.8rem; margin-right:4px;'>Check Workers Comp</a>"
-                f"<a href='/toggle_contractor/{c['id']}'>{'turn off' if c['active'] else 'turn on'}</a> · "
-                f"<a href='/delete_contractor/{c['id']}'>delete</a></li>"
-                for c in contractors
-            ) or "<li>None approved yet</li>"
+            contractor_html = ""
+            for c in contractors:
+                bought = db.execute("SELECT COUNT(*) FROM leads WHERE sold_to=? AND status='sold'", (c['id'],)).fetchone()[0]
+                contractor_html += f"<li><strong><a href='/contractor/{c['id']}'>{c['name']}</a></strong> — {c['phone'] or ''} — License {'✓' if c['license_verified'] else '✗'} · Insurance {'✓' if c['insurance_verified'] else '✗'} — Bought: {bought} — <a href='https://secure.doli.state.mn.us/lookup/licensing.aspx' target='_blank' style='background:#0ea5e9; color:white; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:0.8rem; margin-right:4px;'>Check License</a><a href='https://www.inslookup.doli.state.mn.us' target='_blank' style='background:#16a34a; color:white; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:0.8rem; margin-right:4px;'>Check Workers Comp</a><a href='/toggle_contractor/{c['id']}'>{'turn off' if c['active'] else 'turn on'}</a> · <a href='/delete_contractor/{c['id']}'>delete</a></li>"
+            if not contractor_html:
+                contractor_html = "<li>None approved yet</li>"
             pending_html = "".join(
                 f"<li><strong>{c['name']}</strong> — {c['phone'] or ''} — License: {c['license_number'] or '—'} — Insurance: {c['insurance'] or '—'} <a href='/approve_contractor/{c['id']}'>approve</a> · <a href='/delete_contractor/{c['id']}'>reject</a></li>"
                 for c in pending
