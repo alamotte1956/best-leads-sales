@@ -654,13 +654,14 @@ def contractor_agreement():
     <ol>
       <li>Leads are exclusive. You will not share or resell them.</li>
       <li>You will contact the homeowner within 15 minutes of receiving a lead when possible.</li>
-      <li>You will only purchase leads for services you are licensed and insured to perform.</li>
-      <li>You will maintain active general liability insurance and workers compensation as required by Minnesota law.</li>
+      <li>You will only purchase leads for services you are licensed and insured to perform under Minnesota law (Minn. Stat. ch. 326B).</li>
+      <li>You will maintain active general liability insurance and workers’ compensation insurance as required by Minnesota Statutes Chapter 176.</li>
+      <li>You will comply with Minnesota contractor registration and licensing requirements administered by the Department of Labor and Industry.</li>
       <li>You will not contact homeowners obtained through this system for any purpose other than the specific job requested.</li>
       <li>Pricing is as displayed at the time of purchase. First 5 leads are 50% off until November 30, 2026.</li>
       <li>You may decline an assigned lead within 24 hours. After acceptance, the lead is yours.</li>
       <li>Albert R LaMotte dba: Restoration Contractors MN may suspend or remove your account for non-compliance.</li>
-      <li>This agreement is governed by the laws of the State of Minnesota.</li>
+      <li>This agreement is governed by the laws of the State of Minnesota, including but not limited to Minn. Stat. ch. 326B (construction codes and licensing) and ch. 176 (workers’ compensation).</li>
     </ol>
     <p>This agreement is between you and Albert R LaMotte dba: Restoration Contractors MN and is subject to Minnesota law.</p>
     <p><a href="/signup">Back to signup</a></p>
