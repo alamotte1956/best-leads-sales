@@ -450,8 +450,28 @@ def available_leads():
     </html>
     """
 
-@app.route("/seed_demo")
-def seed_demo():
+@app.route("/add_demo_leads")
+def add_demo_leads():
+    """Add 7 exclusive demo leads for testing."""
+    with get_db() as db:
+        leads = [
+            ("water_damage", "emergency", "55416", "Alex Rivera", "612-555-2001", "alex@example.com", 88, 81),
+            ("mold_remediation", "asap", "55345", "Chris Patel", "952-555-2002", "chris@example.com", 75, 56),
+            ("roofing", "this_week", "55406", "Taylor Kim", "612-555-2003", "taylor@example.com", 62, 68),
+            ("kitchen", "asap", "55331", "Jordan Lee", "952-555-2004", "jordan@example.com", 70, 56),
+            ("windows", "this_week", "55316", "Morgan Chen", "612-555-2005", "morgan@example.com", 58, 48),
+            ("hvac", "asap", "55407", "Riley Brooks", "952-555-2006", "riley@example.com", 80, 44),
+            ("plumbing", "emergency", "55408", "Casey Nguyen", "612-555-2007", "casey@example.com", 85, 50),
+        ]
+        for l in leads:
+            db.execute("""
+                INSERT INTO leads (service_type, urgency, zip, name, phone, email, score, price, status, created)
+                VALUES (?,?,?,?,?,?,?,?, 'available', ?)
+            """, (*l, datetime.now().strftime("%Y-%m-%d %H:%M")))
+    return """
+    <h2>7 demo leads added</h2>
+    <p><a href="/available">View available leads</a> · <a href="/admin">Admin</a></p>
+    """
     """Add demo contractors and leads for testing."""
     with get_db() as db:
         # Demo contractors
