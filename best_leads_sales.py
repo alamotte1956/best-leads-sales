@@ -640,6 +640,33 @@ def add_demo_leads():
                 payment_url = None
     return redirect(url_for("home"))
 
+@app.route("/contractor_agreement")
+def contractor_agreement():
+    return """
+    <html>
+    <head><title>Contractor Agreement — Restoration Contractors MN</title>
+    <style>body{font-family:system-ui;max-width:700px;margin:40px auto;padding:20px;line-height:1.6;}</style>
+    </head>
+    <body>
+    <h1>Restoration Contractors MN<br>Contractor Agreement</h1>
+    <p><strong>DBA:</strong> Restoration Contractors MN</p>
+    <p>By signing up, you agree to the following:</p>
+    <ol>
+      <li>Leads are exclusive. You will not share or resell them.</li>
+      <li>You will contact the homeowner within 15 minutes of receiving a lead when possible.</li>
+      <li>You will only purchase leads for services you are licensed and insured to perform.</li>
+      <li>You will maintain active general liability insurance and workers compensation as required by Minnesota law.</li>
+      <li>You will not contact homeowners obtained through this system for any purpose other than the specific job requested.</li>
+      <li>Pricing is as displayed at the time of purchase. First 5 leads are 50% off until November 30, 2026.</li>
+      <li>You may decline an assigned lead within 24 hours. After acceptance, the lead is yours.</li>
+      <li>Restoration Contractors MN may suspend or remove your account for non-compliance.</li>
+    </ol>
+    <p>This agreement is between you and Restoration Contractors MN.</p>
+    <p><a href="/signup">Back to signup</a></p>
+    </body>
+    </html>
+    """
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -753,6 +780,10 @@ def signup():
             <option value="Yes">Yes — exclusive only</option>
             <option value="Open to shared later">Open to shared later</option>
           </select>
+          <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px;">
+            <input type="checkbox" name="agree" required style="width:auto; margin-top:4px;">
+            <span>I agree to the <a href="/contractor_agreement" target="_blank">Restoration Contractors MN Contractor Agreement</a> and understand that leads are exclusive and non-shared.</span>
+          </label>
           <button type="submit">Apply</button>
         </form>
       </div>
