@@ -529,6 +529,41 @@ def available_leads():
     </html>
     """
 
+@app.route("/seed_35_50")
+def seed_35_50():
+    """Add 35 approved contractors and 50 mixed leads."""
+    services = ["water_damage", "mold_remediation", "roofing", "kitchen", "windows", "hvac", "plumbing", "electrical", "flooring", "painting", "siding", "bathroom", "dry_out", "remodeling"]
+    zips = ["55416", "55345", "55406", "55331", "55316", "55407", "55408", "55410", "55343", "55424", "55401", "55344", "55419", "55347"]
+    first = ["Alex", "Chris", "Taylor", "Jordan", "Morgan", "Riley", "Casey", "Drew", "Quinn", "Sam", "Jamie", "Avery", "Blake", "Cameron", "Dakota", "Emerson", "Finley", "Harper", "Indigo", "Jules", "Kai", "Logan", "Noah", "Owen", "Parker", "Reese", "Sage", "Tyler", "Uma", "Val", "West", "Xander", "Yael", "Zion", "Aiden"]
+    last = ["Rivera", "Patel", "Kim", "Lee", "Chen", "Brooks", "Nguyen", "Garcia", "Martinez", "Brown", "Davis", "Miller", "Wilson", "Moore", "Taylor", "Anderson", "Thomas", "Jackson", "White", "Harris", "Martin", "Thompson", "Garcia", "Martinez", "Robinson", "Clark", "Rodriguez", "Lewis", "Walker", "Hall", "Allen", "Young", "King", "Wright", "Lopez"]
+
+    with get_db() as db:
+        for i in range(35):
+            name = f"{first[i]} {last[i]} Contracting"
+            svc = services[i % len(services)]
+            db.execute("""
+                INSERT INTO contractors (name, phone, email, service_area, license_number, insurance, insurance_expires, years_in_business, services_offered, status, active, created)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (name, f"612-555-{3000+i}", f"c{i}@example.com", "Twin Cities", f"MN-{3000+i}", "Yes — Liability & Workers Comp", "2027-12-31", str(5 + i % 12), svc, "approved", 1, datetime.now().strftime("%Y-%m-%d %H:%M")))
+
+        for i in range(50):
+            service = services[i % len(services)]
+            urgency = ["emergency", "asap", "this_week"][i % 3]
+            zipc = zips[i % len(zips)]
+            name = f"{first[i % 35]} {last[(i + 5) % 35]}"
+            score = 45 + (i % 50)
+            price = 35 + (i % 60)
+            db.execute("""
+                INSERT INTO leads (service_type, urgency, zip, name, phone, email, score, price, status, created)
+                VALUES (?,?,?,?,?,?,?,?, 'available', ?)
+            """, (service, urgency, zipc, name, f"612-555-{4000+i}", f"lead{i}@example.com", score, price, datetime.now().strftime("%Y-%m-%d %H:%M")))
+
+    return """
+    <h2>Demo data added</h2>
+    <p>35 approved contractors and 50 mixed leads created.</p>
+    <p><a href="/admin">Admin</a> · <a href="/available">Available leads</a></p>
+    """
+
 @app.route("/seed_large_demo")
 def seed_large_demo():
     """Add 20 contractors and 40 mixed leads for demo testing."""
