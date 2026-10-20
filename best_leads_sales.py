@@ -275,13 +275,21 @@ def home():
         sold_rows = "<tr><td colspan='6'>No leads sold yet.</td></tr>"
 
     content = f"""
+    <div style="background:#0f172a; color:white; padding:12px 16px; border-radius:8px; margin-bottom:20px; display:flex; gap:16px; flex-wrap:wrap;">
+      <a href="/admin" style="color:white; font-weight:600;">Admin</a>
+      <a href="/available" style="color:#93c5fd;">Available Leads</a>
+      <a href="/signup" style="color:#93c5fd;">Contractor Signup</a>
+      <a href="/hub" style="color:#93c5fd;">Hub</a>
+      <a href="/seed_demo" style="color:#93c5fd;">Seed Demo</a>
+    </div>
+    <div class="card">
+      <h2>Quick Stats</h2>
+      <p style="font-size:1.1rem;"><strong>{sold_count}</strong> leads sold · <strong>${sold_revenue}</strong> revenue</p>
+    </div>
     <div class="card">
       <h2>Verification Tools</h2>
       <p><a href="https://secure.doli.state.mn.us/lookup/licensing.aspx" target="_blank">MN License Lookup</a> · 
          <a href="https://www.inslookup.doli.state.mn.us" target="_blank">Workers Comp Verification</a></p>
-      <p style="font-size:0.85rem; color:#64748b;">Use these to verify pending contractors before approving.</p>
-    </div>
-      <p><strong>{sold_count}</strong> leads sold · <strong>${sold_revenue}</strong> revenue</p>
     </div>
     <div class="card">
       <h2>Sold Leads</h2>
