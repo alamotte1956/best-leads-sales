@@ -1026,6 +1026,7 @@ def accept_lead(lead_id):
             "UPDATE leads SET status='sold', sold_at=? WHERE id=? AND status='assigned'",
             (datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
         )
+        notify_contractor(session.get("contractor_id"), lead_id)
     return redirect("/available")
 
 @app.route("/decline/<int:lead_id>")
@@ -1103,6 +1104,21 @@ def decline_lead(lead_id):
     )
     return redirect(session.url, code=303)
 
+def notify_contractor(contractor_id, lead_id):
+    """Send email/SMS notification when a contractor is selected for a lead.
+    Currently logs the notification. Connect to Twilio or email service later."""
+    with get_db() as db:
+        c = db.execute("SELECT name, phone, email FROM contractors WHERE id=?", (contractor_id,)).fetchone()
+        l = db.execute("SELECT service_type, zip, price FROM leads WHERE id=?", (lead_id,)).fetchone()
+    if c and l:
+        msg = f"New exclusive lead: {l['service_type']} in {l['zip']} — ${l['price']}. Log in to accept: https://best-leads-sales-production.up.railway.app/contractor_login"
+        # Log for now — replace with Twilio SMS or email send
+        print(f"NOTIFY {c['name']} ({c['phone']} / {c['email']}): {msg}")
+        # Example Twilio (uncomment when ready):
+        # from twilio.rest import Client
+        # client = Client(os.environ.get("TWILIO_SID"), os.environ.get("TWILIO_TOKEN"))
+        # client.messages.create(body=msg, from_=os.environ.get("TWILIO_FROM"), to=c["phone"])
+
 @app.route("/sell/<int:lead_id>/<int:contractor_id>")
 def sell_lead(lead_id, contractor_id):
     """Demo buy: mark lead as sold without real payment."""
@@ -1118,6 +1134,7 @@ def sell_lead(lead_id, contractor_id):
             "UPDATE leads SET status='sold', sold_to=?, sold_at=? WHERE id=?",
             (contractor_id, datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
         )
+        notify_contractor(contractor_id, lead_id)
     return f"""
     <h2>Lead purchased (demo)</h2>
     <p style="background:#dcfce7; padding:12px; border-radius:8px;"><strong>Success.</strong> Lead #{lead_id} sold to {contractor['name']}.</p>
