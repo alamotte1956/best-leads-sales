@@ -408,7 +408,7 @@ def available_leads():
             ) or "<span style='color:#64748b;'>No matching contractors</span>"
             status_html = f"<span style='background:#dcfce7; color:#166534; padding:2px 8px; border-radius:999px; font-size:0.75rem;'>Available</span>"
         else:
-            buy_links = f"<a href='/decline/{l['id']}' style='color:#dc2626; font-weight:600;'>Decline</a>"
+            buy_links = f"<a href='/accept/{l['id']}' style='background:#16a34a; color:white; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.85rem; font-weight:600; margin-right:6px;'>Accept</a> <a href='/decline/{l['id']}' style='color:#dc2626; font-weight:600;'>Reject</a>"
             status_html = f"<span style='background:#fef3c7; color:#854d0e; padding:2px 8px; border-radius:999px; font-size:0.75rem;'>Assigned</span>"
         rows += f"""
         <tr>
@@ -781,6 +781,16 @@ def assign_lead(lead_id, contractor_id):
             (contractor_id, datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
         )
     return redirect(url_for("home"))
+
+@app.route("/accept/<int:lead_id>")
+def accept_lead(lead_id):
+    """Contractor accepts an assigned lead."""
+    with get_db() as db:
+        db.execute(
+            "UPDATE leads SET status='sold', sold_at=? WHERE id=? AND status='assigned'",
+            (datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
+        )
+    return redirect("/available")
 
 @app.route("/decline/<int:lead_id>")
 def decline_lead(lead_id):
