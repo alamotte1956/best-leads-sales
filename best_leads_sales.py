@@ -440,6 +440,12 @@ def available_leads():
         table {{ width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }}
         th, td {{ padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 0.9rem; }}
         th {{ background: #0f172a; color: white; }}
+        @media (max-width: 600px) {{
+          body {{ padding: 8px; margin: 10px auto; }}
+          table {{ font-size: 0.8rem; }}
+          th, td {{ padding: 6px; }}
+          h1 {{ font-size: 1.4rem; }}
+        }}
         .badge {{ display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; background: #dcfce7; color: #166534; }}
         a {{ color: #0ea5e9; }}
       </style>
@@ -659,8 +665,12 @@ def signup():
         body { font-family: system-ui; max-width: 520px; margin: 40px auto; padding: 16px; background: #f8fafc; }
         .card { background: white; padding: 28px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
         label { display: block; margin: 14px 0 4px; font-weight: 600; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
-        button { width: 100%; background: #0ea5e9; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; margin-top: 16px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; }
+        button { width: 100%; background: #0ea5e9; color: white; border: none; padding: 14px; border-radius: 6px; font-size: 16px; margin-top: 16px; }
+        @media (max-width: 600px) {
+          body { margin: 10px auto; padding: 8px; }
+          .card { padding: 16px; }
+        }
       </style>
     </head>
     <body>
