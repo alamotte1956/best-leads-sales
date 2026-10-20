@@ -199,8 +199,8 @@ def home():
                 f"<li><strong><a href='/contractor/{c['id']}'>{c['name']}</a></strong> — {c['phone'] or ''} — "
                 f"License {'✓' if c['license_verified'] else '✗'} · Insurance {'✓' if c['insurance_verified'] else '✗'} — "
                 f"Bought: {db.execute('SELECT COUNT(*) FROM leads WHERE sold_to=? AND status=\"sold\"', (c['id'],)).fetchone()[0]} — "
-                f"<a href='https://secure.doli.state.mn.us/lookup/licensing.aspx' target='_blank'>Check License</a> · "
-                f"<a href='https://www.inslookup.doli.state.mn.us' target='_blank'>Check Workers Comp</a> · "
+                f"<a href='https://secure.doli.state.mn.us/lookup/licensing.aspx' target='_blank' style='background:#0ea5e9; color:white; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:0.8rem; margin-right:4px;'>Check License</a>"
+                f"<a href='https://www.inslookup.doli.state.mn.us' target='_blank' style='background:#16a34a; color:white; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:0.8rem; margin-right:4px;'>Check Workers Comp</a>"
                 f"<a href='/toggle_contractor/{c['id']}'>{'turn off' if c['active'] else 'turn on'}</a> · "
                 f"<a href='/delete_contractor/{c['id']}'>delete</a></li>"
                 for c in contractors
