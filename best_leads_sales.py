@@ -468,7 +468,14 @@ def available_leads():
     </head>
     <body>
       <h1>Available Exclusive Leads</h1>
-      <p><strong>World-class exclusive leads.</strong> One contractor only. No shared leads like Angi. Higher close rates. Competitive pricing (20% below Angi). Volume discount: 10% off after 10 leads/month. Respond within 15 minutes.</p>
+      <p><strong>Why contractors choose Best Leads:</strong></p>
+      <ul>
+        <li>Exclusive leads only — no shared leads like Angi</li>
+        <li>First 5 leads 50% off until Nov 30, 2026</li>
+        <li>10% volume discount after 10 leads/month</li>
+        <li>No monthly fee — pay only for leads you want</li>
+        <li>Higher close rates because homeowners expect one call</li>
+      </ul>
       <p style="background:#dcfce7; color:#166534; padding:10px 14px; border-radius:8px; font-weight:600;">Limited time: First 5 leads are 50% off until November 30, 2026.</p>
       <p style="background:#fee2e2; color:#991b1b; padding:10px 14px; border-radius:8px; font-weight:600;">Leads expire after 24 hours if not accepted.</p>
       <table>
@@ -931,8 +938,10 @@ def sell_lead(lead_id, contractor_id):
         )
     return f"""
     <h2>Lead purchased (demo)</h2>
-    <p>Lead #{lead_id} sold to {contractor['name']}.</p>
-    <p><strong>Contact:</strong> {lead['name']} — {lead['phone']}</p>
+    <p style="background:#dcfce7; padding:12px; border-radius:8px;"><strong>Success.</strong> Lead #{lead_id} sold to {contractor['name']}.</p>
+    <p><strong>Contact:</strong> {lead['name']} — {lead['phone']}<br>
+    <strong>Email:</strong> {lead['email'] or '—'}<br>
+    <strong>Price:</strong> ${lead['price'] or 0}</p>
     <p><a href="/available">Back to available leads</a> · <a href="/admin">Admin</a></p>
     """
 
