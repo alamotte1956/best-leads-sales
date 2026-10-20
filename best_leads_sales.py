@@ -742,8 +742,8 @@ def signup():
           <label>License Number *</label>
           <input name="license_number" required placeholder="MN contractor license #">
           <label>Liability Insurance Certificate *</label>
-          <input type="file" name="insurance_cert" accept=".pdf,.jpg,.jpeg,.png" required>
-          <small style="color:#64748b;">Upload certificate of insurance (PDF or image)</small>
+          <input type="file" name="insurance_cert" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.bmp,.heic,.heif,image/*,application/pdf" required>
+          <small style="color:#64748b;">Upload certificate of insurance (PDF, JPEG, JPG, PNG, or other image)</small>
             <option value="">Select...</option>
             <option value="Yes — Liability & Workers Comp">Yes — Liability & Workers Comp</option>
             <option value="Yes — Liability only">Yes — Liability only</option>
