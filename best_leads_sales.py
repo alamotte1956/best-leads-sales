@@ -658,7 +658,10 @@ def contractor_agreement():
       <li>You will maintain active general liability insurance and workers’ compensation insurance as required by Minnesota Statutes Chapter 176.</li>
       <li>You will comply with Minnesota contractor registration and licensing requirements administered by the Department of Labor and Industry.</li>
       <li>You will not use the homeowner’s information for any purpose other than the specific job requested. You will not sell, share, or retain the information after the job is complete or declined.</li>
-      <li>You agree to indemnify Albert R LaMotte dba: Restoration Contractors MN against any claims arising from your work, licensing, or insurance status.</li>
+      <li>You are an independent contractor. Albert R LaMotte dba: Restoration Contractors MN is not your employer and does not control how you perform work.</li>
+      <li>You agree to indemnify and hold harmless Albert R LaMotte dba: Restoration Contractors MN from any claims, damages, or liabilities arising from your work, licensing status, insurance, or interactions with homeowners.</li>
+      <li>A lead is an introduction only. Purchase of a lead does not guarantee a job or payment from the homeowner.</li>
+      <li>The platform is provided “as is.” Albert R LaMotte dba: Restoration Contractors MN makes no warranty that leads will result in completed work.</li>
       <li>Pricing is as displayed at the time of purchase. First 5 leads are 50% off until November 30, 2026.</li>
       <li>You may decline an assigned lead within 24 hours. After acceptance, the lead is yours.</li>
       <li>Albert R LaMotte dba: Restoration Contractors MN may suspend or remove your account for non-compliance.</li>
