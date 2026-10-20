@@ -468,23 +468,31 @@ def seed_demo():
             """, (*c, datetime.now().strftime("%Y-%m-%d %H:%M")))
 
         leads = [
-            ("water_damage", "emergency", "55416", "Alex Rivera", "612-555-2001", "alex@example.com", 88, 81),
-            ("mold_remediation", "asap", "55345", "Chris Patel", "952-555-2002", "chris@example.com", 75, 56),
-            ("roofing", "this_week", "55406", "Taylor Kim", "612-555-2003", "taylor@example.com", 62, 68),
-            ("kitchen", "asap", "55331", "Jordan Lee", "952-555-2004", "jordan@example.com", 70, 56),
-            ("windows", "this_week", "55316", "Morgan Chen", "612-555-2005", "morgan@example.com", 58, 48),
-            ("hvac", "asap", "55407", "Riley Brooks", "952-555-2006", "riley@example.com", 80, 44),
-            ("plumbing", "emergency", "55408", "Casey Nguyen", "612-555-2007", "casey@example.com", 85, 50),
+            ("water_damage", "emergency", "55416", "Alex Rivera", "612-555-2001", "alex@example.com", 88, 81, "Minneapolis Mold Pros"),
+            ("mold_remediation", "asap", "55345", "Chris Patel", "952-555-2002", "chris@example.com", 75, 56, "Minneapolis Mold Pros"),
+            ("roofing", "this_week", "55406", "Taylor Kim", "612-555-2003", "taylor@example.com", 62, 68, "Twin Cities Roofing"),
+            ("kitchen", "asap", "55331", "Jordan Lee", "952-555-2004", "jordan@example.com", 70, 56, "Suburban Remodel Co"),
+            ("windows", "this_week", "55316", "Morgan Chen", "612-555-2005", "morgan@example.com", 58, 48, "West Metro Windows"),
+            ("hvac", "asap", "55407", "Riley Brooks", "952-555-2006", "riley@example.com", 80, 44, None),
+            ("plumbing", "emergency", "55408", "Casey Nguyen", "612-555-2007", "casey@example.com", 85, 50, None),
         ]
-        for l in leads:
-            db.execute("""
+        for service, urgency, zipc, name, phone, email, score, price, contractor_name in leads:
+            cur = db.execute("""
                 INSERT INTO leads (service_type, urgency, zip, name, phone, email, score, price, status, created)
                 VALUES (?,?,?,?,?,?,?,?, 'available', ?)
-            """, (*l, datetime.now().strftime("%Y-%m-%d %H:%M")))
+            """, (service, urgency, zipc, name, phone, email, score, price, datetime.now().strftime("%Y-%m-%d %H:%M")))
+            lead_id = cur.lastrowid
+            if contractor_name:
+                c = db.execute("SELECT id FROM contractors WHERE name=?", (contractor_name,)).fetchone()
+                if c:
+                    db.execute(
+                        "UPDATE leads SET status='sold', sold_to=?, sold_at=? WHERE id=?",
+                        (c["id"], datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
+                    )
 
     return """
     <h2>Demo data added</h2>
-    <p>5 contractors and 7 leads created.</p>
+    <p>5 contractors and 7 leads created. 5 are matched to contractors.</p>
     <p><a href="/admin">Admin</a> · <a href="/available">Available leads</a></p>
     <p>Test the consumer form at:<br>
     <a href="https://web-production-ac750.up.railway.app/" target="_blank">https://web-production-ac750.up.railway.app/</a></p>
