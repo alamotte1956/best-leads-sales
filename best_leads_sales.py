@@ -3,7 +3,7 @@ Best Leads — Lead Sales Database
 Separate server for selling exclusive restoration leads to contractors.
 SQLite database tracks contractors, available leads, and sales.
 """
-from flask import Flask, render_template_string, request, redirect, url_for
+from flask import Flask, render_template_string, request, redirect, url_for, session
 import sqlite3
 from datetime import datetime
 import os
