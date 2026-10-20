@@ -1105,19 +1105,25 @@ def decline_lead(lead_id):
     return redirect(session.url, code=303)
 
 def notify_contractor(contractor_id, lead_id):
-    """Send email/SMS notification when a contractor is selected for a lead.
-    Currently logs the notification. Connect to Twilio or email service later."""
+    """Send email and SMS notification when a contractor is selected for a lead."""
     with get_db() as db:
         c = db.execute("SELECT name, phone, email FROM contractors WHERE id=?", (contractor_id,)).fetchone()
         l = db.execute("SELECT service_type, zip, price FROM leads WHERE id=?", (lead_id,)).fetchone()
     if c and l:
-        msg = f"New exclusive lead: {l['service_type']} in {l['zip']} — ${l['price']}. Log in to accept: https://best-leads-sales-production.up.railway.app/contractor_login"
-        # Log for now — replace with Twilio SMS or email send
+        msg = f"New exclusive lead: {l['service_type']} in {l['zip']} — ${l['price']}. Log in: https://best-leads-sales-production.up.railway.app/contractor_login"
         print(f"NOTIFY {c['name']} ({c['phone']} / {c['email']}): {msg}")
-        # Example Twilio (uncomment when ready):
+        # SMS via Twilio (set TWILIO_SID, TWILIO_TOKEN, TWILIO_FROM on Railway)
         # from twilio.rest import Client
         # client = Client(os.environ.get("TWILIO_SID"), os.environ.get("TWILIO_TOKEN"))
         # client.messages.create(body=msg, from_=os.environ.get("TWILIO_FROM"), to=c["phone"])
+        # Email via SMTP (set SMTP_HOST, SMTP_USER, SMTP_PASS on Railway)
+        # import smtplib
+        # from email.mime.text import MIMEText
+        # server = smtplib.SMTP(os.environ.get("SMTP_HOST"), 587)
+        # server.starttls()
+        # server.login(os.environ.get("SMTP_USER"), os.environ.get("SMTP_PASS"))
+        # server.sendmail(os.environ.get("SMTP_USER"), c["email"], MIMEText(msg).as_string())
+        # server.quit()
 
 @app.route("/sell/<int:lead_id>/<int:contractor_id>")
 def sell_lead(lead_id, contractor_id):
