@@ -466,10 +466,7 @@ def available_leads():
         quality = "High" if (l['score'] or 0) >= 75 else "Medium" if (l['score'] or 0) >= 50 else "Standard"
         quality_color = "#166534" if quality == "High" else "#854d0e" if quality == "Medium" else "#64748b"
         if l["status"] == "available":
-            buy_links = " ".join(
-                f"<a href='/sell/{l['id']}/{c['id']}' style='margin-right:6px; background:#0ea5e9; color:white; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.85rem; font-weight:600;'>Buy ${l['price'] or 0}</a>"
-                for _, c in matches[:3]
-            ) or "<span style='color:#64748b;'>No matching contractors</span>"
+            buy_links = f"<a href='/auto_assign/{l['id']}' style='background:#0ea5e9; color:white; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.85rem; font-weight:600;'>Buy ${l['price'] or 0}</a>"
             status_html = f"<span style='background:#dcfce7; color:#166534; padding:2px 8px; border-radius:999px; font-size:0.75rem;'>Available</span>"
         else:
             buy_links = f"<a href='/accept/{l['id']}' style='background:#16a34a; color:white; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.85rem; font-weight:600; margin-right:6px;'>Accept</a> <a href='/decline/{l['id']}' style='color:#dc2626; font-weight:600;'>Reject</a>"
