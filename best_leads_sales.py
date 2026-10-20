@@ -1152,6 +1152,7 @@ def accept_lead(lead_id):
             (datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
         )
         notify_contractor(session.get("contractor_id"), lead_id)
+        notify_homeowner(lead_id)
     return redirect("/available")
 
 @app.route("/decline/<int:lead_id>")
@@ -1228,6 +1229,31 @@ def decline_lead(lead_id):
         metadata={"lead_id": str(lead_id), "contractor_id": str(contractor_id)},
     )
     return redirect(session.url, code=303)
+
+def notify_homeowner(lead_id):
+    """Email the homeowner when a contractor accepts their lead."""
+    with get_db() as db:
+        l = db.execute("SELECT name, email, service_type, zip FROM leads WHERE id=?", (lead_id,)).fetchone()
+        c = db.execute("SELECT name, phone FROM contractors WHERE id=(SELECT sold_to FROM leads WHERE id=?)", (lead_id,)).fetchone()
+    if not (l and l["email"] and c):
+        return
+    msg = f"Hello {l['name']},\n\n{c['name']} has accepted your request for {l['service_type']} in {l['zip']}. They will contact you at the number you provided.\n\n— Restoration Contractors MN"
+    print(f"HOMEOWNER EMAIL to {l['email']}: {msg}")
+    host = os.environ.get("SMTP_HOST")
+    user = os.environ.get("SMTP_USER")
+    password = os.environ.get("SMTP_PASS")
+    if host and user and password:
+        try:
+            import smtplib
+            from email.mime.text import MIMEText
+            server = smtplib.SMTP(host, 587)
+            server.starttls()
+            server.login(user, password)
+            server.sendmail(user, l["email"], MIMEText(msg).as_string())
+            server.quit()
+            print(f"Email sent to homeowner {l['email']}")
+        except Exception as e:
+            print(f"Homeowner email failed: {e}")
 
 def notify_contractor(contractor_id, lead_id):
     """Send email and SMS when a contractor is selected for a lead."""
