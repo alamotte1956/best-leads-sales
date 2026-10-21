@@ -239,6 +239,9 @@ def available():
         a.buy { background: #0ea5e9; color: white; padding: 10px 18px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 8px; font-weight: 600; }
         .cta-box { background: #f0f9ff; border: 1px solid #bae6fd; padding: 16px; border-radius: 10px; margin-bottom: 20px; }
         .cta-box h3 { margin-top: 0; color: #0369a1; }
+        .guarantee { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px; border-radius: 10px; margin: 20px 0; }
+        .guarantee h3 { margin-top: 0; color: #166534; }
+        .guarantee ul { margin: 8px 0 0 20px; }
       </style>
     </head>
     <body>
@@ -247,6 +250,16 @@ def available():
         <h3>Get Exclusive Jobs — No Shared Leads</h3>
         <p>These leads go to one contractor only. Buy now before they expire in 24 hours.</p>
         <p><strong>Competitive Twin Cities pricing. Higher close rates.</strong></p>
+      </div>
+      <div class="guarantee">
+        <h3>Lead Quality Guarantees</h3>
+        <ul>
+          <li><strong>100% Exclusive</strong> — sold to one contractor only. Never shared.</li>
+          <li><strong>Contact info hidden</strong> until you purchase the lead.</li>
+          <li><strong>24-hour expiration</strong> if not accepted — no stale leads.</li>
+          <li><strong>Minnesota licensed contractors only</strong> on the platform.</li>
+          <li><strong>Competitive local pricing</strong> based on Twin Cities market rates.</li>
+        </ul>
       </div>
       <p class="expire">Leads expire after 24 hours if not accepted.</p>
       {% if leads %}
