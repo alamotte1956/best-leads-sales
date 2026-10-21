@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Best Leads — Exclusive Contractor Leads</title>
+  <title>Best Contractors Twin Cities — One Pro. No Shared Leads.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -11,92 +11,119 @@
     body { font-family: 'Inter', system-ui, sans-serif; color: #0f172a; background: #fff; }
     .nav { padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; }
     .logo { font-weight: 700; font-size: 1.2rem; }
-    .hero { background: linear-gradient(160deg, #0f172a 0%, #0e7490 100%); color: white; padding: 100px 24px 80px; text-align: center; }
-    .hero h1 { font-size: 2.8rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 16px; line-height: 1.1; }
-    .hero p { font-size: 1.2rem; opacity: 0.9; max-width: 540px; margin: 0 auto 36px; }
+    .hero { background: linear-gradient(160deg, #0f172a 0%, #1e3a8a 100%); color: white; padding: 100px 24px 80px; text-align: center; }
+    .hero h1 { font-size: 3rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 16px; line-height: 1.1; }
+    .hero p { font-size: 1.25rem; opacity: 0.9; max-width: 580px; margin: 0 auto 36px; }
     .badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 36px; }
-    .badge { background: rgba(255,255,255,0.12); padding: 8px 18px; border-radius: 999px; font-size: 0.9rem; font-weight: 500; }
-    .cta { display: inline-block; background: #0ea5e9; color: white; padding: 18px 36px; border-radius: 10px; font-weight: 600; text-decoration: none; font-size: 1.1rem; }
-    .cta:hover { background: #0284c7; }
+    .badge { background: rgba(255,255,255,0.12); backdrop-filter: blur(4px); padding: 8px 18px; border-radius: 999px; font-size: 0.9rem; font-weight: 500; }
+    .cta { display: inline-block; background: #0ea5e9; color: white; padding: 18px 36px; border-radius: 10px; font-weight: 600; text-decoration: none; font-size: 1.1rem; transition: transform 0.15s; }
+    .cta:hover { transform: translateY(-1px); background: #0284c7; }
     .section { max-width: 960px; margin: 0 auto; padding: 80px 24px; }
-    h2 { text-align: center; font-size: 2rem; margin-bottom: 48px; }
-    .benefits { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
-    .benefit { padding: 28px; background: #f8fafc; border-radius: 16px; }
-    .benefit strong { display: block; margin-bottom: 8px; font-size: 1.05rem; }
-    .price { text-align: center; padding: 48px 24px; background: #f0fdf4; }
-    .price strong { font-size: 1.5rem; color: #166534; }
+    h2 { text-align: center; font-size: 2rem; margin-bottom: 12px; }
+    .sub { text-align: center; color: #64748b; margin-bottom: 48px; }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; }
+    .step { text-align: center; }
+    .num { width: 48px; height: 48px; background: #0ea5e9; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-weight: 700; font-size: 1.2rem; }
     .form-wrap { background: #f8fafc; padding: 80px 24px; }
-    .form-card { background: white; border-radius: 20px; padding: 40px; max-width: 540px; margin: 0 auto; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
-    label { display: block; font-weight: 500; margin: 16px 0 6px; font-size: 0.95rem; }
+    .form-card { background: white; border-radius: 20px; padding: 40px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+    label { display: block; font-weight: 500; margin: 18px 0 6px; font-size: 0.95rem; }
     input, select { width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 1rem; }
-    button { width: 100%; background: #0ea5e9; color: white; border: none; padding: 16px; border-radius: 10px; font-weight: 600; margin-top: 24px; cursor: pointer; }
+    button { width: 100%; background: #0ea5e9; color: white; border: none; padding: 16px; border-radius: 10px; font-size: 1.05rem; font-weight: 600; margin-top: 24px; cursor: pointer; }
     button:hover { background: #0284c7; }
+    .trust { text-align: center; padding: 48px 24px; color: #64748b; font-size: 0.95rem; }
   </style>
 </head>
 <body>
   <div class="nav">
-    <div class="logo">Best Leads</div>
-    <a href="#signup" style="color:#0ea5e9; font-weight:600; text-decoration:none;">Sign Up</a>
+    <div class="logo">Best Contractors</div>
+    <a href="#form" style="color:#0ea5e9; font-weight:600; text-decoration:none;">Get Help</a>
   </div>
   <div class="hero">
-    <h1>Exclusive Leads.<br>Higher Close Rates.</h1>
-    <p>One contractor per job. No shared leads like Angi. 20% below Angi pricing. Twin Cities only.</p>
+    <h1>One Contractor.<br>No Shared Leads.</h1>
+    <p>Water damage, mold, or remodeling in the Twin Cities. We match you with one licensed local pro. Your phone stays quiet.</p>
     <div class="badges">
       <span class="badge">No Shared Leads</span>
-      <span class="badge">20% Below Angi</span>
-      <span class="badge">No Monthly Fee</span>
+      <span class="badge">Licensed & Insured</span>
+      <span class="badge">Twin Cities Only</span>
     </div>
-    <a href="#signup" class="cta">Sign Up Free</a>
+    <a href="#form" class="cta">Get My Contractor</a>
   </div>
   <div class="section">
-    <h2>Why Contractors Choose Best Leads</h2>
-    <div class="benefits">
-      <div class="benefit">
-        <strong>Exclusive Only</strong>
-        <p style="color:#64748b;">One contractor per lead. No competition for the same job.</p>
+    <h2>How It Works</h2>
+    <p class="sub">Simple. Exclusive. Fast.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <strong>Tell Us</strong>
+        <p style="color:#64748b; margin-top:8px;">Describe the job and your ZIP code.</p>
       </div>
-      <div class="benefit">
-        <strong>Higher Close Rates</strong>
-        <p style="color:#64748b;">Homeowners expect one call. They answer. You close more.</p>
+      <div class="step">
+        <div class="num">2</div>
+        <strong>We Match</strong>
+        <p style="color:#64748b; margin-top:8px;">One verified contractor is selected for you.</p>
       </div>
-      <div class="benefit">
-        <strong>20% Below Angi</strong>
-        <p style="color:#64748b;">Pay less per lead. No annual fee. No monthly subscription.</p>
-      </div>
-      <div class="benefit">
-        <strong>Quality Gated</strong>
-        <p style="color:#64748b;">Leads are scored. Low quality stays out. You get real jobs.</p>
+      <div class="step">
+        <div class="num">3</div>
+        <strong>They Call</strong>
+        <p style="color:#64748b; margin-top:8px;">Only one pro contacts you. No phone blow-up.</p>
       </div>
     </div>
   </div>
-  <div class="price">
-    <strong>No monthly fee. Pay only for the leads you want.</strong>
-    <p style="color:#64748b; margin-top:8px;">Volume discount: 10% off after 10 leads/month.</p>
+  <div class="section">
+    <h2>Services Offered by Independent Contractors</h2>
+    <p class="sub">Water damage, mold, roofing, remodeling, and more — matched to one local pro.</p>
   </div>
-  <div class="form-wrap" id="signup">
+  <div class="form-wrap" id="form">
     <div class="form-card">
-      <h2 style="text-align:left; font-size:1.6rem; margin-bottom:8px;">Become a Contractor</h2>
-      <p style="color:#64748b; margin-bottom:20px;">License and insurance required. Approved contractors get exclusive leads.</p>
-      <form method="POST" action="/signup">
-        <label>Company Name</label>
+      <h2 style="text-align:left; font-size:1.6rem; margin-bottom:8px;">Request Help</h2>
+      <p style="color:#64748b; margin-bottom:20px;">Exclusive matching. One contractor only.</p>
+      <form method="POST" action="https://best-leads-sales-production.up.railway.app/add_lead">
+        <label>Service</label>
+        <select name="service_type" required>
+          <option value="">Select a service...</option>
+          <option value="water_damage">Water Damage Restoration</option>
+          <option value="mold_remediation">Mold Remediation</option>
+          <option value="mold_inspection">Mold Inspection</option>
+          <option value="dry_out">Dry Out / Water Extraction</option>
+          <option value="iaq">Indoor Air Quality</option>
+          <option value="roofing">Roofing</option>
+          <option value="siding">Siding</option>
+          <option value="windows">Windows</option>
+          <option value="remodeling">Remodeling / Renovation</option>
+          <option value="kitchen">Kitchen Remodel</option>
+          <option value="bathroom">Bathroom Remodel</option>
+          <option value="addition">Home Addition</option>
+          <option value="painting">Painting</option>
+          <option value="flooring">Flooring</option>
+          <option value="hvac">HVAC</option>
+          <option value="plumbing">Plumbing</option>
+          <option value="electrical">Electrical</option>
+          <option value="landscaping">Landscaping</option>
+          <option value="other">Other</option>
+        </select>
+        <label>Urgency</label>
+        <select name="urgency">
+          <option value="emergency">Emergency</option>
+          <option value="asap">ASAP</option>
+          <option value="this_week">This Week</option>
+        </select>
+        <label>ZIP Code</label>
+        <input name="zip" required placeholder="55406">
+        <label>Name</label>
         <input name="name" required>
         <label>Phone</label>
         <input name="phone" required>
         <label>Email</label>
-        <input name="email" type="email" required>
-        <label>License Number</label>
-        <input name="license_number" required>
-        <label>Insurance Provider</label>
-        <input name="insurance" required>
-        <label>Services Offered</label>
-        <input name="services_offered" placeholder="water damage, mold, remodeling">
-        <label>Service Area (ZIPs)</label>
-        <input name="service_area" placeholder="55416, 55345, 55331">
-        <label>Years in Business</label>
-        <input name="years_in_business" type="number">
-        <button type="submit">Apply Now</button>
+        <input name="email" type="email">
+        <input type="hidden" name="score" value="75">
+        <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px; font-size:0.9rem;">
+          <input type="checkbox" name="agree" required style="width:auto; margin-top:4px;">
+          <span>I agree to the <a href="/consumer_agreement" target="_blank">Consumer Agreement</a> and understand that one licensed contractor will contact me. No shared leads.</span>
+        </label>
+        <button type="submit">Get My Contractor</button>
       </form>
     </div>
   </div>
+  <div class="trust">Licensed local contractors only. No shared leads. Twin Cities metro.</div>
 </body>
 </html>
