@@ -106,11 +106,17 @@ def signup():
       <style>
         body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
         input, button { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; }
-        button { background: #0ea5e9; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        button { background: #0ea5e9; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 16px; }
         .agreement { border: 1px solid #ccc; padding: 15px; margin: 15px 0; background: #f9f9f9; }
+        .cta-box { background: #f0f9ff; border: 1px solid #bae6fd; padding: 16px; border-radius: 10px; margin-bottom: 20px; }
       </style>
     </head>
     <body>
+      <div class="cta-box">
+        <h3>Get Exclusive Twin Cities Leads</h3>
+        <p>Stop competing with 3–5 other contractors on every job. Sign up for exclusive leads only — one contractor per homeowner.</p>
+        <p><strong>Competitive pricing. Higher close rates. No shared leads.</strong></p>
+      </div>
       <h2>Contractor Signup</h2>
       <form method="post">
         <input name="name" placeholder="Business Name" required>
@@ -127,7 +133,7 @@ def signup():
             <input type="checkbox" name="agree" required> I agree to the Contractor Agreement
           </label>
         </div>
-        <button type="submit">Submit Application</button>
+        <button type="submit">Start Getting Exclusive Leads</button>
       </form>
     </body>
     </html>
@@ -230,18 +236,25 @@ def available():
         body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
         .lead { border: 1px solid #ddd; padding: 15px; margin: 12px 0; border-radius: 8px; }
         .expire { color: #dc2626; font-weight: bold; }
-        a.buy { background: #0ea5e9; color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 8px; }
+        a.buy { background: #0ea5e9; color: white; padding: 10px 18px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 8px; font-weight: 600; }
+        .cta-box { background: #f0f9ff; border: 1px solid #bae6fd; padding: 16px; border-radius: 10px; margin-bottom: 20px; }
+        .cta-box h3 { margin-top: 0; color: #0369a1; }
       </style>
     </head>
     <body>
       <h2>Available Exclusive Leads</h2>
+      <div class="cta-box">
+        <h3>Get Exclusive Jobs — No Shared Leads</h3>
+        <p>These leads go to one contractor only. Buy now before they expire in 24 hours.</p>
+        <p><strong>Competitive Twin Cities pricing. Higher close rates.</strong></p>
+      </div>
       <p class="expire">Leads expire after 24 hours if not accepted.</p>
       {% if leads %}
         {% for l in leads %}
           <div class="lead">
             <strong>{{ l.service }}</strong> — {{ l.zip_code }}<br>
             Price: ${{ "%.2f"|format(l.price) }}<br>
-            <a class="buy" href="/buy/{{ l.id }}">Buy Lead</a>
+            <a class="buy" href="/buy/{{ l.id }}">Buy This Exclusive Lead</a>
           </div>
         {% endfor %}
       {% else %}
