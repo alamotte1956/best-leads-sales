@@ -1065,8 +1065,14 @@ def signup():
           </select>
           <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px;">
             <input type="checkbox" name="agree" required style="width:auto; margin-top:4px;">
-            <span>I agree to the <a href="/contractor_agreement" target="_blank">Contractor Agreement</a>. I consent to receive SMS/text messages about new exclusive leads at the phone number I provide. Message frequency varies. Msg & data rates may apply. Reply STOP to cancel, HELP for help. I understand that leads are exclusive and non-shared.</span>
+            <span>I agree to the <a href="/contractor_agreement" target="_blank">Contractor Agreement</a> and consent to receive SMS/text messages about new exclusive leads at the phone number I provide.</span>
           </label>
+          <p style="font-size:0.8rem; color:#475569; margin:8px 0 16px; line-height:1.4;">
+            <strong>Message type:</strong> Lead notifications.<br>
+            <strong>Message frequency:</strong> Varies.<br>
+            <strong>Msg & data rates may apply.</strong><br>
+            <strong>Reply STOP to cancel, HELP for help.</strong>
+          </p>
           <button type="submit">Apply</button>
         </form>
         <p style="font-size:0.85rem; margin-top:16px;"><a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms & Conditions</a></p>
