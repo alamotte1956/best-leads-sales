@@ -898,6 +898,62 @@ def contractor_edit_profile():
     </body></html>
     """
 
+@app.route("/privacy")
+def privacy():
+    return """
+    <html>
+    <head><title>Privacy Policy — Restoration Contractors MN</title>
+    <style>body{font-family:system-ui;max-width:700px;margin:40px auto;padding:20px;line-height:1.6;}</style>
+    </head>
+    <body>
+    <h1>Privacy Policy</h1>
+    <p><strong>Albert R LaMotte dba: Restoration Contractors MN</strong></p>
+    <p>Last updated: October 20, 2026</p>
+    <h2>Information We Collect</h2>
+    <p>When you submit a request or sign up as a contractor, we collect your name, phone number, email address, ZIP code, project details, and (for contractors) license information.</p>
+    <h2>How We Use Information</h2>
+    <p>We use this information to match homeowners with one licensed contractor, send lead notifications, and operate the service. We do not sell personal information to third parties for marketing.</p>
+    <h2>Sharing</h2>
+    <p>Homeowner contact information is shared only with the single contractor matched to the request. Contractor information is used to deliver leads and may be reviewed for verification.</p>
+    <h2>SMS and Email</h2>
+    <p>Contractors who provide a phone number and check the agreement box consent to receive SMS notifications about new leads. You may reply STOP to unsubscribe. Email notifications are sent to the address provided at signup.</p>
+    <h2>Data Retention</h2>
+    <p>We retain lead and contractor data as needed to operate the service and meet legal requirements.</p>
+    <h2>Contact</h2>
+    <p>Questions about this policy: contact the site administrator.</p>
+    <p><a href="/">Back</a></p>
+    </body>
+    </html>
+    """
+
+@app.route("/terms")
+def terms():
+    return """
+    <html>
+    <head><title>Terms & Conditions — Restoration Contractors MN</title>
+    <style>body{font-family:system-ui;max-width:700px;margin:40px auto;padding:20px;line-height:1.6;}</style>
+    </head>
+    <body>
+    <h1>Terms & Conditions</h1>
+    <p><strong>Albert R LaMotte dba: Restoration Contractors MN</strong></p>
+    <p>Last updated: October 20, 2026</p>
+    <h2>Service</h2>
+    <p>We provide a lead-matching service. We are not a contractor and do not perform work. All work agreements are between the homeowner and the independent contractor.</p>
+    <h2>Exclusive Leads</h2>
+    <p>Leads are exclusive. One contractor receives each lead. Contractors may not resell or share lead information.</p>
+    <h2>Contractor Responsibilities</h2>
+    <p>Contractors must hold any license required for the work they perform in Minnesota and must comply with applicable law. Insurance is recommended but not required for signup.</p>
+    <h2>Homeowner Responsibilities</h2>
+    <p>Homeowners should verify the contractor’s license and insurance before signing any work contract. You may have a three-day cancellation right under Minnesota’s Home Solicitation Sales Act if applicable.</p>
+    <h2>Limitation of Liability</h2>
+    <p>The service is provided “as is.” We are not liable for the quality, timing, or outcome of any contractor’s work, or for disputes between homeowners and contractors.</p>
+    <h2>Governing Law</h2>
+    <p>These terms are governed by the laws of the State of Minnesota.</p>
+    <p><a href="/">Back</a> · <a href="/privacy">Privacy Policy</a></p>
+    </body>
+    </html>
+    """
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -1013,6 +1069,7 @@ def signup():
           </label>
           <button type="submit">Apply</button>
         </form>
+        <p style="font-size:0.85rem; margin-top:16px;"><a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms & Conditions</a></p>
       </div>
     </body>
     </html>
