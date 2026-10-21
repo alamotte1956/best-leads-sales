@@ -954,6 +954,23 @@ def terms():
     </html>
     """
 
+@app.route("/thank-you")
+def thank_you():
+    return """
+    <html>
+    <head><title>Thank You — Contractor Signup</title>
+    <style>body{font-family:system-ui;max-width:500px;margin:60px auto;padding:20px;text-align:center;}</style>
+    </head>
+    <body>
+    <h2>Thank You!</h2>
+    <p>Your contractor application has been received.</p>
+    <p>You will receive SMS/text messages about new exclusive leads at the phone number you provided.</p>
+    <p>Reply STOP to cancel, HELP for help. Msg & data rates may apply.</p>
+    <p><a href="/contractor_login">Log in to your dashboard</a></p>
+    </body>
+    </html>
+    """
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
