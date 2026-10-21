@@ -1049,7 +1049,7 @@ def signup():
                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (d.get("name"), d.get("phone"), d.get("email"), d.get("password"), d.get("service_area"),
                  d.get("license_number"), d.get("insurance"), d.get("insurance_expires"),
-                 d.get("years_in_business"), d.get("services_offered"), d.get("avg_job_size"),
+                 d.get("years_in_business"), ",".join(request.form.getlist("services")), d.get("avg_job_size"),
                  d.get("preferred_contact"), d.get("website"), d.get("google_profile"),
                  d.get("contractor_refs"), d.get("exclusive_only"), status, active,
                  datetime.now().strftime("%Y-%m-%d %H:%M"))
@@ -1101,7 +1101,27 @@ def signup():
           <label>Years in Business *</label>
           <input name="years_in_business" type="number" min="0" required>
           <label>Services Offered *</label>
-          <input name="services_offered" required placeholder="e.g. water damage, mold, remodeling, roofing">
+          <div style="border:1px solid #e2e8f0; border-radius:6px; padding:10px; max-height:200px; overflow-y:auto;">
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="water_damage"> Water Damage Restoration</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="mold_remediation"> Mold Remediation</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="mold_inspection"> Mold Inspection</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="dry_out"> Dry Out / Water Extraction</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="iaq"> Indoor Air Quality</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="roofing"> Roofing</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="siding"> Siding</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="windows"> Windows</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="remodeling"> Remodeling / Renovation</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="kitchen"> Kitchen Remodel</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="bathroom"> Bathroom Remodel</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="addition"> Home Addition</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="painting"> Painting</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="flooring"> Flooring</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="hvac"> HVAC</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="plumbing"> Plumbing</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="electrical"> Electrical</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="landscaping"> Landscaping</label>
+            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="other"> Other</label>
+          </div>
           <label>Service Area *</label>
           <input name="service_area" required placeholder="e.g. Full Twin Cities, Bloomington, Eagan, etc.">
           <label>Average Job Size</label>
