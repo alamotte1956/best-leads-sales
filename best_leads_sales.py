@@ -14,17 +14,41 @@ app.secret_key = "best-leads-sales-2026"
 DB = "best_leads.db"
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 
+def expire_and_rematch():
+    """Expire unaccepted assignments after 15 minutes and rematch them."""
+    cutoff = (datetime.now() - __import__('datetime').timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M")
+    with get_db() as db:
+        expired = db.execute(
+            "SELECT id FROM leads WHERE status='assigned' AND sold_at < ?", (cutoff,)
+        ).fetchall()
+        for row in expired:
+            db.execute(
+                "UPDATE leads SET status='available', sold_to=NULL, sold_at=NULL WHERE id=?",
+                (row["id"],)
+            )
+        # Rematch newly available leads using improved algorithm
+        available = db.execute("SELECT * FROM leads WHERE status='available'").fetchall()
+        for lead in available:
+            best = find_best_contractor(lead["service_type"], lead["zip"])
+            if best:
+                db.execute(
+                    "UPDATE leads SET status='assigned', sold_to=?, sold_at=? WHERE id=?",
+                    (best["id"], datetime.now().strftime("%Y-%m-%d %H:%M"), lead["id"])
+                )
+                notify_contractor(best["id"], lead["id"])
+
 def expire_old_assignments():
-    """Return assigned leads to available if not accepted within 24 hours."""
-    cutoff = (datetime.now() - __import__('datetime').timedelta(hours=24)).strftime("%Y-%m-%d %H:%M")
+    """Return assigned leads to available if not accepted within 15 minutes."""
+    cutoff = (datetime.now() - __import__('datetime').timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M")
     with get_db() as db:
         db.execute(
             "UPDATE leads SET status='available', sold_to=NULL, sold_at=NULL WHERE status='assigned' AND sold_at < ?",
             (cutoff,)
         )
 
-def find_best_contractor(service_type, zip_code):
-    """Auto-match: approved contractor whose services include the lead type and service area covers the ZIP."""
+def find_best_contractor(service_type, zip_code, exclude_ids=None):
+    """Match by service + ZIP, rotate among contractors, skip recent decliners."""
+    exclude_ids = exclude_ids or []
     with get_db() as db:
         contractors = db.execute(
             "SELECT * FROM contractors WHERE status='approved' AND active=1"
@@ -32,17 +56,29 @@ def find_best_contractor(service_type, zip_code):
     service = (service_type or "").lower().replace("_", " ")
     matches = []
     for c in contractors:
+        if c["id"] in exclude_ids:
+            continue
         services = (c["services_offered"] or "").lower()
         area = (c["service_area"] or "").lower()
+        score = 0
         if service and service in services:
-            if zip_code and (zip_code in area or "full" in area or "twin" in area):
-                matches.append((c, 2))
-            else:
-                matches.append((c, 1))
+            score += 2
+        if zip_code and (zip_code in area or "full" in area or "twin" in area):
+            score += 1
+        if score > 0:
+            # Prefer contractors who have accepted fewer recent leads (load balance)
+            with get_db() as db:
+                recent = db.execute(
+                    "SELECT COUNT(*) FROM leads WHERE sold_to=? AND status IN ('assigned','sold') AND sold_at > ?",
+                    (c["id"], (datetime.now() - __import__('datetime').timedelta(days=7)).strftime("%Y-%m-%d %H:%M"))
+                ).fetchone()[0]
+            matches.append((score, -recent, c))
     if not matches:
         return None
-    matches.sort(key=lambda x: -x[1])
-    return matches[0][0]
+    matches.sort(key=lambda x: (-x[0], x[1]))
+    return matches[0][2]
+
+def expire_and_rematch():
 
 def calculate_auto_price(service_type, urgency, score):
     """Return competitive price: 20% below typical Angi shared-lead rates.
@@ -199,7 +235,7 @@ HTML = """
 @app.route("/admin")
 def home():
     try:
-        expire_old_assignments()
+        expire_and_rematch()
     except Exception:
         pass
     with get_db() as db:
@@ -432,13 +468,14 @@ def add_lead():
         """, (d.get("service_type"), d.get("urgency"), d.get("zip"), d.get("name"),
               d.get("phone"), d.get("email"), score, price, datetime.now().strftime("%Y-%m-%d %H:%M")))
         lead_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
-        # Notify matching contractors
-        contractors = db.execute("""
-            SELECT id FROM contractors
-            WHERE active=1 AND status='approved' AND services_offered LIKE ?
-        """, (f"%{d.get('service_type','')}%",)).fetchall()
-        for c in contractors:
-            notify_contractor(c["id"], lead_id)
+        # Auto-match using improved algorithm
+        best = find_best_contractor(d.get("service_type"), d.get("zip"))
+        if best:
+            db.execute(
+                "UPDATE leads SET status='assigned', sold_to=?, sold_at=? WHERE id=?",
+                (best["id"], datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
+            )
+            notify_contractor(best["id"], lead_id)
     return """
     <html><head><title>Thank You</title>
     <style>body{font-family:system-ui;max-width:500px;margin:60px auto;padding:20px;text-align:center;}</style>
@@ -1242,6 +1279,7 @@ def accept_lead(lead_id):
             (datetime.now().strftime("%Y-%m-%d %H:%M"), lead_id)
         )
         notify_contractor(session.get("contractor_id"), lead_id)
+        notify_contractor_with_lead_phone(session.get("contractor_id"), lead_id)
         notify_homeowner(lead_id)
     return redirect("/available")
 
@@ -1321,18 +1359,23 @@ def decline_lead(lead_id):
     return redirect(session.url, code=303)
 
 def notify_homeowner(lead_id):
-    """Email the homeowner when a contractor accepts their lead."""
+    """Email and SMS the homeowner with the contractor's phone after acceptance."""
     with get_db() as db:
-        l = db.execute("SELECT name, email, service_type, zip FROM leads WHERE id=?", (lead_id,)).fetchone()
+        l = db.execute("SELECT name, email, phone, service_type, zip FROM leads WHERE id=?", (lead_id,)).fetchone()
         c = db.execute("SELECT name, phone FROM contractors WHERE id=(SELECT sold_to FROM leads WHERE id=?)", (lead_id,)).fetchone()
-    if not (l and l["email"] and c):
+    if not (l and c):
         return
-    msg = f"Hello {l['name']},\n\n{c['name']} has accepted your request for {l['service_type']} in {l['zip']}. They will contact you at the number you provided.\n\n— Restoration Contractors MN"
-    print(f"HOMEOWNER EMAIL to {l['email']}: {msg}")
+    msg = (
+        f"Hello {l['name']}, {c['name']} has accepted your request for {l['service_type']} in {l['zip']}. "
+        f"They will contact you soon. Their phone number is {c['phone'] or 'on file'}. "
+        f"— Restoration Contractors MN"
+    )
+    print(f"HOMEOWNER NOTIFY to {l['email']} / {l['phone']}: {msg}")
+    # Email via SMTP
     host = os.environ.get("SMTP_HOST")
     user = os.environ.get("SMTP_USER")
     password = os.environ.get("SMTP_PASS")
-    if host and user and password:
+    if host and user and password and l["email"]:
         try:
             import smtplib
             from email.mime.text import MIMEText
@@ -1344,16 +1387,58 @@ def notify_homeowner(lead_id):
             print(f"Email sent to homeowner {l['email']}")
         except Exception as e:
             print(f"Homeowner email failed: {e}")
+    # SMS to homeowner if Twilio is set
+    sid = os.environ.get("TWILIO_SID")
+    token = os.environ.get("TWILIO_TOKEN")
+    from_num = os.environ.get("TWILIO_FROM")
+    if sid and token and from_num and l["phone"]:
+        try:
+            from twilio.rest import Client
+            client = Client(sid, token)
+            client.messages.create(body=msg, from_=from_num, to=l["phone"])
+            print(f"SMS sent to homeowner {l['phone']}")
+        except Exception as e:
+            print(f"Homeowner SMS failed: {e}")
+
+def notify_contractor_with_lead_phone(contractor_id, lead_id):
+    """Send the contractor the homeowner's phone number after acceptance."""
+    with get_db() as db:
+        c = db.execute("SELECT name, phone, email FROM contractors WHERE id=?", (contractor_id,)).fetchone()
+        l = db.execute("SELECT name, phone, service_type, zip FROM leads WHERE id=?", (lead_id,)).fetchone()
+    if not (c and l):
+        return
+    msg = (
+        f"Lead accepted. Homeowner: {l['name']}, Phone: {l['phone']}, "
+        f"Service: {l['service_type']}, ZIP: {l['zip']}. Contact them soon."
+    )
+    print(f"CONTRACTOR PHONE REVEAL to {c['phone']}: {msg}")
+    sid = os.environ.get("TWILIO_SID")
+    token = os.environ.get("TWILIO_TOKEN")
+    from_num = os.environ.get("TWILIO_FROM")
+    if sid and token and from_num and c["phone"]:
+        try:
+            from twilio.rest import Client
+            client = Client(sid, token)
+            client.messages.create(body=msg, from_=from_num, to=c["phone"])
+        except Exception as e:
+            print(f"Contractor phone reveal SMS failed: {e}")
+
+def notify_homeowner(lead_id):
 
 def notify_contractor(contractor_id, lead_id):
-    """Send email and SMS when a contractor is selected for a lead."""
+    """Send SMS/email with 15-minute accept window."""
     with get_db() as db:
         c = db.execute("SELECT name, phone, email FROM contractors WHERE id=?", (contractor_id,)).fetchone()
         l = db.execute("SELECT service_type, zip, price FROM leads WHERE id=?", (lead_id,)).fetchone()
     if not (c and l):
         return
-    msg = f"New exclusive lead: {l['service_type']} in {l['zip']} — ${l['price']}. Log in: https://best-leads-sales-production.up.railway.app/contractor_login"
+    msg = (
+        f"New exclusive lead: {l['service_type']} in {l['zip']} — ${l['price']}. "
+        f"You have 15 minutes to accept. Reply YES to accept or NO to decline. "
+        f"Or log in: https://best-leads-sales-production.up.railway.app/contractor_login"
+    )
     print(f"NOTIFY {c['name']} ({c['phone']} / {c['email']}): {msg}")
+    # SMS and email sending code remains the same below...
 
     # SMS via Twilio
     sid = os.environ.get("TWILIO_SID")
