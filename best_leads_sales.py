@@ -1083,7 +1083,7 @@ def signup():
         <h2>Contractor Signup</h2>
         <p>Join Best Leads to receive exclusive Twin Cities restoration leads.</p>
         <p style="background:#dcfce7; color:#166534; padding:12px; border-radius:8px; font-weight:600;">New contractor incentive: Your first lead is 50% off. No monthly fee. Pay only for the leads you want.</p>
-        <p style="background:#dbeafe; color:#1e40af; padding:10px; border-radius:6px; font-size:0.9rem;"><strong>Verification:</strong> We check MN contractor licenses through the official DLI lookup. Auto-approval requires a license number and 3+ years in business. Insurance is optional.</p>
+        <p style="background:#dbeafe; color:#1e40af; padding:10px; border-radius:6px; font-size:0.9rem;"><strong>Instant approval:</strong> Enter a license number and 3+ years in business to be approved immediately. Insurance is optional.</p>
         <form method="POST" enctype="multipart/form-data">
           <label>Company / Contractor Name *</label>
           <input name="name" required>
