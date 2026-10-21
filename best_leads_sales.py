@@ -1065,7 +1065,7 @@ def signup():
           </select>
           <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px;">
             <input type="checkbox" name="agree" required style="width:auto; margin-top:4px;">
-            <span>I agree to the <a href="/contractor_agreement" target="_blank">Albert R LaMotte dba: Restoration Contractors MN Contractor Agreement</a> and understand that leads are exclusive and non-shared.</span>
+            <span>I agree to the <a href="/contractor_agreement" target="_blank">Albert R LaMotte dba: Restoration Contractors MN Contractor Agreement</a>. I consent to receive SMS/text messages about new exclusive leads at the phone number I provide. Message frequency varies. Reply STOP to unsubscribe. Msg & data rates may apply. I understand that leads are exclusive and non-shared.</span>
           </label>
           <button type="submit">Apply</button>
         </form>
