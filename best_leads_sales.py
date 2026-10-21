@@ -1088,7 +1088,8 @@ def signup():
           <label>Company / Contractor Name *</label>
           <input name="name" required>
           <label>Phone *</label>
-          <input name="phone" required>
+          <input name="phone" required placeholder="(612) 555-1234">
+          <small style="color:#64748b;">We'll text lead alerts to this number</small>
           <label>Email *</label>
           <input name="email" type="email" required>
           <label>Password *</label>
@@ -1101,26 +1102,26 @@ def signup():
           <label>Years in Business *</label>
           <input name="years_in_business" type="number" min="0" required>
           <label>Services Offered *</label>
-          <div style="border:1px solid #e2e8f0; border-radius:6px; padding:10px; max-height:200px; overflow-y:auto;">
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="water_damage"> Water Damage Restoration</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="mold_remediation"> Mold Remediation</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="mold_inspection"> Mold Inspection</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="dry_out"> Dry Out / Water Extraction</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="iaq"> Indoor Air Quality</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="roofing"> Roofing</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="siding"> Siding</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="windows"> Windows</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="remodeling"> Remodeling / Renovation</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="kitchen"> Kitchen Remodel</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="bathroom"> Bathroom Remodel</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="addition"> Home Addition</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="painting"> Painting</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="flooring"> Flooring</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="hvac"> HVAC</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="plumbing"> Plumbing</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="electrical"> Electrical</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="landscaping"> Landscaping</label>
-            <label style="display:block; margin:4px 0;"><input type="checkbox" name="services" value="other"> Other</label>
+          <div style="border:1px solid #e2e8f0; border-radius:6px; padding:12px; max-height:220px; overflow-y:auto;">
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="water_damage" style="width:18px; height:18px;"> Water Damage Restoration</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="mold_remediation" style="width:18px; height:18px;"> Mold Remediation</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="mold_inspection" style="width:18px; height:18px;"> Mold Inspection</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="dry_out" style="width:18px; height:18px;"> Dry Out / Water Extraction</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="iaq" style="width:18px; height:18px;"> Indoor Air Quality</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="roofing" style="width:18px; height:18px;"> Roofing</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="siding" style="width:18px; height:18px;"> Siding</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="windows" style="width:18px; height:18px;"> Windows</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="remodeling" style="width:18px; height:18px;"> Remodeling / Renovation</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="kitchen" style="width:18px; height:18px;"> Kitchen Remodel</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="bathroom" style="width:18px; height:18px;"> Bathroom Remodel</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="addition" style="width:18px; height:18px;"> Home Addition</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="painting" style="width:18px; height:18px;"> Painting</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="flooring" style="width:18px; height:18px;"> Flooring</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="hvac" style="width:18px; height:18px;"> HVAC</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="plumbing" style="width:18px; height:18px;"> Plumbing</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="electrical" style="width:18px; height:18px;"> Electrical</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="landscaping" style="width:18px; height:18px;"> Landscaping</label>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:1rem;"><input type="checkbox" name="services" value="other" style="width:18px; height:18px;"> Other</label>
           </div>
           <label>Service Area *</label>
           <input name="service_area" required placeholder="e.g. Full Twin Cities, Bloomington, Eagan, etc.">
