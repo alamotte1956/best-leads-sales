@@ -7,6 +7,7 @@ import hashlib
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-this-secret-key-in-production-2026")
 DB = "leads.db"
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
 
 def get_db():
     conn = sqlite3.connect(DB)
@@ -51,6 +52,9 @@ def hash_pw(pw):
     if not pw:
         pw = "demo123"
     return hashlib.sha256(pw.encode()).hexdigest()
+
+def is_admin():
+    return session.get("is_admin") is True
 
 CONTRACTOR_AGREEMENT = """
 By signing up you agree:
@@ -276,10 +280,8 @@ def logout():
 @app.route("/seed_demo")
 def seed_demo():
     with get_db() as db:
-        # Clear old demo data for clean test
         db.execute("DELETE FROM contractors WHERE email LIKE 'demo%@test.com'")
         db.execute("DELETE FROM leads WHERE email LIKE 'home%@test.com'")
-        # 5 demo contractors
         for i in range(1, 6):
             db.execute("""
                 INSERT OR IGNORE INTO contractors (name, phone, email, license_number, years_in_business, services, password_hash, created)
@@ -294,7 +296,6 @@ def seed_demo():
                 hash_pw("demo123"),
                 datetime.now().isoformat()
             ))
-        # 10 demo leads
         services = ["Roofing", "Water Damage", "Mold Remediation", "Bathroom Remodel", "Kitchen Remodel"]
         for i in range(1, 11):
             exp = (datetime.now() + timedelta(hours=24)).isoformat()
@@ -317,7 +318,130 @@ def seed_demo():
     <h2>Demo data seeded successfully.</h2>
     <p><a href="/available">View available leads</a></p>
     <p><a href="/contractor_login">Login as demo1@test.com / demo123</a></p>
+    <p><a href="/admin">Admin panel</a></p>
     """
+
+# ---------- ADMIN OVERRIDES ----------
+@app.route("/admin", methods=["GET", "POST"])
+def admin():
+    if request.method == "POST" and request.form.get("password") == ADMIN_PASSWORD:
+        session["is_admin"] = True
+        return redirect(url_for("admin"))
+    if not is_admin():
+        return """
+        <h2>Admin Login</h2>
+        <form method="post">
+          <input type="password" name="password" placeholder="Admin password" required>
+          <button type="submit">Login</button>
+        </form>
+        <p>Default: admin123</p>
+        """
+    with get_db() as db:
+        contractors = db.execute("SELECT * FROM contractors ORDER BY id DESC").fetchall()
+        leads = db.execute("SELECT * FROM leads ORDER BY id DESC").fetchall()
+    return render_template_string("""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Admin Overrides</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 30px auto; padding: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        button, input[type=submit] { background: #0ea5e9; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .section { margin: 30px 0; }
+        a { color: #0ea5e9; }
+      </style>
+    </head>
+    <body>
+      <h1>Admin Overrides</h1>
+      <p><a href="/available">Available Leads</a> | <a href="/logout">Logout</a></p>
+
+      <div class="section">
+        <h2>Contractors — Turn On/Off</h2>
+        <table>
+          <tr><th>ID</th><th>Name</th><th>License</th><th>Active</th><th>Action</th></tr>
+          {% for c in contractors %}
+          <tr>
+            <td>{{ c.id }}</td>
+            <td>{{ c.name }}</td>
+            <td>{{ c.license_number }}</td>
+            <td>{{ "Yes" if c.active else "No" }}</td>
+            <td>
+              <form method="post" action="/admin/toggle/{{ c.id }}" style="display:inline;">
+                <button type="submit">{{ "Deactivate" if c.active else "Activate" }}</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>Leads — Change Price or Assign</h2>
+        <table>
+          <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Price</th><th>Status</th><th>Assigned</th><th>Actions</th></tr>
+          {% for l in leads %}
+          <tr>
+            <td>{{ l.id }}</td>
+            <td>{{ l.service }}</td>
+            <td>{{ l.zip_code }}</td>
+            <td>${{ "%.2f"|format(l.price) }}</td>
+            <td>{{ l.status }}</td>
+            <td>{{ l.assigned_to or "-" }}</td>
+            <td>
+              <form method="post" action="/admin/price/{{ l.id }}" style="display:inline;">
+                <input type="number" name="price" value="{{ l.price }}" step="0.01" style="width:80px;">
+                <button type="submit">Update Price</button>
+              </form>
+              <form method="post" action="/admin/assign/{{ l.id }}" style="display:inline; margin-left:10px;">
+                <input type="number" name="contractor_id" placeholder="Contractor ID" style="width:100px;">
+                <button type="submit">Assign</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </body>
+    </html>
+    """, contractors=contractors, leads=leads)
+
+@app.route("/admin/toggle/<int:cid>", methods=["POST"])
+def admin_toggle(cid):
+    if not is_admin():
+        return redirect(url_for("admin"))
+    with get_db() as db:
+        db.execute("UPDATE contractors SET active = CASE WHEN active=1 THEN 0 ELSE 1 END WHERE id=?", (cid,))
+        db.commit()
+    return redirect(url_for("admin"))
+
+@app.route("/admin/price/<int:lid>", methods=["POST"])
+def admin_price(lid):
+    if not is_admin():
+        return redirect(url_for("admin"))
+    try:
+        new_price = float(request.form.get("price", 75))
+        with get_db() as db:
+            db.execute("UPDATE leads SET price=? WHERE id=?", (new_price, lid))
+            db.commit()
+    except:
+        pass
+    return redirect(url_for("admin"))
+
+@app.route("/admin/assign/<int:lid>", methods=["POST"])
+def admin_assign(lid):
+    if not is_admin():
+        return redirect(url_for("admin"))
+    try:
+        cid = int(request.form.get("contractor_id", 0))
+        with get_db() as db:
+            db.execute("UPDATE leads SET assigned_to=?, status='sold' WHERE id=?", (cid, lid))
+            db.commit()
+    except:
+        pass
+    return redirect(url_for("admin"))
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8080))
