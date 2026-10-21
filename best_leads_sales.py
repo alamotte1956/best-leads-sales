@@ -450,6 +450,18 @@ def add_lead():
     </body></html>
     """
 
+@app.route("/add_contractor", methods=["POST"])
+def add_contractor():
+    """Manually add a contractor from the admin page."""
+    d = request.form
+    with get_db() as db:
+        db.execute("""
+            INSERT INTO contractors (name, phone, email, service_area, status, active, created)
+            VALUES (?,?,?,?, 'approved', 1, ?)
+        """, (d.get("name"), d.get("phone"), d.get("email"), d.get("service_area"),
+              datetime.now().strftime("%Y-%m-%d %H:%M")))
+    return redirect("/admin")
+
 @app.route("/available")
 def available_leads():
     expire_old_assignments()
