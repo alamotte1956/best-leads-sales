@@ -137,13 +137,20 @@ def signup():
 @app.route("/contractor_login", methods=["GET", "POST"])
 def contractor_login():
     if request.method == "POST":
-        email = request.form.get("email")
+        email = request.form.get("email", "").strip()
+        # Auto-admin: if this is the admin email, grant admin session too
+        if email == ADMIN_EMAIL:
+            session["is_admin"] = True
         with get_db() as db:
             contractor = db.execute("SELECT * FROM contractors WHERE email = ?", (email,)).fetchone()
             if contractor and contractor["active"]:
                 session["contractor_id"] = contractor["id"]
                 session["contractor_name"] = contractor["name"]
                 return redirect(url_for("leads"))
+            # Even if not a contractor, if they are admin, let them in
+            if email == ADMIN_EMAIL:
+                session["contractor_name"] = "Admin"
+                return redirect(url_for("admin"))
             flash("Invalid login or inactive account.")
     return """
     <!DOCTYPE html>
@@ -161,6 +168,7 @@ def contractor_login():
     </body>
     </html>
     """
+
 
 @app.route("/logout")
 def logout():
@@ -254,7 +262,52 @@ def terms():
     </html>
     """
 
+# Admin credentials (change in production)
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "alamotte1956@gmail.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Peggy Smith1$")
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("is_admin"):
+            return redirect(url_for("admin_login"))
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route("/admin_login", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+        if email == ADMIN_EMAIL and password == ADMIN_PASSWORD:
+            session["is_admin"] = True
+            return redirect(url_for("admin"))
+        flash("Invalid admin credentials.")
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head><title>Admin Login</title>
+    <style>body{font-family:Arial;max-width:500px;margin:40px auto;padding:20px;} input{width:100%;padding:10px;margin:8px 0;border:1px solid #ccc;border-radius:4px;} button{background:#0ea5e9;color:white;padding:12px 24px;border:none;border-radius:6px;}</style>
+    </head>
+    <body>
+        <h1>Admin Login</h1>
+        <form method="post">
+            <input name="email" type="email" placeholder="Admin Email" required><br>
+            <input name="password" type="password" placeholder="Password" required><br>
+            <button type="submit">Login</button>
+        </form>
+        <p><a href="/">Home</a></p>
+    </body>
+    </html>
+    """
+
+@app.route("/admin_logout")
+def admin_logout():
+    session.pop("is_admin", None)
+    return redirect(url_for("home"))
+
 @app.route("/admin")
+@admin_required
 def admin():
     with get_db() as db:
         contractors = db.execute("SELECT * FROM contractors ORDER BY created DESC").fetchall()
@@ -267,6 +320,7 @@ def admin():
     </head>
     <body>
         <h1>Admin Dashboard</h1>
+        <p><a href="/admin_logout">Logout</a> | <a href="/">Home</a></p>
         <h2>Contractors</h2>
         <table><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Active</th></tr>
     """
@@ -275,8 +329,9 @@ def admin():
     html += "</table><h2>Leads</h2><table><tr><th>ID</th><th>Name</th><th>Service</th><th>ZIP</th><th>Status</th><th>Price</th></tr>"
     for l in leads:
         html += f"<tr><td>{l['id']}</td><td>{l['name']}</td><td>{l['service_type']}</td><td>{l['zip']}</td><td>{l['status']}</td><td>${l['price']}</td></tr>"
-    html += "</table><p><a href='/'>Home</a></p></body></html>"
+    html += "</table></body></html>"
     return html
+
 
 # Demo seed route (optional)
 @app.route("/seed")
