@@ -1,474 +1,297 @@
-from flask import Flask, request, render_template_string, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import sqlite3
-from datetime import datetime, timedelta
 import os
-import hashlib
+from datetime import datetime
+from functools import wraps
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "change-this-secret-key-in-production-2026")
-DB = "leads.db"
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
+app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production-please")
+
+# Database setup
+DB_PATH = "best_leads.db"
 
 def get_db():
-    conn = sqlite3.connect(DB)
-    conn.row_factory = sqlite3.Row
-    return conn
+    db = sqlite3.connect(DB_PATH)
+    db.row_factory = sqlite3.Row
+    return db
 
 def init_db():
     with get_db() as db:
         db.executescript("""
-        CREATE TABLE IF NOT EXISTS contractors (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            phone TEXT,
-            email TEXT UNIQUE,
-            license_number TEXT,
-            years_in_business INTEGER,
-            services TEXT,
-            password_hash TEXT,
-            active INTEGER DEFAULT 1,
-            created TEXT
-        );
-        CREATE TABLE IF NOT EXISTS leads (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            phone TEXT,
-            email TEXT,
-            zip_code TEXT,
-            service TEXT,
-            details TEXT,
-            price REAL DEFAULT 75.0,
-            status TEXT DEFAULT 'available',
-            assigned_to INTEGER,
-            created TEXT,
-            expires TEXT
-        );
+            CREATE TABLE IF NOT EXISTS contractors (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT,
+                email TEXT UNIQUE,
+                phone TEXT,
+                company TEXT,
+                services TEXT,
+                license_number TEXT,
+                insurance TEXT,
+                active INTEGER DEFAULT 1,
+                created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE IF NOT EXISTS leads (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT,
+                phone TEXT,
+                email TEXT,
+                zip TEXT,
+                service_type TEXT,
+                details TEXT,
+                status TEXT DEFAULT 'available',
+                assigned_to INTEGER,
+                price REAL DEFAULT 50.0,
+                created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(assigned_to) REFERENCES contractors(id)
+            );
+            CREATE TABLE IF NOT EXISTS assignments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                lead_id INTEGER,
+                contractor_id INTEGER,
+                status TEXT DEFAULT 'pending',
+                created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
         """)
-        db.commit()
 
 init_db()
 
-def hash_pw(pw):
-    if not pw:
-        pw = "demo123"
-    return hashlib.sha256(pw.encode()).hexdigest()
+# Login required decorator
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "contractor_id" not in session:
+            return redirect(url_for("contractor_login"))
+        return f(*args, **kwargs)
+    return decorated
 
-def is_admin():
-    return session.get("is_admin") is True
-
-CONTRACTOR_AGREEMENT = """
-By signing up you agree:
-- You hold a valid Minnesota contractor license
-- You receive exclusive leads only (one contractor per job)
-- You are responsible for your own liability insurance and workers’ compensation
-- Restoration Contractors MN verifies your Minnesota license only — not insurance
-- All agreements are subject to Minnesota law
-"""
-
+# Routes
 @app.route("/")
 def home():
-    return redirect(url_for("available"))
-
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        d = request.form
-        if not d.get("agree"):
-            return "You must agree to the terms.", 400
-        pw = hash_pw(d.get("password"))
-        try:
-            with get_db() as db:
-                db.execute("""
-                    INSERT INTO contractors (name, phone, email, license_number, years_in_business, services, password_hash, created)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    d.get("name", ""),
-                    d.get("phone", ""),
-                    d.get("email", ""),
-                    d.get("license_number", ""),
-                    int(d.get("years") or 0),
-                    d.get("services", ""),
-                    pw,
-                    datetime.now().isoformat()
-                ))
-                db.commit()
-            return "<h2>Application received. We will review your Minnesota license.</h2><p><a href='/contractor_login'>Login here</a></p>"
-        except sqlite3.IntegrityError:
-            return "Email already registered. Try logging in.", 400
-        except Exception as e:
-            return f"Error: {str(e)}", 500
-    return render_template_string("""
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Contractor Signup - Restoration Contractors MN</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <style>
-        body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; }
-        button { background: #0ea5e9; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 16px; }
-        .agreement { border: 1px solid #ccc; padding: 15px; margin: 15px 0; background: #f9f9f9; }
-        .cta-box { background: #f0f9ff; border: 1px solid #bae6fd; padding: 16px; border-radius: 10px; margin-bottom: 20px; }
-      </style>
-    </head>
-    <body>
-      <div class="cta-box">
-        <h3>Get Exclusive Twin Cities Leads</h3>
-        <p>Stop competing with 3–5 other contractors on every job. Sign up for exclusive leads only — one contractor per homeowner.</p>
-        <p><strong>Competitive pricing. Higher close rates. No shared leads.</strong></p>
-      </div>
-      <h2>Contractor Signup</h2>
-      <form method="post">
-        <input name="name" placeholder="Business Name" required>
-        <input name="phone" placeholder="Phone" required>
-        <input name="email" type="email" placeholder="Email" required>
-        <input name="license_number" placeholder="MN License Number" required>
-        <input name="years" type="number" placeholder="Years in business" min="0">
-        <input name="services" placeholder="Services (roofing, water damage, etc.)">
-        <input name="password" type="password" placeholder="Password" required>
-        <div class="agreement">
-          <strong>Contractor Agreement</strong><br>
-          {{ agreement }}
-          <label style="display:block; margin-top:10px;">
-            <input type="checkbox" name="agree" required> I agree to the Contractor Agreement
-          </label>
-        </div>
-        <button type="submit">Start Getting Exclusive Leads</button>
-      </form>
-    </body>
-    </html>
-    """, agreement=CONTRACTOR_AGREEMENT)
-
-@app.route("/contractor_login", methods=["GET", "POST"])
-def contractor_login():
-    if request.method == "POST":
-        email = request.form.get("email", "")
-        pw = hash_pw(request.form.get("password", ""))
-        with get_db() as db:
-            c = db.execute("SELECT * FROM contractors WHERE email=? AND password_hash=?", (email, pw)).fetchone()
-        if c:
-            session["contractor_id"] = c["id"]
-            session["contractor_name"] = c["name"]
-            return redirect(url_for("contractor_profile"))
-        return "<p>Invalid email or password.</p><a href='/contractor_login'>Try again</a>"
     return """
     <!DOCTYPE html>
     <html>
-    <head>
-      <title>Contractor Login</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <style>
-        body { font-family: system-ui, sans-serif; max-width: 400px; margin: 60px auto; padding: 20px; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; }
-        button { background: #0ea5e9; color: white; border: none; border-radius: 6px; }
-      </style>
+    <head><title>Best Leads Sales</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+        a { display: inline-block; margin: 10px; padding: 12px 20px; background: #0ea5e9; color: white; text-decoration: none; border-radius: 6px; }
+        a:hover { background: #0284c7; }
+    </style>
     </head>
     <body>
-      <h2>Contractor Login</h2>
-      <form method="post">
-        <input name="email" type="email" placeholder="Email" required>
-        <input name="password" type="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-      </form>
+        <h1>Best Leads Sales to Contractors</h1>
+        <p>Exclusive leads for Twin Cities contractors. No shared leads.</p>
+        <a href="/signup">Contractor Signup</a>
+        <a href="/contractor_login">Contractor Login</a>
+        <a href="/leads">Available Leads</a>
+        <a href="/admin">Admin Dashboard</a>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms & Conditions</a>
     </body>
     </html>
     """
 
-@app.route("/contractor_profile")
-def contractor_profile():
-    cid = session.get("contractor_id")
-    if not cid:
-        return redirect(url_for("contractor_login"))
-    with get_db() as db:
-        c = db.execute("SELECT * FROM contractors WHERE id=?", (cid,)).fetchone()
-        leads = db.execute("SELECT * FROM leads WHERE assigned_to=? AND status='sold' ORDER BY created DESC", (cid,)).fetchall()
-    if not c:
-        session.clear()
-        return redirect(url_for("contractor_login"))
-    return render_template_string("""
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Your Profile</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <style>
-        body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
-        .lead { border: 1px solid #ddd; padding: 12px; margin: 10px 0; border-radius: 6px; }
-        a { color: #0ea5e9; }
-      </style>
-    </head>
-    <body>
-      <h2>{{ c.name }} — Your Leads</h2>
-      <p><strong>License:</strong> {{ c.license_number or 'Not provided' }}</p>
-      <p><strong>Email:</strong> {{ c.email }}</p>
-      <p><a href="/available">Available Leads</a> | <a href="/logout">Logout</a></p>
-      <h3>Purchased Leads</h3>
-      {% if leads %}
-        {% for l in leads %}
-          <div class="lead">
-            <strong>{{ l.service }}</strong> in {{ l.zip_code }}<br>
-            Price: ${{ "%.2f"|format(l.price) }}<br>
-            Contact: {{ l.name }} — {{ l.phone }}
-          </div>
-        {% endfor %}
-      {% else %}
-        <p>No purchased leads yet.</p>
-      {% endif %}
-    </body>
-    </html>
-    """, c=c, leads=leads)
-
-@app.route("/available")
-def available():
-    now = datetime.now().isoformat()
-    with get_db() as db:
-        leads = db.execute(
-            "SELECT * FROM leads WHERE status='available' AND expires > ? ORDER BY created DESC",
-            (now,)
-        ).fetchall()
-    return render_template_string("""
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Available Exclusive Leads</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <style>
-        body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
-        .lead { border: 1px solid #ddd; padding: 15px; margin: 12px 0; border-radius: 8px; }
-        .expire { color: #dc2626; font-weight: bold; }
-        a.buy { background: #0ea5e9; color: white; padding: 10px 18px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 8px; font-weight: 600; }
-        .cta-box { background: #f0f9ff; border: 1px solid #bae6fd; padding: 16px; border-radius: 10px; margin-bottom: 20px; }
-        .cta-box h3 { margin-top: 0; color: #0369a1; }
-        .guarantee { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px; border-radius: 10px; margin: 20px 0; }
-        .guarantee h3 { margin-top: 0; color: #166534; }
-        .guarantee ul { margin: 8px 0 0 20px; }
-      </style>
-    </head>
-    <body>
-      <h2>Available Exclusive Leads</h2>
-      <div class="cta-box">
-        <h3>Get Exclusive Jobs — No Shared Leads</h3>
-        <p>These leads go to one contractor only. Buy now before they expire in 24 hours.</p>
-        <p><strong>Competitive Twin Cities pricing. Higher close rates.</strong></p>
-      </div>
-      <div class="guarantee">
-        <h3>Lead Quality Guarantees</h3>
-        <ul>
-          <li><strong>100% Exclusive</strong> — sold to one contractor only. Never shared.</li>
-          <li><strong>Contact info hidden</strong> until you purchase the lead.</li>
-          <li><strong>24-hour expiration</strong> if not accepted — no stale leads.</li>
-          <li><strong>Minnesota licensed contractors only</strong> on the platform.</li>
-          <li><strong>Competitive local pricing</strong> based on Twin Cities market rates.</li>
-        </ul>
-      </div>
-      <p class="expire">Leads expire after 24 hours if not accepted.</p>
-      {% if leads %}
-        {% for l in leads %}
-          <div class="lead">
-            <strong>{{ l.service }}</strong> — {{ l.zip_code }}<br>
-            Price: ${{ "%.2f"|format(l.price) }}<br>
-            <a class="buy" href="/buy/{{ l.id }}">Buy This Exclusive Lead</a>
-          </div>
-        {% endfor %}
-      {% else %}
-        <p>No available leads right now. Check back soon or <a href="/seed_demo">seed demo data</a>.</p>
-      {% endif %}
-      <p><a href="/contractor_profile">My Profile</a> | <a href="/logout">Logout</a></p>
-    </body>
-    </html>
-    """, leads=leads)
-
-@app.route("/buy/<int:lead_id>")
-def buy(lead_id):
-    cid = session.get("contractor_id")
-    if not cid:
-        return redirect(url_for("contractor_login"))
-    with get_db() as db:
-        lead = db.execute("SELECT * FROM leads WHERE id=? AND status='available'", (lead_id,)).fetchone()
-        if not lead:
-            return "Lead not available or already sold.", 400
-        db.execute(
-            "UPDATE leads SET status='sold', assigned_to=? WHERE id=?",
-            (cid, lead_id)
-        )
-        db.commit()
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        name = request.form.get("name")
+        email = request.form.get("email")
+        phone = request.form.get("phone")
+        company = request.form.get("company")
+        services = request.form.get("services")
+        license_number = request.form.get("license_number")
+        insurance = request.form.get("insurance")
+        with get_db() as db:
+            try:
+                db.execute(
+                    "INSERT INTO contractors (name, email, phone, company, services, license_number, insurance) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (name, email, phone, company, services, license_number, insurance)
+                )
+                db.commit()
+                flash("Signup successful. You can now log in.")
+                return redirect(url_for("contractor_login"))
+            except sqlite3.IntegrityError:
+                flash("Email already registered.")
     return """
-    <h2>Lead purchased successfully (demo mode).</h2>
-    <p><a href="/contractor_profile">View your leads</a></p>
-    <p><a href="/available">Back to available leads</a></p>
+    <!DOCTYPE html>
+    <html>
+    <head><title>Contractor Signup</title>
+    <style>body{font-family:Arial;max-width:600px;margin:40px auto;padding:20px;} input,textarea{width:100%;padding:10px;margin:8px 0;border:1px solid #ccc;border-radius:4px;} button{background:#0ea5e9;color:white;padding:12px 24px;border:none;border-radius:6px;cursor:pointer;}</style>
+    </head>
+    <body>
+        <h1>Contractor Signup</h1>
+        <form method="post">
+            <input name="name" placeholder="Full Name" required><br>
+            <input name="email" type="email" placeholder="Email" required><br>
+            <input name="phone" placeholder="Phone" required><br>
+            <input name="company" placeholder="Company Name"><br>
+            <textarea name="services" placeholder="Services offered (e.g. water damage, mold, roofing)"></textarea><br>
+            <input name="license_number" placeholder="License Number"><br>
+            <input name="insurance" placeholder="Insurance info"><br>
+            <button type="submit">Sign Up</button>
+        </form>
+        <p><a href="/">Back to Home</a></p>
+    </body>
+    </html>
+    """
+
+@app.route("/contractor_login", methods=["GET", "POST"])
+def contractor_login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        with get_db() as db:
+            contractor = db.execute("SELECT * FROM contractors WHERE email = ?", (email,)).fetchone()
+            if contractor and contractor["active"]:
+                session["contractor_id"] = contractor["id"]
+                session["contractor_name"] = contractor["name"]
+                return redirect(url_for("leads"))
+            flash("Invalid login or inactive account.")
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head><title>Contractor Login</title>
+    <style>body{font-family:Arial;max-width:500px;margin:40px auto;padding:20px;} input{width:100%;padding:10px;margin:8px 0;border:1px solid #ccc;border-radius:4px;} button{background:#0ea5e9;color:white;padding:12px 24px;border:none;border-radius:6px;}</style>
+    </head>
+    <body>
+        <h1>Contractor Login</h1>
+        <form method="post">
+            <input name="email" type="email" placeholder="Email" required><br>
+            <button type="submit">Login</button>
+        </form>
+        <p><a href="/signup">Need an account? Sign up</a> | <a href="/">Home</a></p>
+    </body>
+    </html>
     """
 
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("contractor_login"))
+    return redirect(url_for("home"))
 
-@app.route("/seed_demo")
-def seed_demo():
+@app.route("/leads")
+@login_required
+def leads():
     with get_db() as db:
-        db.execute("DELETE FROM contractors WHERE email LIKE 'demo%@test.com'")
-        db.execute("DELETE FROM leads WHERE email LIKE 'home%@test.com'")
-        for i in range(1, 6):
-            db.execute("""
-                INSERT OR IGNORE INTO contractors (name, phone, email, license_number, years_in_business, services, password_hash, created)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                f"Demo Contractor {i}",
-                f"612-555-100{i}",
-                f"demo{i}@test.com",
-                f"MN-{1000+i}",
-                5 + i,
-                "roofing, water damage, mold",
-                hash_pw("demo123"),
-                datetime.now().isoformat()
-            ))
-        services = ["Roofing", "Water Damage", "Mold Remediation", "Bathroom Remodel", "Kitchen Remodel"]
-        for i in range(1, 11):
-            exp = (datetime.now() + timedelta(hours=24)).isoformat()
-            db.execute("""
-                INSERT INTO leads (name, phone, email, zip_code, service, details, price, created, expires, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')
-            """, (
-                f"Homeowner {i}",
-                f"612-555-200{i}",
-                f"home{i}@test.com",
-                "55344",
-                services[i % len(services)],
-                "Need help soon",
-                75.0,
-                datetime.now().isoformat(),
-                exp
-            ))
-        db.commit()
-    return """
-    <h2>Demo data seeded successfully.</h2>
-    <p><a href="/available">View available leads</a></p>
-    <p><a href="/contractor_login">Login as demo1@test.com / demo123</a></p>
-    <p><a href="/admin">Admin panel</a></p>
-    """
-
-# ---------- ADMIN OVERRIDES ----------
-@app.route("/admin", methods=["GET", "POST"])
-def admin():
-    if request.method == "POST" and request.form.get("password") == ADMIN_PASSWORD:
-        session["is_admin"] = True
-        return redirect(url_for("admin"))
-    if not is_admin():
-        return """
-        <h2>Admin Login</h2>
-        <form method="post">
-          <input type="password" name="password" placeholder="Admin password" required>
-          <button type="submit">Login</button>
-        </form>
-        <p>Default: admin123</p>
-        """
-    with get_db() as db:
-        contractors = db.execute("SELECT * FROM contractors ORDER BY id DESC").fetchall()
-        leads = db.execute("SELECT * FROM leads ORDER BY id DESC").fetchall()
-    return render_template_string("""
+        available = db.execute("SELECT * FROM leads WHERE status = 'available' ORDER BY created DESC").fetchall()
+        my_leads = db.execute("SELECT * FROM leads WHERE assigned_to = ? ORDER BY created DESC", (session["contractor_id"],)).fetchall()
+    html = f"""
     <!DOCTYPE html>
     <html>
-    <head>
-      <title>Admin Overrides</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <style>
-        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 30px auto; padding: 15px; }
-        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        button, input[type=submit] { background: #0ea5e9; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-        .section { margin: 30px 0; }
-        a { color: #0ea5e9; }
-      </style>
+    <head><title>Available Leads</title>
+    <style>body{{font-family:Arial;max-width:900px;margin:40px auto;padding:20px;}} table{{width:100%;border-collapse:collapse;}} th,td{{border:1px solid #ddd;padding:8px;text-align:left;}} .btn{{background:#0ea5e9;color:white;padding:6px 12px;text-decoration:none;border-radius:4px;}}</style>
     </head>
     <body>
-      <h1>Admin Overrides</h1>
-      <p><a href="/available">Available Leads</a> | <a href="/logout">Logout</a></p>
-
-      <div class="section">
-        <h2>Contractors — Turn On/Off</h2>
+        <h1>Available Exclusive Leads</h1>
+        <p>Welcome, {session.get('contractor_name', 'Contractor')} | <a href="/logout">Logout</a></p>
+        <h2>Available Leads</h2>
         <table>
-          <tr><th>ID</th><th>Name</th><th>License</th><th>Active</th><th>Action</th></tr>
-          {% for c in contractors %}
-          <tr>
-            <td>{{ c.id }}</td>
-            <td>{{ c.name }}</td>
-            <td>{{ c.license_number }}</td>
-            <td>{{ "Yes" if c.active else "No" }}</td>
-            <td>
-              <form method="post" action="/admin/toggle/{{ c.id }}" style="display:inline;">
-                <button type="submit">{{ "Deactivate" if c.active else "Activate" }}</button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </table>
-      </div>
+            <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Price</th><th>Action</th></tr>
+    """
+    for lead in available:
+        html += f"<tr><td>{lead['id']}</td><td>{lead['service_type']}</td><td>{lead['zip']}</td><td>${lead['price']}</td><td><a class='btn' href='/buy/{lead['id']}'>Buy Exclusive Lead</a></td></tr>"
+    html += "</table><h2>My Assigned Leads</h2><table><tr><th>ID</th><th>Service</th><th>ZIP</th><th>Status</th></tr>"
+    for lead in my_leads:
+        html += f"<tr><td>{lead['id']}</td><td>{lead['service_type']}</td><td>{lead['zip']}</td><td>{lead['status']}</td></tr>"
+    html += "</table><p><a href='/'>Home</a></p></body></html>"
+    return html
 
-      <div class="section">
-        <h2>Leads — Change Price or Assign</h2>
-        <table>
-          <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Price</th><th>Status</th><th>Assigned</th><th>Actions</th></tr>
-          {% for l in leads %}
-          <tr>
-            <td>{{ l.id }}</td>
-            <td>{{ l.service }}</td>
-            <td>{{ l.zip_code }}</td>
-            <td>${{ "%.2f"|format(l.price) }}</td>
-            <td>{{ l.status }}</td>
-            <td>{{ l.assigned_to or "-" }}</td>
-            <td>
-              <form method="post" action="/admin/price/{{ l.id }}" style="display:inline;">
-                <input type="number" name="price" value="{{ l.price }}" step="0.01" style="width:80px;">
-                <button type="submit">Update Price</button>
-              </form>
-              <form method="post" action="/admin/assign/{{ l.id }}" style="display:inline; margin-left:10px;">
-                <input type="number" name="contractor_id" placeholder="Contractor ID" style="width:100px;">
-                <button type="submit">Assign</button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </table>
-      </div>
+@app.route("/buy/<int:lead_id>")
+@login_required
+def buy_lead(lead_id):
+    with get_db() as db:
+        lead = db.execute("SELECT * FROM leads WHERE id = ? AND status = 'available'", (lead_id,)).fetchone()
+        if lead:
+            db.execute("UPDATE leads SET status = 'sold', assigned_to = ? WHERE id = ?", (session["contractor_id"], lead_id))
+            db.execute("INSERT INTO assignments (lead_id, contractor_id, status) VALUES (?, ?, 'accepted')", (lead_id, session["contractor_id"]))
+            db.commit()
+            flash(f"Lead #{lead_id} purchased successfully! Contact info is now available.")
+        else:
+            flash("Lead not available.")
+    return redirect(url_for("leads"))
+
+@app.route("/privacy")
+def privacy():
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head><title>Privacy Policy</title>
+    <style>body{font-family:Arial;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;}</style>
+    </head>
+    <body>
+        <h1>Privacy Policy</h1>
+        <p><strong>Last updated:</strong> October 22, 2026</p>
+        <p>This site collects contact information (name, phone, email, address) from homeowners and contractors for the purpose of connecting exclusive leads with independent contractors in the Twin Cities area.</p>
+        <p>We do not sell or share personal data with third parties beyond the specific contractor who purchases an exclusive lead.</p>
+        <p>SMS notifications are optional. By providing your phone number and checking the consent box, you agree to receive transactional messages. You may opt out at any time by replying STOP.</p>
+        <p>Data is stored securely and retained only as long as necessary for the service.</p>
+        <p>Subject to Minnesota law.</p>
+        <p><a href="/">Back to Home</a></p>
     </body>
     </html>
-    """, contractors=contractors, leads=leads)
+    """
 
-@app.route("/admin/toggle/<int:cid>", methods=["POST"])
-def admin_toggle(cid):
-    if not is_admin():
-        return redirect(url_for("admin"))
+@app.route("/terms")
+def terms():
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head><title>Terms & Conditions</title>
+    <style>body{font-family:Arial;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;}</style>
+    </head>
+    <body>
+        <h1>Terms & Conditions</h1>
+        <p><strong>Last updated:</strong> October 22, 2026</p>
+        <p>By using this platform you agree to the following:</p>
+        <ul>
+            <li>Leads are exclusive — only one contractor receives the homeowner contact information.</li>
+            <li>Contractors are independent and responsible for their own licensing, insurance, and work quality.</li>
+            <li>Homeowners understand they are connecting with independent contractors, not employees of this platform.</li>
+            <li>Payment for leads is due upon purchase. Refunds are not available once contact information is revealed.</li>
+            <li>All parties agree that Minnesota law governs this agreement.</li>
+        </ul>
+        <p>This platform acts solely as a lead marketplace and is not responsible for the work performed by contractors.</p>
+        <p><a href="/">Back to Home</a></p>
+    </body>
+    </html>
+    """
+
+@app.route("/admin")
+def admin():
     with get_db() as db:
-        db.execute("UPDATE contractors SET active = CASE WHEN active=1 THEN 0 ELSE 1 END WHERE id=?", (cid,))
-        db.commit()
-    return redirect(url_for("admin"))
+        contractors = db.execute("SELECT * FROM contractors ORDER BY created DESC").fetchall()
+        leads = db.execute("SELECT * FROM leads ORDER BY created DESC").fetchall()
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head><title>Admin Dashboard</title>
+    <style>body{font-family:Arial;max-width:1000px;margin:40px auto;padding:20px;} table{width:100%;border-collapse:collapse;margin:20px 0;} th,td{border:1px solid #ddd;padding:8px;}</style>
+    </head>
+    <body>
+        <h1>Admin Dashboard</h1>
+        <h2>Contractors</h2>
+        <table><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Active</th></tr>
+    """
+    for c in contractors:
+        html += f"<tr><td>{c['id']}</td><td>{c['name']}</td><td>{c['email']}</td><td>{c['phone']}</td><td>{'Yes' if c['active'] else 'No'}</td></tr>"
+    html += "</table><h2>Leads</h2><table><tr><th>ID</th><th>Name</th><th>Service</th><th>ZIP</th><th>Status</th><th>Price</th></tr>"
+    for l in leads:
+        html += f"<tr><td>{l['id']}</td><td>{l['name']}</td><td>{l['service_type']}</td><td>{l['zip']}</td><td>{l['status']}</td><td>${l['price']}</td></tr>"
+    html += "</table><p><a href='/'>Home</a></p></body></html>"
+    return html
 
-@app.route("/admin/price/<int:lid>", methods=["POST"])
-def admin_price(lid):
-    if not is_admin():
-        return redirect(url_for("admin"))
-    try:
-        new_price = float(request.form.get("price", 75))
-        with get_db() as db:
-            db.execute("UPDATE leads SET price=? WHERE id=?", (new_price, lid))
+# Demo seed route (optional)
+@app.route("/seed")
+def seed():
+    with get_db() as db:
+        # Add a few demo contractors and leads if empty
+        count = db.execute("SELECT COUNT(*) FROM contractors").fetchone()[0]
+        if count == 0:
+            db.execute("INSERT INTO contractors (name, email, phone, company, services) VALUES (?, ?, ?, ?, ?)",
+                       ("Demo Contractor", "demo@contractor.com", "612-555-0100", "Demo Restoration", "water damage, mold"))
+            db.execute("INSERT INTO leads (name, phone, email, zip, service_type, details, price) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                       ("Jane Homeowner", "612-555-0200", "jane@example.com", "55406", "Water Damage", "Basement flooding", 75.0))
             db.commit()
-    except:
-        pass
-    return redirect(url_for("admin"))
-
-@app.route("/admin/assign/<int:lid>", methods=["POST"])
-def admin_assign(lid):
-    if not is_admin():
-        return redirect(url_for("admin"))
-    try:
-        cid = int(request.form.get("contractor_id", 0))
-        with get_db() as db:
-            db.execute("UPDATE leads SET assigned_to=?, status='sold' WHERE id=?", (cid, lid))
-            db.commit()
-    except:
-        pass
     return redirect(url_for("admin"))
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8080))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
