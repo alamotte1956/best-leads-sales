@@ -183,6 +183,15 @@ def logout():
 @login_required
 def leads():
     with get_db() as db:
+        # Expire old pending assignments (>15 min)
+        db.execute("""UPDATE leads SET status='available', assigned_to=NULL 
+                      WHERE status='assigned' AND id IN (
+                          SELECT lead_id FROM assignments 
+                          WHERE status='pending' AND created < datetime('now', '-15 minutes')
+                      )""")
+        db.execute("""UPDATE assignments SET status='expired' 
+                      WHERE status='pending' AND created < datetime('now', '-15 minutes')""")
+        db.commit()
         avail = db.execute("SELECT * FROM leads WHERE status='available' ORDER BY id DESC").fetchall()
         mine = db.execute("SELECT * FROM leads WHERE assigned_to=? ORDER BY id DESC", (session["contractor_id"],)).fetchall()
     html = f"""<!DOCTYPE html>
@@ -195,9 +204,12 @@ def leads():
 <table><tr><th>ID</th><th>Service</th><th>ZIP</th><th>Price</th><th></th></tr>"""
     for l in avail:
         html += f"<tr><td>{l['id']}</td><td>{l['service_type']}</td><td>{l['zip']}</td><td>${l['price']}</td><td><a class='btn' href='/buy/{l['id']}'>Buy</a></td></tr>"
-    html += "</table><h2>My Leads</h2><table><tr><th>ID</th><th>Service</th><th>ZIP</th><th>Status</th></tr>"
+    html += "</table><h2>My Leads</h2><p style='color:#b91c1c;font-weight:600'>Assigned leads expire in 15 minutes if not accepted.</p><table><tr><th>ID</th><th>Service</th><th>ZIP</th><th>Status</th><th>Action</th></tr>"
     for l in mine:
-        html += f"<tr><td>{l['id']}</td><td>{l['service_type']}</td><td>{l['zip']}</td><td>{l['status']}</td></tr>"
+        action = ""
+        if l['status'] == 'assigned':
+            action = f"<a class='btn' href='/accept/{l['id']}'>Accept</a> <a class='btn' style='background:#dc2626' href='/reject/{l['id']}'>Reject</a>"
+        html += f"<tr><td>{l['id']}</td><td>{l['service_type']}</td><td>{l['zip']}</td><td>{l['status']}</td><td>{action}</td></tr>"
     html += "</table><p><a href='/'>Home</a></p></body></html>"
     return html
 
@@ -310,6 +322,27 @@ def auto_match():
                 matched += 1
         db.commit()
     return f"<p>Auto-matched {matched} leads. <a href='/assignments'>View</a> · <a href='/admin'>Admin</a></p>"
+
+
+@app.route("/accept/<int:lid>")
+@login_required
+def accept(lid):
+    with get_db() as db:
+        db.execute("UPDATE leads SET status='sold' WHERE id=? AND assigned_to=? AND status='assigned'", (lid, session["contractor_id"]))
+        db.execute("UPDATE assignments SET status='accepted' WHERE lead_id=? AND contractor_id=? AND status='pending'", (lid, session["contractor_id"]))
+        db.commit()
+    flash("Lead accepted")
+    return redirect("/leads")
+
+@app.route("/reject/<int:lid>")
+@login_required
+def reject(lid):
+    with get_db() as db:
+        db.execute("UPDATE leads SET status='available', assigned_to=NULL WHERE id=? AND assigned_to=?", (lid, session["contractor_id"]))
+        db.execute("UPDATE assignments SET status='rejected' WHERE lead_id=? AND contractor_id=?", (lid, session["contractor_id"]))
+        db.commit()
+    flash("Lead rejected and returned to pool")
+    return redirect("/leads")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
