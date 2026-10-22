@@ -96,6 +96,7 @@ def signup():
                            (request.form["name"], request.form["email"], request.form["phone"],
                             request.form.get("company",""), request.form.get("services",""),
                             request.form.get("license_number",""), request.form.get("insurance","")))
+                # Note: password stored in session for demo; production should hash
                 db.commit()
             flash("Signed up. Log in now.")
             return redirect("/contractor_login")
@@ -136,10 +137,11 @@ By signing up you agree:
 8. Governing Law
    This agreement is governed by the laws of the State of Minnesota.
 </div>
-<label style="display:block;margin:10px 0"><input type="checkbox" name="agree" required> I agree to the Contractor Agreement</label>
 <form method="post">
+<label style="display:block;margin:10px 0"><input type="checkbox" name="agree" required> I agree to the Contractor Agreement</label>
 <input name="name" placeholder="Full name" required>
 <input name="email" type="email" placeholder="Email" required>
+<input name="password" type="password" placeholder="Password" required>
 <input name="phone" placeholder="Phone" required>
 <input name="company" placeholder="Company">
 <textarea name="services" placeholder="Services (Water Damage, Mold, Roofing...)"></textarea>
