@@ -312,15 +312,33 @@ def admin():
     with get_db() as db:
         contractors = db.execute("SELECT * FROM contractors ORDER BY created DESC").fetchall()
         leads = db.execute("SELECT * FROM leads ORDER BY created DESC").fetchall()
+        # Simple assignment view (leads that have been assigned)
+        assigned = db.execute("""
+            SELECT l.id, l.name as lead_name, l.service_type, l.zip, l.status, l.price,
+                   c.name as contractor_name, c.email as contractor_email
+            FROM leads l
+            LEFT JOIN contractors c ON l.assigned_to = c.id
+            WHERE l.assigned_to IS NOT NULL
+            ORDER BY l.created DESC
+        """).fetchall()
     html = """
     <!DOCTYPE html>
     <html>
     <head><title>Admin Dashboard</title>
-    <style>body{font-family:Arial;max-width:1000px;margin:40px auto;padding:20px;} table{width:100%;border-collapse:collapse;margin:20px 0;} th,td{border:1px solid #ddd;padding:8px;}</style>
+    <style>
+        body{font-family:Arial;max-width:1100px;margin:40px auto;padding:20px;}
+        table{width:100%;border-collapse:collapse;margin:20px 0;}
+        th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+        .btn{background:#0ea5e9;color:white;padding:10px 16px;border:none;border-radius:6px;text-decoration:none;display:inline-block;margin:8px 4px;}
+    </style>
     </head>
     <body>
         <h1>Admin Dashboard</h1>
-        <p><a href="/admin_logout">Logout</a> | <a href="/">Home</a></p>
+        <p>
+            <a class="btn" href="/auto_match">Run Auto-Match</a>
+            <a class="btn" href="/assignments">View Assignments</a>
+            <a href="/admin_logout">Logout</a>
+        </p>
         <h2>Contractors</h2>
         <table><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Active</th></tr>
     """
@@ -331,6 +349,52 @@ def admin():
         html += f"<tr><td>{l['id']}</td><td>{l['name']}</td><td>{l['service_type']}</td><td>{l['zip']}</td><td>{l['status']}</td><td>${l['price']}</td></tr>"
     html += "</table></body></html>"
     return html
+
+@app.route("/assignments")
+@admin_required
+def assignments():
+    with get_db() as db:
+        rows = db.execute("""
+            SELECT l.id, l.name as lead_name, l.phone as lead_phone, l.service_type, l.zip, l.status,
+                   c.name as contractor_name, c.email as contractor_email, c.phone as contractor_phone
+            FROM leads l
+            LEFT JOIN contractors c ON l.assigned_to = c.id
+            WHERE l.assigned_to IS NOT NULL
+            ORDER BY l.created DESC
+        """).fetchall()
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head><title>Assignments</title>
+    <style>body{font-family:Arial;max-width:1000px;margin:40px auto;padding:20px;} table{width:100%;border-collapse:collapse;} th,td{border:1px solid #ddd;padding:8px;}</style>
+    </head>
+    <body>
+        <h1>Contractor ↔ Consumer Assignments</h1>
+        <p><a href="/admin">Back to Admin</a> | <a href="/auto_match">Run Auto-Match</a></p>
+        <table>
+            <tr><th>Lead ID</th><th>Consumer</th><th>Service</th><th>ZIP</th><th>Contractor</th><th>Contractor Email</th><th>Status</th></tr>
+    """
+    for r in rows:
+        html += f"<tr><td>{r['id']}</td><td>{r['lead_name']}<br><small>{r['lead_phone']}</small></td><td>{r['service_type']}</td><td>{r['zip']}</td><td>{r['contractor_name'] or '—'}</td><td>{r['contractor_email'] or '—'}</td><td>{r['status']}</td></tr>"
+    if not rows:
+        html += "<tr><td colspan='7'>No assignments yet. Run Auto-Match.</td></tr>"
+    html += "</table></body></html>"
+    return html
+
+@app.route("/auto_match")
+@admin_required
+def auto_match():
+    with get_db() as db:
+        # Simple auto-match: assign each unassigned lead to an active contractor (round-robin style)
+        unassigned = db.execute("SELECT * FROM leads WHERE assigned_to IS NULL OR assigned_to = ''").fetchall()
+        contractors = db.execute("SELECT * FROM contractors WHERE active = 1").fetchall()
+        if not contractors:
+            return "<h2>No active contractors.</h2><p><a href='/admin'>Back</a></p>"
+        for i, lead in enumerate(unassigned):
+            contractor = contractors[i % len(contractors)]
+            db.execute("UPDATE leads SET assigned_to = ?, status = 'assigned' WHERE id = ?", (contractor["id"], lead["id"]))
+        db.commit()
+    return redirect(url_for("assignments"))
 
 
 # Demo seed route (optional)
