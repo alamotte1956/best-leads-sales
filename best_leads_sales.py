@@ -346,5 +346,62 @@ def reject(lid):
     flash("Lead rejected and returned to pool")
     return redirect("/leads")
 
+
+@app.route("/lp")
+def landing():
+    return """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exclusive Leads for Contractors — Twin Cities | No Shared Leads</title>
+<style>
+body{font-family:system-ui,-apple-system,sans-serif;margin:0;background:#f8fafc;color:#0f172a}
+.hero{background:linear-gradient(135deg,#0f766e,#065f46);color:#fff;padding:60px 20px;text-align:center}
+.hero h1{font-size:36px;margin:0 0 12px}
+.hero p{font-size:18px;max-width:620px;margin:0 auto 20px}
+.container{max-width:640px;margin:-40px auto 40px;padding:0 20px}
+.card{background:#fff;border-radius:12px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.benefits{margin:16px 0}
+.benefits li{margin:8px 0}
+input,textarea,button{width:100%;padding:14px;margin:6px 0;border:1px solid #cbd5e1;border-radius:8px;box-sizing:border-box;font-size:16px}
+button{background:#0f766e;color:#fff;border:none;font-weight:700;cursor:pointer;font-size:18px}
+.note{font-size:13px;color:#64748b;text-align:center;margin-top:16px}
+.badge{display:inline-block;background:#d1fae5;color:#065f46;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="hero">
+<div class="badge">Exclusive Leads • Not Shared</div>
+<h1>Get Exclusive Homeowner Leads</h1>
+<p>One homeowner. One contractor. No shared leads. Buy leads for water damage, mold, roofing, and remodeling in the Twin Cities.</p>
+</div>
+<div class="container">
+<div class="card">
+<ul class="benefits">
+<li>Exclusive leads — your phone won’t ring with competition</li>
+<li>Lower cost than Angi-style shared leads</li>
+<li>15-minute accept/reject window</li>
+<li>Minnesota contractors only</li>
+</ul>
+<form method="post" action="/signup">
+<input name="name" placeholder="Your Name" required>
+<input name="email" type="email" placeholder="Email" required>
+<input name="password" type="password" placeholder="Password" required>
+<input name="phone" placeholder="Phone" required>
+<input name="company" placeholder="Company Name">
+<textarea name="services" placeholder="Services you offer"></textarea>
+<input name="license_number" placeholder="MN License #">
+<label style="display:block;margin:10px 0;font-size:14px">
+<input type="checkbox" name="agree" required> I agree to the Contractor Agreement
+</label>
+<button>Create Free Account</button>
+</form>
+<p class="note"><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
+</div>
+</div>
+</body>
+</html>"""
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
