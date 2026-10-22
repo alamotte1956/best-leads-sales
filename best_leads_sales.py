@@ -264,7 +264,7 @@ def terms():
 
 # Admin credentials (change in production)
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "alamotte1956@gmail.com")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Peggy Smith1$")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "PeggySmith1$")
 
 def admin_required(f):
     @wraps(f)
