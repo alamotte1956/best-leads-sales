@@ -1,4 +1,4 @@
-# COMPLETE_ATTRACTIVE_CONTRACTOR_SITE_V7_DEMO_SEED_2026_10_22
+# COMPLETE_ATTRACTIVE_CONTRACTOR_SITE_V7_ADMIN_EMAIL_2026_10_22
 from flask import Flask, request, redirect, url_for, session, flash, jsonify
 import sqlite3, os, random
 from datetime import datetime, timedelta
@@ -80,7 +80,7 @@ def get_price(service):
         return 45.0
     return 40.0
 
-ADMIN_EMAIL = "admin@example.com"
+ADMIN_EMAILS = ["alamotte1956@gmail.com", "admin@example.com"]
 ADMIN_PASS = "demo"
 
 def login_required(f):
@@ -337,7 +337,7 @@ def admin():
 @app.route("/admin_login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
-        if request.form.get("email") == ADMIN_EMAIL and request.form.get("password") == ADMIN_PASS:
+        if request.form.get("email") in ADMIN_EMAILS and request.form.get("password") == ADMIN_PASS:
             session["is_admin"] = True
             return redirect("/admin")
     return f"""<!DOCTYPE html>
