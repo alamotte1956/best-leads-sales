@@ -199,9 +199,19 @@ def home():
   <a href="/seed_demo">Seed Demo Data</a>
   <a href="/privacy">Privacy</a>
   <a href="/terms">Terms</a>
+  <a href="/contractor_agreement">Contractor Agreement</a>
 </div>
 <div class="container">
   <div class="note">No shared leads. Your phone will not ring with competing contractors.</div>
+  <div class="card">
+    <h2>How It Works</h2>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 20px;">
+      <div class="benefit"><h3>1. Sign Up</h3><p>Create your contractor account and agree to the exclusive lead terms.</p></div>
+      <div class="benefit"><h3>2. Claim a Lead</h3><p>See available exclusive leads. Contact info stays hidden until you accept.</p></div>
+      <div class="benefit"><h3>3. Accept Within 60 Min</h3><p>Accept or reject. You are not charged until you accept.</p></div>
+      <div class="benefit"><h3>4. Contact the Homeowner</h3><p>Once accepted, you receive full contact details and the homeowner is notified.</p></div>
+    </div>
+  </div>
   <div class="card">
     <h2>Why Contractors Choose Best Leads</h2>
     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 24px;">
@@ -353,6 +363,10 @@ def signup():
       <input name="company" placeholder="Company">
       <label style="display:block; margin-top:12px; font-weight:600;">Services Offered (hold Ctrl/Cmd to select multiple)</label>
       <select name="services" multiple required>{options}</select>
+      <label style="display:block; margin:16px 0; font-size:14px;">
+        <input type="checkbox" name="agree" required style="width:auto; margin-right:8px;">
+        I agree to the <a href="/contractor_agreement" target="_blank">Contractor Agreement</a>, including exclusive lead terms, 60-minute acceptance window, and Minnesota law.
+      </label>
       <button>Create Account</button>
     </form>
   </div>
@@ -644,28 +658,66 @@ def admin_login():
 @app.route("/privacy")
 def privacy():
     return f"""<!DOCTYPE html>
-<html lang="en"><head><title>Privacy</title>
+<html lang="en"><head><title>Privacy Policy</title>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
 <div class="header"><h1>Privacy Policy</h1></div>
 <div class="container"><div class="card legal">
-<p>Last Updated: October 22, 2026</p>
-<p>We collect contractor and lead information solely to operate the exclusive lead matching service. We do not share leads with multiple contractors.</p>
-<p><a href="/">Back</a></p>
+<p><strong>Last Updated:</strong> October 22, 2026</p>
+<p>Best Leads (Albert R LaMotte dba Restoration Contractors MN) collects contractor and homeowner information solely to operate an exclusive lead matching service for the Twin Cities area.</p>
+<p>We do not sell or share leads with multiple contractors. Contact information is revealed only after a contractor accepts an assignment.</p>
+<p>We may use SMS and email to notify contractors of claimed leads and to notify homeowners when a contractor has accepted their request.</p>
+<p>This policy is governed by Minnesota law. Questions: contact the administrator.</p>
+<p><a href="/">Back to Home</a> | <a href="/terms">Terms</a> | <a href="/contractor_agreement">Contractor Agreement</a></p>
 </div></div>
 </body></html>"""
 
 @app.route("/terms")
 def terms():
     return f"""<!DOCTYPE html>
-<html lang="en"><head><title>Terms</title>
+<html lang="en"><head><title>Terms & Conditions</title>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
 <div class="header"><h1>Terms & Conditions</h1></div>
 <div class="container"><div class="card legal">
-<p>Last Updated: October 22, 2026</p>
-<p>Exclusive leads only. Minnesota law governs. Leads expire after 60 minutes if not accepted. Prices are competitive and approximately 10–20% below typical Angi shared lead rates. No monthly fee.</p>
-<p><a href="/">Back</a></p>
+<p><strong>Last Updated:</strong> October 22, 2026</p>
+<p>These terms govern use of the Best Leads platform operated by Albert R LaMotte dba Restoration Contractors MN.</p>
+<ul>
+<li>Leads are exclusive — one contractor per lead.</li>
+<li>Contractors have 60 minutes to accept or reject a claimed lead.</li>
+<li>Contractors are not charged until they accept an assignment.</li>
+<li>Contact information is provided only after acceptance.</li>
+<li>Leads that are not accepted within 60 minutes return to the available pool or expire.</li>
+<li>Minnesota law governs all agreements and disputes.</li>
+<li>No shared leads. Your phone will not ring with competing contractors.</li>
+</ul>
+<p>By using this site you agree to these terms and the applicable contractor or consumer agreement.</p>
+<p><a href="/">Back to Home</a> | <a href="/privacy">Privacy</a> | <a href="/contractor_agreement">Contractor Agreement</a></p>
+</div></div>
+</body></html>"""
+
+@app.route("/contractor_agreement")
+def contractor_agreement():
+    return f"""<!DOCTYPE html>
+<html lang="en"><head><title>Contractor Agreement</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>{STYLE}</style></head><body>
+<div class="header"><h1>Contractor Agreement</h1></div>
+<div class="container"><div class="card legal">
+<p><strong>Albert R LaMotte dba Restoration Contractors MN</strong></p>
+<p><strong>Last Updated:</strong> October 22, 2026</p>
+<p>By creating an account you agree to the following:</p>
+<ol>
+<li>Leads are exclusive. You will be the only contractor who receives the homeowner’s contact information for that job.</li>
+<li>You have 60 minutes from the time you claim a lead to accept or reject it. If you do not act, the lead is released.</li>
+<li>You are not charged for a lead until you accept the assignment.</li>
+<li>You will contact the homeowner promptly after acceptance and provide a professional quote.</li>
+<li>You maintain any required Minnesota licenses and insurance for the services you offer.</li>
+<li>This agreement is governed by the laws of the State of Minnesota.</li>
+<li>No shared leads will be sold. Your phone will not receive calls from competing contractors on the same job.</li>
+</ol>
+<p>This agreement incorporates the Privacy Policy and Terms & Conditions.</p>
+<p><a href="/">Back to Home</a> | <a href="/signup">Return to Signup</a></p>
 </div></div>
 </body></html>"""
 
