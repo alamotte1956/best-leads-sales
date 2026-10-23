@@ -1,12 +1,18 @@
-# COMPLETE_ATTRACTIVE_CONTRACTOR_SITE_RESTORED_LOOK_2026_10_22
+# COMPLETE_ATTRACTIVE_CONTRACTOR_SITE_60MIN_EXPIRE_2026_10_22
 # Restored professional look & feel from ~Oct 18 (Inter font, gradients, badges, benefits, clean modern design)
 # + All recent features: demo seed 50/100, persistent admin for alamotte1956@gmail.com,
 # demo buy process, Stripe-ready (commented), exclusive messaging, privacy/terms.
 
 from flask import Flask, request, redirect, url_for, session, flash, jsonify
-import sqlite3, os, random
+import sqlite3, os, random, smtplib
+from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 from functools import wraps
+
+try:
+    from twilio.rest import Client
+except ImportError:
+    Client = None
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production")
@@ -46,19 +52,69 @@ def init_db():
                 name TEXT, phone TEXT, email TEXT, zip TEXT,
                 service_type TEXT, details TEXT, urgency TEXT,
                 status TEXT DEFAULT 'available', assigned_to INTEGER,
-                price REAL DEFAULT 45.0, created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                price REAL DEFAULT 45.0, qualification_score INTEGER DEFAULT 0,
+                created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 expires_at TIMESTAMP
             );
             CREATE TABLE IF NOT EXISTS assignments (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 lead_id INTEGER, contractor_id INTEGER,
-                status TEXT DEFAULT 'pending', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                status TEXT DEFAULT 'pending', 
+                created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expires_at TIMESTAMP
             );
         """)
 
 init_db()
 
-def get_price(service):
+def qualify_lead(urgency, details, zipc):
+    """Simple Angi/Thumbtack-style qualification score (0-100)."""
+    score = 50
+    u = (urgency or "").lower()
+    if u == "emergency": score += 30
+    elif u == "high": score += 20
+    elif u == "medium": score += 10
+    d = (details or "").lower()
+    if any(w in d for w in ["flood", "burst", "leak", "mold", "emergency", "immediate"]):
+        score += 15
+    if zipc in ZIPS:
+        score += 5
+    return min(100, score)
+
+def send_sms(to_phone, body):
+    """Send SMS via Twilio if credentials are set."""
+    sid = os.environ.get("TWILIO_ACCOUNT_SID")
+    token = os.environ.get("TWILIO_AUTH_TOKEN")
+    from_num = os.environ.get("TWILIO_FROM")
+    if not all([sid, token, from_num, Client]):
+        print(f"[SMS skipped] {to_phone}: {body}")
+        return
+    try:
+        client = Client(sid, token)
+        client.messages.create(body=body, from_=from_num, to=to_phone)
+    except Exception as e:
+        print(f"[SMS error] {e}")
+
+def send_email(to_email, subject, body):
+    """Send email via SMTP if credentials are set."""
+    host = os.environ.get("SMTP_HOST")
+    port = int(os.environ.get("SMTP_PORT", 587))
+    user = os.environ.get("SMTP_USER")
+    password = os.environ.get("SMTP_PASS")
+    if not all([host, user, password]):
+        print(f"[Email skipped] {to_email}: {subject}")
+        return
+    try:
+        msg = MIMEText(body)
+        msg["Subject"] = subject
+        msg["From"] = user
+        msg["To"] = to_email
+        with smtplib.SMTP(host, port) as server:
+            server.starttls()
+            server.login(user, password)
+            server.send_message(msg)
+    except Exception as e:
+        print(f"[Email error] {e}")
     s = (service or "").lower()
     if any(x in s for x in ["water", "mold", "dry out", "air quality"]):
         return 54.0
@@ -137,6 +193,7 @@ def home():
 <div class="nav">
   <a href="/signup">Contractor Signup</a>
   <a href="/available_leads">Available Leads</a>
+  <a href="/my_assignments">My Assignments</a>
   <a href="/contractor_login">Login</a>
   <a href="/admin">Admin</a>
   <a href="/seed_demo">Seed Demo Data</a>
@@ -151,7 +208,7 @@ def home():
       <div class="benefit"><h3>Exclusive Only</h3><p>One contractor per lead. No competition on the job.</p></div>
       <div class="benefit"><h3>Higher Close Rates</h3><p>Homeowners expect one contractor. You convert more.</p></div>
       <div class="benefit"><h3>Lower Cost</h3><p>Prices set ~10–20% below typical shared lead platforms.</p></div>
-      <div class="benefit"><h3>Quality Focus</h3><p>Twin Cities zips only. Leads expire after 24 hours if not accepted.</p></div>
+      <div class="benefit"><h3>Quality Focus</h3><p>Twin Cities zips only. Leads expire after 60 minutes if not accepted.</p></div>
     </div>
   </div>
 </div>
@@ -188,11 +245,12 @@ def seed_demo():
             zipc = random.choice(ZIPS)
             urgency = random.choice(urgencies)
             detail = random.choice(details)
-            created = datetime.utcnow() - timedelta(hours=random.randint(0, 48))
-            expires = created + timedelta(hours=24)
-            db.execute("""INSERT INTO leads (name, phone, email, zip, service_type, details, urgency, price, created, expires_at, status)
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')""",
-                       (name, phone, email, zipc, svc, detail, urgency, price, created, expires))
+            created = datetime.utcnow() - timedelta(minutes=random.randint(0, 90))
+            expires = created + timedelta(minutes=60)
+            score = qualify_lead(urgency, detail, zipc)
+            db.execute("""INSERT INTO leads (name, phone, email, zip, service_type, details, urgency, price, qualification_score, created, expires_at, status)
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')""",
+                       (name, phone, email, zipc, svc, detail, urgency, price, score, created, expires))
 
     flash("Demo data seeded: 50 contractors and 100 exclusive leads.")
     return redirect("/admin")
@@ -271,53 +329,194 @@ def contractor_login():
 @app.route("/available_leads")
 @login_required
 def available_leads():
+    now = datetime.utcnow()
     with get_db() as db:
-        leads = db.execute("SELECT * FROM leads WHERE status='available' ORDER BY created DESC LIMIT 50").fetchall()
+        # Only unassigned, non-expired leads
+        leads = db.execute("""
+            SELECT * FROM leads 
+            WHERE status='available' AND (expires_at IS NULL OR expires_at > ?)
+            ORDER BY qualification_score DESC, created DESC LIMIT 50
+        """, (now,)).fetchall()
     rows = ""
     for lead in leads:
         rows += f"""<tr>
             <td>{lead['service_type']}</td>
             <td>{lead['zip']}</td>
             <td>{lead['urgency']}</td>
+            <td>Score: {lead['qualification_score']}</td>
             <td>${lead['price']:.0f}</td>
-            <td><form method="post" action="/buy/{lead['id']}"><button class="green">Buy Exclusive Lead</button></form></td>
+            <td><form method="post" action="/claim/{lead['id']}"><button class="green">Claim Lead</button></form></td>
         </tr>"""
     if not rows:
-        rows = "<tr><td colspan='5'>No available leads right now. Seed demo data if needed.</td></tr>"
+        rows = "<tr><td colspan='6'>No available leads right now. Seed demo data if needed.</td></tr>"
     return f"""<!DOCTYPE html>
 <html lang="en"><head><title>Available Leads</title>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
-<div class="header"><h1>Available Exclusive Leads</h1><p>One contractor per job. No shared leads.</p></div>
-<div class="nav"><a href="/">Home</a> <a href="/logout">Logout</a></div>
+<div class="header"><h1>Available Exclusive Leads</h1><p>One contractor per job. Contact info hidden until accepted.</p></div>
+<div class="nav"><a href="/">Home</a> <a href="/my_assignments">My Assignments</a> <a href="/logout">Logout</a></div>
 <div class="container">
-  <div class="note">No shared leads. Your phone will not ring with competing contractors.</div>
-  <div class="red-note">Leads expire after 24 hours of not being accepted.</div>
+  <div class="note">No shared leads. Contact information is revealed only after you accept the assignment.</div>
+  <div class="red-note">You have 60 minutes to accept or reject once claimed. You are not charged until you accept.</div>
   <div class="card">
     <p>Welcome {session.get('contractor_name', 'Contractor')}</p>
     <table>
-      <tr><th>Service</th><th>Zip</th><th>Urgency</th><th>Price</th><th>Action</th></tr>
+      <tr><th>Service</th><th>Zip</th><th>Urgency</th><th>Quality</th><th>Price</th><th>Action</th></tr>
       {rows}
     </table>
   </div>
 </div>
 </body></html>"""
 
-@app.route("/buy/<int:lead_id>", methods=["POST"])
+@app.route("/claim/<int:lead_id>", methods=["POST"])
 @login_required
-def buy(lead_id):
+def claim(lead_id):
     cid = session["contractor_id"]
+    now = datetime.utcnow()
+    expires = now + timedelta(minutes=60)
     with get_db() as db:
-        lead = db.execute("SELECT * FROM leads WHERE id=? AND status='available'", (lead_id,)).fetchone()
+        lead = db.execute("SELECT * FROM leads WHERE id=? AND status='available' AND (expires_at IS NULL OR expires_at > ?)", (lead_id, now)).fetchone()
         if not lead:
             flash("Lead no longer available.")
             return redirect("/available_leads")
-        # Demo mode: assign immediately so the buying process looks real.
-        # When Stripe is connected later, replace this block with Checkout Session creation.
-        db.execute("UPDATE leads SET status='assigned', assigned_to=? WHERE id=? AND status='available'", (cid, lead_id))
-        db.execute("INSERT INTO assignments (lead_id, contractor_id, status) VALUES (?, ?, 'accepted')", (lead_id, cid))
-        flash(f"Demo purchase complete. Exclusive lead #{lead_id} ({lead['service_type']}) is now yours for ${lead['price']:.0f}.")
-    return redirect("/available_leads")
+        # Mark as pending assignment (not charged yet)
+        db.execute("UPDATE leads SET status='pending', assigned_to=? WHERE id=?", (cid, lead_id))
+        db.execute("INSERT INTO assignments (lead_id, contractor_id, status, expires_at) VALUES (?, ?, 'pending', ?)", (lead_id, cid, expires))
+        # SMS alert to contractor
+        c = db.execute("SELECT phone FROM contractors WHERE id=?", (cid,)).fetchone()
+        if c and c["phone"]:
+            send_sms(c["phone"], f"New exclusive lead claimed: {lead['service_type']} in {lead['zip']}. You have 60 minutes to accept or reject. No charge until you accept.")
+        flash("Lead claimed. You have 60 minutes to accept or reject. You are not charged until you accept.")
+    return redirect("/my_assignments")
+
+@app.route("/my_assignments")
+@login_required
+def my_assignments():
+    cid = session["contractor_id"]
+    now = datetime.utcnow()
+    with get_db() as db:
+        assigns = db.execute("""
+            SELECT a.*, l.service_type, l.zip, l.urgency, l.price, l.qualification_score, l.details,
+                   l.name, l.phone, l.email
+            FROM assignments a
+            JOIN leads l ON l.id = a.lead_id
+            WHERE a.contractor_id=? AND a.status='pending' AND a.expires_at > ?
+            ORDER BY a.created DESC
+        """, (cid, now)).fetchall()
+    rows = ""
+    for a in assigns:
+        # Hide contact info until accepted
+        rows += f"""<tr>
+            <td>{a['service_type']}</td>
+            <td>{a['zip']}</td>
+            <td>{a['urgency']}</td>
+            <td>Score: {a['qualification_score']}</td>
+            <td>${a['price']:.0f}</td>
+            <td>
+              <form method="post" action="/accept/{a['id']}" style="display:inline"><button class="green">Accept</button></form>
+              <form method="post" action="/reject/{a['id']}" style="display:inline"><button style="background:#dc2626">Reject</button></form>
+            </td>
+        </tr>"""
+    if not rows:
+        rows = "<tr><td colspan='6'>No pending assignments. Claim a lead first.</td></tr>"
+    return f"""<!DOCTYPE html>
+<html lang="en"><head><title>My Assignments</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>{STYLE}</style></head><body>
+<div class="header"><h1>My Pending Assignments</h1><p>Accept within 60 minutes or the lead is released. No charge until you accept.</p></div>
+<div class="nav"><a href="/available_leads">Available Leads</a> <a href="/logout">Logout</a></div>
+<div class="container">
+  <div class="red-note">Contact information is revealed only after you accept. You are not charged until acceptance.</div>
+  <div class="card">
+    <table>
+      <tr><th>Service</th><th>Zip</th><th>Urgency</th><th>Quality</th><th>Price</th><th>Action</th></tr>
+      {rows}
+    </table>
+  </div>
+</div>
+</body></html>"""
+
+@app.route("/accept/<int:assignment_id>", methods=["POST"])
+@login_required
+def accept(assignment_id):
+    cid = session["contractor_id"]
+    now = datetime.utcnow()
+    with get_db() as db:
+        a = db.execute("SELECT * FROM assignments WHERE id=? AND contractor_id=? AND status='pending' AND expires_at > ?", (assignment_id, cid, now)).fetchone()
+        if not a:
+            flash("Assignment expired or invalid.")
+            return redirect("/my_assignments")
+        # Accept: mark lead sold, reveal contact later, charge would happen here in real Stripe
+        db.execute("UPDATE assignments SET status='accepted' WHERE id=?", (assignment_id,))
+        db.execute("UPDATE leads SET status='sold', assigned_to=? WHERE id=?", (cid, a["lead_id"]))
+        # Email the customer that a contractor will call
+        lead = db.execute("SELECT * FROM leads WHERE id=?", (a["lead_id"],)).fetchone()
+        contractor = db.execute("SELECT * FROM contractors WHERE id=?", (cid,)).fetchone()
+        if lead and lead["email"] and contractor:
+            body = f"""Hello {lead['name']},
+
+A contractor has accepted your exclusive lead for {lead['service_type']}.
+
+{contractor['name']} ({contractor.get('company') or 'Independent Contractor'}) will be contacting you shortly with a quote.
+
+Phone: {contractor.get('phone') or 'On file'}
+
+Thank you for using Best Leads.
+"""
+            send_email(lead["email"], "Your contractor will contact you with a quote", body)
+        flash("Lead accepted. Contact information is now available. Customer has been notified by email. (Demo: no charge applied.)")
+    return redirect("/my_leads")
+
+@app.route("/reject/<int:assignment_id>", methods=["POST"])
+@login_required
+def reject(assignment_id):
+    cid = session["contractor_id"]
+    with get_db() as db:
+        a = db.execute("SELECT * FROM assignments WHERE id=? AND contractor_id=? AND status='pending'", (assignment_id, cid)).fetchone()
+        if a:
+            db.execute("UPDATE assignments SET status='rejected' WHERE id=?", (assignment_id,))
+            db.execute("UPDATE leads SET status='available', assigned_to=NULL WHERE id=?", (a["lead_id"],))
+            flash("Lead rejected and released back to the available pool.")
+    return redirect("/my_assignments")
+
+@app.route("/my_leads")
+@login_required
+def my_leads():
+    cid = session["contractor_id"]
+    with get_db() as db:
+        leads = db.execute("""
+            SELECT l.* FROM leads l
+            JOIN assignments a ON a.lead_id = l.id
+            WHERE a.contractor_id=? AND a.status='accepted'
+            ORDER BY a.created DESC
+        """, (cid,)).fetchall()
+    rows = ""
+    for lead in leads:
+        rows += f"""<tr>
+            <td>{lead['service_type']}</td>
+            <td>{lead['name']}</td>
+            <td>{lead['phone']}</td>
+            <td>{lead['email']}</td>
+            <td>{lead['zip']}</td>
+            <td>{lead['details']}</td>
+        </tr>"""
+    if not rows:
+        rows = "<tr><td colspan='6'>No accepted leads yet.</td></tr>"
+    return f"""<!DOCTYPE html>
+<html lang="en"><head><title>My Accepted Leads</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>{STYLE}</style></head><body>
+<div class="header"><h1>My Accepted Leads</h1><p>Contact information is shown only for leads you have accepted.</p></div>
+<div class="nav"><a href="/available_leads">Available Leads</a> <a href="/my_assignments">Pending</a> <a href="/logout">Logout</a></div>
+<div class="container">
+  <div class="card">
+    <table>
+      <tr><th>Service</th><th>Name</th><th>Phone</th><th>Email</th><th>Zip</th><th>Details</th></tr>
+      {rows}
+    </table>
+  </div>
+</div>
+</body></html>"""
 
 @app.route("/logout")
 def logout():
@@ -396,7 +595,7 @@ def terms():
 <div class="header"><h1>Terms & Conditions</h1></div>
 <div class="container"><div class="card legal">
 <p>Last Updated: October 22, 2026</p>
-<p>Exclusive leads only. Minnesota law governs. Leads expire after 24 hours if not accepted. Prices are competitive and approximately 10–20% below typical Angi shared lead rates. No monthly fee.</p>
+<p>Exclusive leads only. Minnesota law governs. Leads expire after 60 minutes if not accepted. Prices are competitive and approximately 10–20% below typical Angi shared lead rates. No monthly fee.</p>
 <p><a href="/">Back</a></p>
 </div></div>
 </body></html>"""
