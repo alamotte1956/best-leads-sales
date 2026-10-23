@@ -1,4 +1,4 @@
-# COMPLETE_ATTRACTIVE_CONTRACTOR_SITE_V4_2026_10_22
+# COMPLETE_ATTRACTIVE_CONTRACTOR_SITE_V5_SERVICES_DROPDOWN_2026_10_22
 from flask import Flask, request, redirect, url_for, session, flash, jsonify
 import sqlite3, os, random
 from datetime import datetime, timedelta
@@ -8,6 +8,27 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production")
 
 DB = "leads.db"
+
+SERVICES = [
+    "Water Damage Restoration",
+    "Mold Mitigation / Remediation",
+    "Mold Inspection",
+    "Dry Out Services",
+    "Indoor Air Quality Testing",
+    "Roofing",
+    "Siding",
+    "Windows",
+    "Kitchen Remodeling",
+    "Bathroom Remodeling",
+    "Home Additions",
+    "General Remodeling",
+    "HVAC",
+    "Plumbing",
+    "Electrical",
+    "Flooring",
+    "Painting",
+    "Other"
+]
 
 def get_db():
     db = sqlite3.connect(DB)
@@ -44,11 +65,10 @@ def init_db():
                 created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """)
-        # Seed demo data if empty
         if db.execute("SELECT COUNT(*) FROM contractors").fetchone()[0] == 0:
             db.execute("""INSERT INTO contractors (name, email, phone, company, services, active, agreement_accepted)
                           VALUES (?, ?, ?, ?, ?, 1, 1)""",
-                       ("Demo Contractor", "demo@example.com", "(612) 555-0100", "Demo Co", "Water Damage, Mold"))
+                       ("Demo Contractor", "demo@example.com", "(612) 555-0100", "Demo Co", "Water Damage Restoration, Mold Mitigation / Remediation"))
 
 init_db()
 
@@ -91,6 +111,7 @@ button.green { background: var(--green); }
 .agreement { white-space: pre-wrap; font-size: 14px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 10px; max-height: 300px; overflow: auto; }
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
+select[multiple] { height: 140px; }
 """
 
 @app.route("/")
@@ -131,7 +152,8 @@ def signup():
         email = request.form.get("email")
         phone = request.form.get("phone")
         company = request.form.get("company", "")
-        services = request.form.get("services", "")
+        services_list = request.form.getlist("services")
+        services = ", ".join(services_list) if services_list else ""
         license_number = request.form.get("license_number", "")
         insurance = request.form.get("insurance", "")
         with get_db() as db:
@@ -144,6 +166,7 @@ def signup():
             except sqlite3.IntegrityError:
                 flash("Email already registered.")
                 return redirect("/signup")
+    options = "".join([f'<option value="{s}">{s}</option>' for s in SERVICES])
     return f"""<!DOCTYPE html>
 <html><head><title>Contractor Signup</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -187,7 +210,10 @@ By signing up you agree:
       <input name="password" type="password" placeholder="Password" required>
       <input name="phone" placeholder="Phone" required>
       <input name="company" placeholder="Company">
-      <textarea name="services" placeholder="Services (Water Damage, Mold, Roofing, Siding, Windows...)"></textarea>
+      <label style="display:block; margin-top:12px; font-weight:600;">Services Offered (hold Ctrl/Cmd to select multiple)</label>
+      <select name="services" multiple required>
+        {options}
+      </select>
       <input name="license_number" placeholder="MN License # (optional)">
       <input name="insurance" placeholder="Insurance info (optional)">
       <button>Create Account</button>
@@ -278,7 +304,7 @@ def admin():
     with get_db() as db:
         contractors = db.execute("SELECT * FROM contractors").fetchall()
         leads = db.execute("SELECT * FROM leads").fetchall()
-    c_rows = "".join([f"<tr><td>{c['name']}</td><td>{c['email']}</td><td>{c['active']}</td></tr>" for c in contractors])
+    c_rows = "".join([f"<tr><td>{c['name']}</td><td>{c['email']}</td><td>{c['services'] or ''}</td><td>{c['active']}</td></tr>" for c in contractors])
     l_rows = "".join([f"<tr><td>{l['name']}</td><td>{l['service_type']}</td><td>{l['status']}</td><td>${l['price']}</td></tr>" for l in leads])
     return f"""<!DOCTYPE html>
 <html><head><title>Admin</title>
@@ -288,7 +314,7 @@ def admin():
 <div class="container">
   <div class="card">
     <h3>Contractors</h3>
-    <table><tr><th>Name</th><th>Email</th><th>Active</th></tr>{c_rows}</table>
+    <table><tr><th>Name</th><th>Email</th><th>Services</th><th>Active</th></tr>{c_rows}</table>
   </div>
   <div class="card">
     <h3>Leads</h3>
