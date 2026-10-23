@@ -1,11 +1,15 @@
-# COMPLETE_ATTRACTIVE_CONTRACTOR_SITE_V7_ADMIN_EMAIL_2026_10_22
+# COMPLETE_ATTRACTIVE_CONTRACTOR_SITE_V7_STRIPE_READY_2026_10_22
 from flask import Flask, request, redirect, url_for, session, flash, jsonify
-import sqlite3, os, random
+import sqlite3, os, random, stripe
 from datetime import datetime, timedelta
 from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production")
+app.permanent_session_lifetime = timedelta(days=365)
+
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "sk_test_replace_me")
+DOMAIN = os.environ.get("DOMAIN", "https://best-leads-sales-production.up.railway.app")
 
 DB = "leads.db"
 
@@ -302,9 +306,44 @@ def available_leads():
 def buy(lead_id):
     cid = session["contractor_id"]
     with get_db() as db:
-        db.execute("UPDATE leads SET status='assigned', assigned_to=? WHERE id=? AND status='available'", (cid, lead_id))
-        db.execute("INSERT INTO assignments (lead_id, contractor_id, status) VALUES (?, ?, 'accepted')", (lead_id, cid))
-    flash("Lead purchased.")
+        lead = db.execute("SELECT * FROM leads WHERE id=? AND status='available'", (lead_id,)).fetchone()
+        if not lead:
+            flash("Lead no longer available.")
+            return redirect("/available_leads")
+        amount_cents = int(lead["price"] * 100)
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=["card"],
+                line_items=[{
+                    "price_data": {
+                        "currency": "usd",
+                        "product_data": {"name": f"Exclusive Lead #{lead_id} — {lead['service_type']}"},
+                        "unit_amount": amount_cents,
+                    },
+                    "quantity": 1,
+                }],
+                mode="payment",
+                success_url=DOMAIN + f"/success?session_id={{CHECKOUT_SESSION_ID}}&lead_id={lead_id}",
+                cancel_url=DOMAIN + "/available_leads",
+                client_reference_id=str(cid),
+                metadata={"lead_id": str(lead_id), "contractor_id": str(cid)},
+            )
+            return redirect(checkout_session.url, code=303)
+        except Exception as e:
+            flash(f"Payment error: {str(e)}")
+            return redirect("/available_leads")
+
+@app.route("/success")
+@login_required
+def success():
+    lead_id = request.args.get("lead_id")
+    session_id = request.args.get("session_id")
+    if lead_id:
+        cid = session["contractor_id"]
+        with get_db() as db:
+            db.execute("UPDATE leads SET status='assigned', assigned_to=? WHERE id=? AND status='available'", (cid, lead_id))
+            db.execute("INSERT INTO assignments (lead_id, contractor_id, status) VALUES (?, ?, 'accepted')", (lead_id, cid))
+        flash("Payment successful. Lead is now yours.")
     return redirect("/available_leads")
 
 @app.route("/logout")
@@ -338,6 +377,7 @@ def admin():
 def admin_login():
     if request.method == "POST":
         if request.form.get("email") in ADMIN_EMAILS and request.form.get("password") == ADMIN_PASS:
+            session.permanent = True
             session["is_admin"] = True
             return redirect("/admin")
     return f"""<!DOCTYPE html>
