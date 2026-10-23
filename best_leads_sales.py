@@ -146,7 +146,18 @@ def admin_required(f):
 # Professional restored stylesheet (Inter + gradients + badges + modern cards)
 STYLE = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-:root { --blue: #0ea5e9; --blue2: #0284c7; --navy: #0f172a; --teal: #0e7490; --bg: #f8fafc; --green: #059669; }
+:root { --blue: #0369a1; --blue2: #0284c7; --orange: #f97316; --orange2: #ea580c; --bg: #f1f5f9; --green: #059669; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: var(--bg); color: #0f172a; }
+.header { background: linear-gradient(135deg, #0c4a6e, #0369a1); color: white; padding: 28px 20px; text-align: center; }
+.header h1 { margin: 0; font-size: 2.1rem; letter-spacing: -0.5px; }
+.nav { background: white; padding: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.nav a { display: inline-block; margin: 6px; padding: 10px 16px; background: var(--blue); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; }
+.nav a:hover { background: var(--blue2); }
+button { background: var(--blue); color: white; border: none; font-weight: 600; cursor: pointer; }
+button:hover { background: var(--blue2); }
+button.orange { background: var(--orange); }
+button.orange:hover { background: var(--orange2); }
+button.green { background: var(--green); }
 * { box-sizing: border-box; }
 body { font-family: 'Inter', system-ui, sans-serif; margin: 0; background: var(--bg); color: #0f172a; }
 .header, .hero { background: linear-gradient(160deg, #0f172a 0%, #0e7490 100%); color: white; padding: 64px 24px 48px; text-align: center; }
@@ -180,15 +191,9 @@ def home():
 <html lang="en"><head><title>Best Leads — Exclusive Twin Cities</title>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
-<div class="hero" style="background: linear-gradient(160deg, rgba(15,23,42,0.85), rgba(14,116,144,0.8)), url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80') center/cover; padding: 100px 24px 80px;">
-  <h1>Exclusive Leads.<br>Higher Close Rates.</h1>
-  <p>One contractor per job. No shared leads. Twin Cities only. ~10–20% below typical Angi rates. No monthly fee.</p>
-  <div class="badges">
-    <span class="badge">No Shared Leads</span>
-    <span class="badge">~10–20% Below Angi</span>
-    <span class="badge">No Monthly Fee</span>
-    <span class="badge">Quality Gated</span>
-  </div>
+<div class="header">
+  <h1>Best Leads</h1>
+  <p>Exclusive Twin Cities Leads — One Contractor Per Job</p>
 </div>
 <div class="nav">
   <a href="/signup">Contractor Signup</a>
@@ -204,34 +209,9 @@ def home():
 <div class="container">
   <div class="note">No shared leads. Your phone will not ring with competing contractors.</div>
   <div class="card">
-    <h2>How It Works</h2>
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 20px;">
-      <div class="benefit"><h3>1. Sign Up</h3><p>Create your contractor account and agree to the exclusive lead terms.</p></div>
-      <div class="benefit"><h3>2. Claim a Lead</h3><p>See available exclusive leads. Contact info stays hidden until you accept.</p></div>
-      <div class="benefit"><h3>3. Accept Within 60 Min</h3><p>Accept or reject. You are not charged until you accept.</p></div>
-      <div class="benefit"><h3>4. Contact the Homeowner</h3><p>Once accepted, you receive full contact details and the homeowner is notified.</p></div>
-    </div>
-  </div>
-  <div class="card">
-    <h2>Why Contractors Choose Best Leads</h2>
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 24px;">
-      <div class="benefit">
-        <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80" alt="Restoration team" style="width:100%; border-radius:12px; margin-bottom:12px; height:160px; object-fit:cover;">
-        <h3>Exclusive Only</h3><p>One contractor per lead. No competition on the job.</p>
-      </div>
-      <div class="benefit">
-        <img src="https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=600&q=80" alt="Kitchen remodel" style="width:100%; border-radius:12px; margin-bottom:12px; height:160px; object-fit:cover;">
-        <h3>Higher Close Rates</h3><p>Homeowners expect one contractor. You convert more.</p>
-      </div>
-      <div class="benefit">
-        <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80" alt="Professional contractor" style="width:100%; border-radius:12px; margin-bottom:12px; height:160px; object-fit:cover;">
-        <h3>Lower Cost</h3><p>Prices set ~10–20% below typical shared lead platforms.</p>
-      </div>
-      <div class="benefit">
-        <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80" alt="Completed bathroom" style="width:100%; border-radius:12px; margin-bottom:12px; height:160px; object-fit:cover;">
-        <h3>Quality Focus</h3><p>Twin Cities zips only. Leads expire after 60 minutes if not accepted.</p>
-      </div>
-    </div>
+    <h2>Contractor Dashboard</h2>
+    <p>High-quality exclusive leads for Twin Cities contractors. Claim a lead, then accept or reject within 60 minutes. Contact info is revealed only after acceptance. You are not charged until you accept.</p>
+    <p><a href="/available_leads"><button class="orange">View Available Leads</button></a></p>
   </div>
 </div>
 </body></html>"""
@@ -422,7 +402,7 @@ def available_leads():
             <td>Score: {lead['qualification_score']}</td>
             <td>${lead['price']:.0f}</td>
             <td title="{lead['details'][:80]}...">{lead['details'][:40]}...</td>
-            <td><form method="post" action="/claim/{lead['id']}"><button class="green">Claim Lead</button></form></td>
+            <td><form method="post" action="/claim/{lead['id']}"><button class="orange">Claim Lead</button></form></td>
         </tr>"""
     if not rows:
         rows = "<tr><td colspan='6'>No available leads right now. Seed demo data if needed.</td></tr>"
@@ -430,7 +410,7 @@ def available_leads():
 <html lang="en"><head><title>Available Leads</title>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
-<div class="header" style="background: linear-gradient(160deg, rgba(15,23,42,0.85), rgba(14,116,144,0.75)), url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1600&q=80') center/cover;">
+<div class="header">
   <h1>Available Exclusive Leads</h1><p>One contractor per job. Contact info hidden until accepted.</p>
 </div>
 <div class="nav"><a href="/">Home</a> <a href="/my_assignments">My Assignments</a> <a href="/logout">Logout</a></div>
@@ -492,7 +472,7 @@ def my_assignments():
             <td>Score: {a['qualification_score']}</td>
             <td>${a['price']:.0f}</td>
             <td>
-              <form method="post" action="/accept/{a['id']}" style="display:inline"><button class="green">Accept</button></form>
+              <form method="post" action="/accept/{a['id']}" style="display:inline"><button class="orange">Accept</button></form>
               <form method="post" action="/reject/{a['id']}" style="display:inline"><button style="background:#dc2626">Reject</button></form>
             </td>
         </tr>"""
