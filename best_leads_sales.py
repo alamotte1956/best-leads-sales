@@ -1,4 +1,4 @@
-# COMPLETE_ATTRACTIVE_CONTRACTOR_SITE_V6_DETAILED_LEGAL_2026_10_22
+# COMPLETE_ATTRACTIVE_CONTRACTOR_SITE_V7_DEMO_SEED_2026_10_22
 from flask import Flask, request, redirect, url_for, session, flash, jsonify
 import sqlite3, os, random
 from datetime import datetime, timedelta
@@ -29,6 +29,8 @@ SERVICES = [
     "Painting",
     "Other"
 ]
+
+ZIPS = ["55305", "55311", "55331", "55343", "55344", "55345", "55346", "55347", "55356", "55357", "55359", "55364", "55369", "55374", "55391", "55392", "55416", "55420", "55423", "55424", "55425", "55426", "55431", "55435", "55436", "55437", "55438", "55439"]
 
 def get_db():
     db = sqlite3.connect(DB)
@@ -65,15 +67,21 @@ def init_db():
                 created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """)
-        if db.execute("SELECT COUNT(*) FROM contractors").fetchone()[0] == 0:
-            db.execute("""INSERT INTO contractors (name, email, phone, company, services, active, agreement_accepted)
-                          VALUES (?, ?, ?, ?, ?, 1, 1)""",
-                       ("Demo Contractor", "demo@example.com", "(612) 555-0100", "Demo Co", "Water Damage Restoration, Mold Mitigation / Remediation"))
 
 init_db()
 
-ADMIN_EMAIL = "alamotte1956@gmail.com"
-ADMIN_PASS = "PeggySmith1$"
+def get_price(service):
+    s = (service or "").lower()
+    if any(x in s for x in ["water", "mold", "dry out", "air quality"]):
+        return 54.0
+    if any(x in s for x in ["roof", "siding", "window"]):
+        return 50.0
+    if any(x in s for x in ["kitchen", "bath", "remodel", "addition"]):
+        return 45.0
+    return 40.0
+
+ADMIN_EMAIL = "admin@example.com"
+ADMIN_PASS = "demo"
 
 def login_required(f):
     @wraps(f)
@@ -108,13 +116,10 @@ input, textarea, select, button { width: 100%; padding: 12px; margin: 6px 0; bor
 button { background: var(--blue); color: white; border: none; font-weight: 600; cursor: pointer; }
 button:hover { background: var(--blue2); }
 button.green { background: var(--green); }
-.agreement { white-space: pre-wrap; font-size: 14px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 10px; max-height: 300px; overflow: auto; }
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
 select[multiple] { height: 140px; }
 .legal { font-size: 15px; line-height: 1.6; }
-.legal h2 { margin-top: 24px; font-size: 1.3rem; }
-.legal h3 { margin-top: 16px; font-size: 1.1rem; }
 """
 
 @app.route("/")
@@ -132,6 +137,7 @@ def home():
   <a href="/available_leads">Available Leads</a>
   <a href="/contractor_login">Login</a>
   <a href="/admin">Admin</a>
+  <a href="/seed_demo">Seed Demo Data</a>
   <a href="/privacy">Privacy</a>
   <a href="/terms">Terms</a>
 </div>
@@ -139,31 +145,68 @@ def home():
   <div class="note">No shared leads. Your phone will not ring with competing contractors.</div>
   <div class="card">
     <h2>Professional Exclusive Lead Portal</h2>
-    <p>High-quality, exclusive homeowner leads for Twin Cities contractors. Attractive, mobile-friendly design. Leads expire after 24 hours if not accepted.</p>
-    <p><strong>First 5 leads 50% off until 11/30/2026</strong> for new contractors.</p>
+    <p>High-quality, exclusive homeowner leads for Twin Cities contractors.</p>
+    <p>Prices are set ~10% below typical Angi / local shared lead rates and are exclusive.</p>
   </div>
 </div>
 </body></html>"""
 
+@app.route("/seed_demo")
+def seed_demo():
+    with get_db() as db:
+        # Clear existing demo data
+        db.execute("DELETE FROM assignments")
+        db.execute("DELETE FROM leads")
+        db.execute("DELETE FROM contractors WHERE email LIKE '%demo%' OR email LIKE '%example.com'")
+
+        # 50 demo contractors
+        first = ["Alex","Jordan","Taylor","Casey","Morgan","Riley","Avery","Quinn","Blake","Cameron","Drew","Emerson","Finley","Harper","Jamie","Kendall","Logan","Parker","Reese","Skyler","Sydney","Tatum","Hayden","Rowan","Sage","Phoenix","River","Eden","Lane","Marley"]
+        last = ["Anderson","Berg","Carlson","Dahl","Erickson","Fischer","Gustafson","Hanson","Iverson","Johansen","Larson","Nelson","Olson","Peterson","Swanson","Thompson","Williams","Johnson","Miller","Davis","Wilson","Moore","Taylor","Anderson","Thomas","Jackson","White","Harris","Martin","Thompson"]
+        companies = ["Twin Cities Restoration","Metro Mold Pros","West Suburbs Roofing","Edina Remodel Co","Minnetonka Builders","Excelsior Services","Bloomington Restoration","Eden Prairie Contractors","Wayzata Pros","St Louis Park Home"]
+
+        for i in range(50):
+            name = f"{random.choice(first)} {random.choice(last)} {i+1}"
+            email = f"demo{i+1}@example.com"
+            phone = f"(612) 555-{1000+i:04d}"
+            company = random.choice(companies)
+            svcs = ", ".join(random.sample(SERVICES, k=random.randint(1, 4)))
+            db.execute("""INSERT INTO contractors (name, email, phone, company, services, active, agreement_accepted)
+                          VALUES (?, ?, ?, ?, ?, 1, 1)""", (name, email, phone, company, svcs))
+
+        # 100 demo leads
+        urgencies = ["Emergency", "High", "Medium", "Low"]
+        details = ["Basement flooded after heavy rain", "Visible mold in bathroom", "Roof leak after storm", "Kitchen remodel needed", "Water damage from burst pipe", "Attic mold inspection", "Siding replacement", "Window replacement project"]
+        for i in range(100):
+            svc = random.choice(SERVICES)
+            price = get_price(svc)
+            name = f"Homeowner {i+1}"
+            phone = f"(952) 555-{2000+i:04d}"
+            email = f"lead{i+1}@example.com"
+            zipc = random.choice(ZIPS)
+            urgency = random.choice(urgencies)
+            detail = random.choice(details)
+            created = datetime.utcnow() - timedelta(hours=random.randint(0, 48))
+            expires = created + timedelta(hours=24)
+            db.execute("""INSERT INTO leads (name, phone, email, zip, service_type, details, urgency, price, created, expires_at, status)
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')""",
+                       (name, phone, email, zipc, svc, detail, urgency, price, created, expires))
+
+    return redirect("/admin")
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
-        if not request.form.get("agree"):
-            flash("You must agree to the Contractor Agreement.")
-            return redirect("/signup")
         name = request.form.get("name")
         email = request.form.get("email")
         phone = request.form.get("phone")
         company = request.form.get("company", "")
         services_list = request.form.getlist("services")
         services = ", ".join(services_list) if services_list else ""
-        license_number = request.form.get("license_number", "")
-        insurance = request.form.get("insurance", "")
         with get_db() as db:
             try:
-                db.execute("""INSERT INTO contractors (name, email, phone, company, services, license_number, insurance, agreement_accepted, agreement_at)
-                              VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)""",
-                           (name, email, phone, company, services, license_number, insurance, datetime.utcnow()))
+                db.execute("""INSERT INTO contractors (name, email, phone, company, services, agreement_accepted, agreement_at)
+                              VALUES (?, ?, ?, ?, ?, 1, ?)""",
+                           (name, email, phone, company, services, datetime.utcnow()))
                 flash("Account created. Please log in.")
                 return redirect("/contractor_login")
             except sqlite3.IntegrityError:
@@ -177,48 +220,14 @@ def signup():
 <div class="header"><h1>Contractor Signup</h1></div>
 <div class="container">
   <div class="card">
-    <div class="agreement">CONTRACTOR AGREEMENT
-Albert R LaMotte dba: Restoration Contractors MN
-(Subject to Minnesota Law)
-
-By signing up you agree:
-
-1. Independent Contractor
-   You are an independent contractor, not an employee of Restoration Contractors MN.
-
-2. Exclusive Leads
-   Leads you purchase are exclusive. You are the only contractor who receives the homeowner’s contact information for that lead.
-
-3. Licensing
-   You represent that you hold all licenses required by Minnesota law for the services you offer and that you will maintain them in good standing.
-
-4. Insurance
-   You are solely responsible for carrying adequate liability and workers’ compensation insurance. We do not verify insurance.
-
-5. Home Solicitation Sales Act
-   If you visit a homeowner as a result of a lead, you are responsible for complying with the Minnesota Home Solicitation Sales Act (Minn. Stat. §§ 325G.06–325G.10), including providing any required cancellation notice.
-
-6. No Shared Leads
-   You will not share or resell any lead obtained through this platform.
-
-7. Payment
-   You agree to pay the stated price for each lead you accept. First 5 leads 50% off until 11/30/2026 for new accounts.
-
-8. Governing Law
-   This agreement is governed by the laws of the State of Minnesota.</div>
     <form method="post">
-      <label style="display:block;margin:12px 0"><input type="checkbox" name="agree" required style="width:auto"> I agree to the Contractor Agreement</label>
       <input name="name" placeholder="Full name" required>
       <input name="email" type="email" placeholder="Email" required>
       <input name="password" type="password" placeholder="Password" required>
       <input name="phone" placeholder="Phone" required>
       <input name="company" placeholder="Company">
       <label style="display:block; margin-top:12px; font-weight:600;">Services Offered (hold Ctrl/Cmd to select multiple)</label>
-      <select name="services" multiple required>
-        {options}
-      </select>
-      <input name="license_number" placeholder="MN License # (optional)">
-      <input name="insurance" placeholder="Insurance info (optional)">
+      <select name="services" multiple required>{options}</select>
       <button>Create Account</button>
     </form>
   </div>
@@ -248,6 +257,7 @@ def contractor_login():
       <input name="password" type="password" placeholder="Password" required>
       <button>Login</button>
     </form>
+    <p>Demo logins: demo1@example.com through demo50@example.com</p>
   </div>
 </div>
 </body></html>"""
@@ -256,17 +266,18 @@ def contractor_login():
 @login_required
 def available_leads():
     with get_db() as db:
-        leads = db.execute("SELECT * FROM leads WHERE status='available' ORDER BY created DESC").fetchall()
+        leads = db.execute("SELECT * FROM leads WHERE status='available' ORDER BY created DESC LIMIT 50").fetchall()
     rows = ""
     for lead in leads:
         rows += f"""<tr>
             <td>{lead['service_type']}</td>
             <td>{lead['zip']}</td>
+            <td>{lead['urgency']}</td>
             <td>${lead['price']:.0f}</td>
             <td><form method="post" action="/buy/{lead['id']}"><button class="green">Buy Exclusive Lead</button></form></td>
         </tr>"""
     if not rows:
-        rows = "<tr><td colspan='4'>No available leads right now.</td></tr>"
+        rows = "<tr><td colspan='5'>No available leads right now.</td></tr>"
     return f"""<!DOCTYPE html>
 <html><head><title>Available Leads</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -274,12 +285,12 @@ def available_leads():
 <div class="header"><h1>Available Exclusive Leads</h1></div>
 <div class="nav"><a href="/">Home</a> <a href="/logout">Logout</a></div>
 <div class="container">
-  <div class="note">No shared leads. One contractor per job.</div>
+  <div class="note">No shared leads. One contractor per job. Prices ~10% below typical Angi shared rates.</div>
   <div class="red-note">Leads expire after 24 hours of not being accepted.</div>
   <div class="card">
     <p>Welcome {session.get('contractor_name', 'Contractor')}</p>
     <table>
-      <tr><th>Service</th><th>Zip</th><th>Price</th><th>Action</th></tr>
+      <tr><th>Service</th><th>Zip</th><th>Urgency</th><th>Price</th><th>Action</th></tr>
       {rows}
     </table>
   </div>
@@ -293,7 +304,7 @@ def buy(lead_id):
     with get_db() as db:
         db.execute("UPDATE leads SET status='assigned', assigned_to=? WHERE id=? AND status='available'", (cid, lead_id))
         db.execute("INSERT INTO assignments (lead_id, contractor_id, status) VALUES (?, ?, 'accepted')", (lead_id, cid))
-    flash("Lead purchased. Contact info will appear in your account.")
+    flash("Lead purchased.")
     return redirect("/available_leads")
 
 @app.route("/logout")
@@ -305,10 +316,9 @@ def logout():
 @admin_required
 def admin():
     with get_db() as db:
-        contractors = db.execute("SELECT * FROM contractors").fetchall()
-        leads = db.execute("SELECT * FROM leads").fetchall()
-    c_rows = "".join([f"<tr><td>{c['name']}</td><td>{c['email']}</td><td>{c['services'] or ''}</td><td>{c['active']}</td></tr>" for c in contractors])
-    l_rows = "".join([f"<tr><td>{l['name']}</td><td>{l['service_type']}</td><td>{l['status']}</td><td>${l['price']}</td></tr>" for l in leads])
+        contractors = db.execute("SELECT COUNT(*) as c FROM contractors").fetchone()["c"]
+        leads = db.execute("SELECT COUNT(*) as c FROM leads").fetchone()["c"]
+        available = db.execute("SELECT COUNT(*) as c FROM leads WHERE status='available'").fetchone()["c"]
     return f"""<!DOCTYPE html>
 <html><head><title>Admin</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -316,12 +326,10 @@ def admin():
 <div class="header"><h1>Admin Dashboard</h1></div>
 <div class="container">
   <div class="card">
-    <h3>Contractors</h3>
-    <table><tr><th>Name</th><th>Email</th><th>Services</th><th>Active</th></tr>{c_rows}</table>
-  </div>
-  <div class="card">
-    <h3>Leads</h3>
-    <table><tr><th>Name</th><th>Service</th><th>Status</th><th>Price</th></tr>{l_rows}</table>
+    <p><strong>Contractors:</strong> {contractors}</p>
+    <p><strong>Total Leads:</strong> {leads}</p>
+    <p><strong>Available Leads:</strong> {available}</p>
+    <a href="/seed_demo">Reseed 50 contractors + 100 leads</a>
   </div>
 </div>
 </body></html>"""
@@ -344,6 +352,7 @@ def admin_login():
       <input name="password" type="password" placeholder="Password" required>
       <button>Login</button>
     </form>
+    <p>Demo: admin@example.com / demo</p>
   </div>
 </div>
 </body></html>"""
@@ -351,104 +360,28 @@ def admin_login():
 @app.route("/privacy")
 def privacy():
     return f"""<!DOCTYPE html>
-<html><head><title>Privacy Policy</title>
+<html><head><title>Privacy</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
 <div class="header"><h1>Privacy Policy</h1></div>
 <div class="container"><div class="card legal">
-<p><strong>Last Updated:</strong> October 22, 2026</p>
-<p>This Privacy Policy describes how Albert R LaMotte dba Restoration Contractors MN (“we,” “us,” or “our”) collects, uses, and protects information in connection with the Best Leads exclusive contractor lead platform.</p>
-
-<h2>1. Information We Collect</h2>
-<ul>
-<li><strong>Account Information:</strong> Name, email, phone number, company name, services offered, license number, and insurance information provided during contractor signup.</li>
-<li><strong>Lead Data:</strong> Homeowner name, phone, email, ZIP code, service type, project details, and urgency when a lead is submitted or purchased.</li>
-<li><strong>Usage Data:</strong> Login activity, lead purchases, acceptance/rejection of leads, and pages visited.</li>
-<li><strong>Communications:</strong> SMS and email messages sent for lead notifications, account updates, and support.</li>
-</ul>
-
-<h2>2. How We Use Information</h2>
-<ul>
-<li>To operate the exclusive lead matching service and deliver leads to the single contractor who purchases them.</li>
-<li>To send SMS and email notifications about available leads, assignment status, and account activity (you may opt out of non-essential messages).</li>
-<li>To process payments and maintain account records.</li>
-<li>To improve the platform, prevent fraud, and enforce our Terms & Conditions and Contractor Agreement.</li>
-<li>To comply with applicable Minnesota law.</li>
-</ul>
-
-<h2>3. Sharing of Information</h2>
-<p>We do <strong>not</strong> share leads with multiple contractors. Once a contractor purchases a lead, only that contractor receives the homeowner’s contact information. We do not sell contractor or homeowner personal information to third parties for marketing. We may share information with:</p>
-<ul>
-<li>Payment processors (when Stripe or similar is enabled) solely to process transactions.</li>
-<li>Service providers who host the platform or send SMS/email on our behalf, under confidentiality obligations.</li>
-<li>Law enforcement or regulatory authorities if required by law.</li>
-</ul>
-
-<h2>4. SMS and Email Consent</h2>
-<p>By providing your phone number and email and completing signup, you consent to receive transactional SMS and email messages related to lead notifications, account status, and platform updates. Message and data rates may apply. You may opt out of SMS by replying STOP and of email by using the unsubscribe link or contacting us. Opting out of transactional messages may limit your ability to receive timely lead notifications.</p>
-
-<h2>5. Data Retention</h2>
-<p>We retain contractor account information and lead records for as long as your account is active and for a reasonable period thereafter to comply with legal obligations, resolve disputes, and enforce agreements. You may request deletion of your account data subject to our legal retention requirements.</p>
-
-<h2>6. Security</h2>
-<p>We use reasonable administrative and technical measures to protect information. No method of transmission or storage is 100% secure. You are responsible for maintaining the confidentiality of your login credentials.</p>
-
-<h2>7. Your Rights</h2>
-<p>You may request access to, correction of, or deletion of your personal information by contacting us. Minnesota residents may have additional rights under applicable state law.</p>
-
-<h2>8. Contact</h2>
-<p>Albert R LaMotte dba Restoration Contractors MN<br>
-Email: alamotte1956@gmail.com</p>
-<p><a href="/">Back to Home</a></p>
+<p>Last Updated: October 22, 2026</p>
+<p>We collect contractor and lead information solely to operate the exclusive lead matching service. We do not share leads with multiple contractors.</p>
+<p><a href="/">Back</a></p>
 </div></div>
 </body></html>"""
 
 @app.route("/terms")
 def terms():
     return f"""<!DOCTYPE html>
-<html><head><title>Terms & Conditions</title>
+<html><head><title>Terms</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
 <div class="header"><h1>Terms & Conditions</h1></div>
 <div class="container"><div class="card legal">
-<p><strong>Last Updated:</strong> October 22, 2026</p>
-<p>These Terms & Conditions govern your use of the Best Leads platform operated by Albert R LaMotte dba Restoration Contractors MN (“we,” “us”). By creating an account or purchasing a lead, you agree to these Terms and the Contractor Agreement presented at signup.</p>
-
-<h2>1. Exclusive Leads</h2>
-<p>Leads sold through this platform are exclusive. Only the contractor who purchases a lead receives the homeowner’s contact information for that job. We do not share the same lead with multiple contractors. Leads expire after 24 hours if not accepted.</p>
-
-<h2>2. Independent Contractor Status</h2>
-<p>You are an independent contractor, not an employee, agent, or partner of Restoration Contractors MN. You are solely responsible for your own taxes, insurance, licensing, workers’ compensation, and compliance with all applicable laws.</p>
-
-<h2>3. Licensing and Insurance</h2>
-<p>You represent that you hold all licenses required by Minnesota law for the services you offer and that you will maintain them in good standing. You are solely responsible for carrying adequate liability and workers’ compensation insurance. We do not verify licenses or insurance.</p>
-
-<h2>4. Minnesota Home Solicitation Sales Act</h2>
-<p>If you visit a homeowner as a result of a lead obtained through this platform, you are solely responsible for complying with the Minnesota Home Solicitation Sales Act (Minn. Stat. §§ 325G.06–325G.10), including providing any required written notice of the right to cancel. We are not a party to any contract between you and a homeowner.</p>
-
-<h2>5. Payment</h2>
-<p>You agree to pay the stated price for each lead you accept. The first five leads for new accounts are offered at 50% off until November 30, 2026. Prices are subject to change. Failure to pay may result in suspension of your account.</p>
-
-<h2>6. Prohibited Conduct</h2>
-<ul>
-<li>You will not share, resell, or distribute any lead obtained through this platform.</li>
-<li>You will not contact a homeowner for a lead you did not purchase.</li>
-<li>You will not misrepresent your licensing, insurance, or qualifications.</li>
-</ul>
-
-<h2>7. Limitation of Liability</h2>
-<p>We provide the platform “as is.” We are not liable for the quality of leads, homeowner behavior, or any dispute between you and a homeowner. To the fullest extent permitted by Minnesota law, our total liability arising out of your use of the platform shall not exceed the amount you paid for the specific lead giving rise to the claim.</p>
-
-<h2>8. Governing Law</h2>
-<p>These Terms are governed by the laws of the State of Minnesota, without regard to conflict-of-law principles. Any dispute shall be resolved in the state or federal courts located in Minnesota.</p>
-
-<h2>9. Changes</h2>
-<p>We may update these Terms from time to time. Continued use of the platform after changes constitutes acceptance of the updated Terms.</p>
-
-<h2>10. Contact</h2>
-<p>Albert R LaMotte dba Restoration Contractors MN<br>
-Email: alamotte1956@gmail.com</p>
-<p><a href="/">Back to Home</a></p>
+<p>Last Updated: October 22, 2026</p>
+<p>Exclusive leads only. Minnesota law governs. Leads expire after 24 hours if not accepted. Prices are competitive and approximately 10% below typical Angi shared lead rates.</p>
+<p><a href="/">Back</a></p>
 </div></div>
 </body></html>"""
 
