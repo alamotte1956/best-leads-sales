@@ -1,4 +1,4 @@
-# FULL CONTRACTOR SITE - Restored signup fields + working login + blue/orange style
+# FULL CONTRACTOR SITE - Extensive disclaimer + richer signup + working login
 from flask import Flask, request, redirect, url_for, session, flash
 import sqlite3, os, random
 from datetime import datetime, timedelta
@@ -17,6 +17,62 @@ SERVICES = [
 ]
 ZIPS = ["55305","55311","55331","55343","55344","55345","55346","55347","55356","55357",
         "55364","55369","55391","55416","55424","55435","55436","55437","55438","55439"]
+
+CONTRACTOR_AGREEMENT = """
+CONTRACTOR AGREEMENT AND DISCLAIMER
+Albert R LaMotte dba Restoration Contractors MN ("Company")
+
+By creating an account and using this service you agree to the following:
+
+1. EXCLUSIVE LEADS ONLY
+   Leads are sold exclusively to one contractor. You will not share or resell a lead. 
+   Once you accept a lead, only you will contact that homeowner.
+
+2. ACCEPTANCE WINDOW
+   You must accept or reject a claimed lead within 24 hours. If you do not respond, 
+   the lead may be reassigned. Failure to respond may affect future lead allocation.
+
+3. PAYMENT
+   Lead fees are due upon acceptance (or as otherwise stated). Non-payment may result 
+   in suspension of your account and collection efforts. Demo accounts are for testing only.
+
+4. NO GUARANTEE OF RESULTS
+   Company does not guarantee that any lead will result in a job, contract, or revenue. 
+   Lead quality depends on homeowner information provided. You are solely responsible for 
+   qualifying, estimating, and closing the work.
+
+5. LICENSING AND INSURANCE
+   You represent that you hold any licenses required by the State of Minnesota for the 
+   services you offer. Company verifies Minnesota license status only. You are solely 
+   responsible for maintaining current liability insurance, workers’ compensation (if required), 
+   and all other coverage. Homeowners are instructed to confirm your insurance before work begins.
+
+6. INDEPENDENT CONTRACTOR
+   You are an independent contractor, not an employee, partner, or agent of Company. 
+   You set your own prices, methods, and schedule. Company does not direct or control your work.
+
+7. MINNESOTA LAW
+   This agreement is governed by the laws of the State of Minnesota. Any dispute will be 
+   resolved in the state or federal courts located in Minnesota. You waive any objection 
+   to venue in those courts.
+
+8. LIMITATION OF LIABILITY
+   Company is not liable for any indirect, incidental, or consequential damages arising from 
+   your use of the service or any lead. Company’s total liability is limited to the amount 
+   you paid for the specific lead in question.
+
+9. INDEMNIFICATION
+   You agree to indemnify and hold harmless Company, its owners, and agents from any claims, 
+   damages, or expenses arising from your work, your representations to homeowners, or your 
+   breach of this agreement.
+
+10. TERMINATION
+    Company may suspend or terminate your account at any time for violation of these terms, 
+    non-payment, or for any reason that protects the integrity of the exclusive-lead model.
+
+By checking the box below you acknowledge that you have read, understand, and agree to 
+these terms, and that you are authorized to bind your company.
+"""
 
 def get_db():
     db = sqlite3.connect(DB)
@@ -66,6 +122,7 @@ label { font-weight:600; display:block; margin-top:12px; }
 button { background:#f97316; color:white; border:none; padding:14px 20px; border-radius:8px; font-weight:600; cursor:pointer; width:100%; }
 button:hover { background:#ea580c; }
 .lead-card { border-left:4px solid #0ea5e9; }
+.disclaimer { background:#f1f5f9; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin:16px 0; max-height:280px; overflow-y:auto; font-size:13px; line-height:1.5; white-space:pre-wrap; }
 .flash { background:#fef3c7; padding:12px; border-radius:8px; margin-bottom:12px; }
 """
 
@@ -86,6 +143,9 @@ def home():
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
+        if not request.form.get("agree"):
+            flash("You must agree to the Contractor Agreement to create an account.")
+            return redirect("/signup")
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
@@ -136,9 +196,13 @@ def signup():
       <select name="has_insurance"><option>Yes</option><option>No</option><option>Pending</option></select>
       <label>Insurance Notes (carrier, policy #, or expiration)</label>
       <textarea name="insurance_notes" rows="2"></textarea>
+
+      <label>Contractor Agreement & Disclaimer</label>
+      <div class="disclaimer">{CONTRACTOR_AGREEMENT}</div>
+
       <label style="font-weight:normal; margin:16px 0;">
         <input type="checkbox" name="agree" required style="width:auto; margin-right:8px;">
-        I agree to the Contractor Agreement, exclusive lead terms, and Minnesota law.
+        I have read and agree to the Contractor Agreement and Disclaimer above, including exclusive lead terms, 24-hour acceptance window, Minnesota law, and the limitation of liability.
       </label>
       <button type="submit">Create Account</button>
     </form>
