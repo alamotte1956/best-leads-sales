@@ -180,7 +180,7 @@ def home():
 <html lang="en"><head><title>Best Leads — Exclusive Twin Cities</title>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
-<div class="hero">
+<div class="hero" style="background: linear-gradient(160deg, rgba(15,23,42,0.85), rgba(14,116,144,0.8)), url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80') center/cover; padding: 100px 24px 80px;">
   <h1>Exclusive Leads.<br>Higher Close Rates.</h1>
   <p>One contractor per job. No shared leads. Twin Cities only. ~10–20% below typical Angi rates. No monthly fee.</p>
   <div class="badges">
@@ -204,11 +204,23 @@ def home():
   <div class="note">No shared leads. Your phone will not ring with competing contractors.</div>
   <div class="card">
     <h2>Why Contractors Choose Best Leads</h2>
-    <div class="benefits">
-      <div class="benefit"><h3>Exclusive Only</h3><p>One contractor per lead. No competition on the job.</p></div>
-      <div class="benefit"><h3>Higher Close Rates</h3><p>Homeowners expect one contractor. You convert more.</p></div>
-      <div class="benefit"><h3>Lower Cost</h3><p>Prices set ~10–20% below typical shared lead platforms.</p></div>
-      <div class="benefit"><h3>Quality Focus</h3><p>Twin Cities zips only. Leads expire after 60 minutes if not accepted.</p></div>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 24px;">
+      <div class="benefit">
+        <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80" alt="Restoration team" style="width:100%; border-radius:12px; margin-bottom:12px; height:160px; object-fit:cover;">
+        <h3>Exclusive Only</h3><p>One contractor per lead. No competition on the job.</p>
+      </div>
+      <div class="benefit">
+        <img src="https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=600&q=80" alt="Kitchen remodel" style="width:100%; border-radius:12px; margin-bottom:12px; height:160px; object-fit:cover;">
+        <h3>Higher Close Rates</h3><p>Homeowners expect one contractor. You convert more.</p>
+      </div>
+      <div class="benefit">
+        <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80" alt="Professional contractor" style="width:100%; border-radius:12px; margin-bottom:12px; height:160px; object-fit:cover;">
+        <h3>Lower Cost</h3><p>Prices set ~10–20% below typical shared lead platforms.</p>
+      </div>
+      <div class="benefit">
+        <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80" alt="Completed bathroom" style="width:100%; border-radius:12px; margin-bottom:12px; height:160px; object-fit:cover;">
+        <h3>Quality Focus</h3><p>Twin Cities zips only. Leads expire after 60 minutes if not accepted.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -221,30 +233,78 @@ def seed_demo():
         db.execute("DELETE FROM leads")
         db.execute("DELETE FROM contractors WHERE email LIKE '%demo%' OR email LIKE '%example.com'")
 
-        first = ["Alex","Jordan","Taylor","Casey","Morgan","Riley","Avery","Quinn","Blake","Cameron","Drew","Emerson","Finley","Harper","Jamie","Kendall","Logan","Parker","Reese","Skyler"]
-        last = ["Anderson","Berg","Carlson","Dahl","Erickson","Fischer","Gustafson","Hanson","Iverson","Johansen","Larson","Nelson","Olson","Peterson","Swanson","Thompson","Williams","Johnson","Miller","Davis"]
-        companies = ["Twin Cities Restoration","Metro Mold Pros","West Suburbs Roofing","Edina Remodel Co","Minnetonka Builders","Excelsior Services","Bloomington Restoration","Eden Prairie Contractors","Wayzata Pros","St Louis Park Home"]
+        # Richer contractor data (realistic Twin Cities style)
+        contractors_data = [
+            ("Mike Johnson", "mike.j@example.com", "(612) 555-0142", "Twin Cities Restoration Pros", "Water Damage Restoration, Mold Remediation, Dry Out Services", "MN-LIC-4421", "State Farm"),
+            ("Sarah Chen", "sarah.c@example.com", "(952) 555-0187", "West Metro Mold Specialists", "Mold Inspection, Mold Remediation, Indoor Air Quality Testing", "MN-LIC-8892", "Travelers"),
+            ("David Olson", "david.o@example.com", "(763) 555-0231", "Edina Roofing & Exteriors", "Roofing, Siding, Windows", "MN-LIC-1156", "Auto-Owners"),
+            ("Lisa Berg", "lisa.b@example.com", "(612) 555-0345", "Minnetonka Home Builders", "Kitchen Remodeling, Bathroom Remodeling, Home Additions", "MN-LIC-6674", "Liberty Mutual"),
+            ("James Peterson", "james.p@example.com", "(952) 555-0412", "Excelsior Restoration", "Water Damage Restoration, Dry Out Services, Mold Mitigation", "MN-LIC-2290", "Nationwide"),
+            ("Emily Anderson", "emily.a@example.com", "(612) 555-0523", "Bloomington Remodel Co", "Kitchen Remodeling, Bathroom Remodeling, Flooring", "MN-LIC-3341", "State Farm"),
+            ("Robert Larson", "robert.l@example.com", "(763) 555-0634", "Wayzata Windows & Siding", "Windows, Siding, Roofing", "MN-LIC-7785", "Travelers"),
+            ("Jennifer Nelson", "jen.n@example.com", "(952) 555-0745", "St Louis Park HVAC Pros", "HVAC, Plumbing, Indoor Air Quality Testing", "MN-LIC-9921", "Auto-Owners"),
+            ("Chris Swanson", "chris.s@example.com", "(612) 555-0856", "Eden Prairie Electrical", "Electrical, General Remodeling", "MN-LIC-4456", "Liberty Mutual"),
+            ("Amanda Fischer", "amanda.f@example.com", "(763) 555-0967", "Plymouth Plumbing & Restoration", "Plumbing, Water Damage Restoration, Dry Out Services", "MN-LIC-5512", "Nationwide"),
+        ]
+        # Expand to ~50 with variations
+        first = ["Alex","Jordan","Taylor","Casey","Morgan","Riley","Avery","Quinn","Blake","Cameron","Drew","Emerson","Finley","Harper","Jamie","Kendall","Logan","Parker","Reese","Skyler","Ryan","Megan","Kevin","Nicole","Brian"]
+        last = ["Anderson","Berg","Carlson","Dahl","Erickson","Fischer","Gustafson","Hanson","Iverson","Johansen","Larson","Nelson","Olson","Peterson","Swanson","Thompson","Williams","Johnson","Miller","Davis","Martinez","Garcia","Rodriguez","Lee","Kim"]
+        companies_extra = ["Metro Restoration", "Northstar Remodel", "Lakeside Contractors", "Summit Home Services", "Prairie Exteriors", "River Valley Builders", "Oak Grove Pros", "Maplewood Restoration", "Golden Valley HVAC", "Richfield Windows"]
 
-        for i in range(50):
-            name = f"{random.choice(first)} {random.choice(last)} {i+1}"
-            email = f"demo{i+1}@example.com"
-            phone = f"(612) 555-{1000+i:04d}"
-            company = random.choice(companies)
-            svcs = ", ".join(random.sample(SERVICES, k=random.randint(1, 4)))
-            db.execute("""INSERT INTO contractors (name, email, phone, company, services, active, agreement_accepted)
-                          VALUES (?, ?, ?, ?, ?, 1, 1)""", (name, email, phone, company, svcs))
+        for i, base in enumerate(contractors_data):
+            name, email, phone, company, svcs, lic, ins = base
+            db.execute("""INSERT INTO contractors (name, email, phone, company, services, license_number, insurance, active, agreement_accepted)
+                          VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1)""", (name, email, phone, company, svcs, lic, ins))
 
+        for i in range(40):
+            name = f"{random.choice(first)} {random.choice(last)}"
+            email = f"demo{i+11}@example.com"
+            phone = f"(612) 555-{2000+i:04d}"
+            company = random.choice(companies_extra)
+            svcs = ", ".join(random.sample(SERVICES, k=random.randint(2, 5)))
+            lic = f"MN-LIC-{1000+i:04d}"
+            ins = random.choice(["State Farm", "Travelers", "Auto-Owners", "Liberty Mutual", "Nationwide"])
+            db.execute("""INSERT INTO contractors (name, email, phone, company, services, license_number, insurance, active, agreement_accepted)
+                          VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1)""", (name, email, phone, company, svcs, lic, ins))
+
+        # Richer lead data
         urgencies = ["Emergency", "High", "Medium", "Low"]
-        details = ["Basement flooded after heavy rain", "Visible mold in bathroom", "Roof leak after storm", "Kitchen remodel needed", "Water damage from burst pipe", "Attic mold inspection", "Siding replacement", "Window replacement project"]
+        lead_details = [
+            "Basement flooded after heavy rain — 2 inches of water, need immediate dry-out and mold check.",
+            "Visible black mold in bathroom ceiling and walls. Want inspection and full remediation.",
+            "Roof leak after storm — water coming into attic and master bedroom. Need temporary tarp and full repair.",
+            "Kitchen remodel: replace cabinets, countertops, and flooring. Looking for full-service contractor.",
+            "Burst pipe under kitchen sink — water damage to cabinets and flooring. Need dry-out ASAP.",
+            "Attic mold discovered during insulation inspection. Want air quality testing and remediation plan.",
+            "Siding replacement on entire house — vinyl preferred, some rot around windows.",
+            "Window replacement project — 12 windows, double-pane, energy-efficient.",
+            "Bathroom remodel: gut and rebuild master bath, including tile, vanity, and fixtures.",
+            "Water damage from upstairs bathroom leak — ceiling damage in living room below.",
+            "Mold inspection requested after musty smell in basement for 3 weeks.",
+            "Home addition: 400 sq ft family room off the back. Need design and build.",
+            "HVAC replacement — old furnace failing, want high-efficiency system.",
+            "Plumbing repair: multiple slow drains and one leaking toilet.",
+            "Electrical panel upgrade needed before selling the house.",
+            "Flooring: replace carpet in 3 bedrooms with hardwood or LVP.",
+            "Painting interior — entire main floor and basement.",
+            "Deck rebuild after rot discovered — about 200 sq ft.",
+            "Gutter replacement and downspout extensions to protect foundation.",
+            "Insulation and air sealing in attic to reduce energy bills.",
+        ]
+        first_names = ["John","Mary","Robert","Patricia","Michael","Jennifer","William","Linda","David","Elizabeth","Richard","Susan","Joseph","Jessica","Thomas","Sarah","Charles","Karen","Christopher","Nancy","Daniel","Lisa","Matthew","Betty","Anthony","Margaret"]
+        last_names = ["Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Rodriguez","Martinez","Hernandez","Lopez","Gonzalez","Wilson","Anderson","Thomas","Taylor","Moore","Jackson","Martin"]
+
         for i in range(100):
             svc = random.choice(SERVICES)
             price = get_price(svc)
-            name = f"Homeowner {i+1}"
-            phone = f"(952) 555-{2000+i:04d}"
-            email = f"lead{i+1}@example.com"
+            fname = random.choice(first_names)
+            lname = random.choice(last_names)
+            name = f"{fname} {lname}"
+            phone = f"(952) 555-{3000+i:04d}"
+            email = f"{fname.lower()}.{lname.lower()}{i}@example.com"
             zipc = random.choice(ZIPS)
             urgency = random.choice(urgencies)
-            detail = random.choice(details)
+            detail = random.choice(lead_details)
             created = datetime.utcnow() - timedelta(minutes=random.randint(0, 90))
             expires = created + timedelta(minutes=60)
             score = qualify_lead(urgency, detail, zipc)
@@ -252,7 +312,7 @@ def seed_demo():
                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')""",
                        (name, phone, email, zipc, svc, detail, urgency, price, score, created, expires))
 
-    flash("Demo data seeded: 50 contractors and 100 exclusive leads.")
+    flash("Demo data seeded: 50 contractors and 100 exclusive leads with richer details.")
     return redirect("/admin")
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -279,7 +339,9 @@ def signup():
 <html lang="en"><head><title>Contractor Signup</title>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
-<div class="header"><h1>Contractor Signup</h1><p>Exclusive Twin Cities leads. No shared jobs.</p></div>
+<div class="header" style="background: linear-gradient(160deg, rgba(15,23,42,0.85), rgba(14,116,144,0.75)), url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=80') center/cover;">
+  <h1>Contractor Signup</h1><p>Exclusive Twin Cities leads. No shared jobs.</p>
+</div>
 <div class="nav"><a href="/">Home</a></div>
 <div class="container">
   <div class="card">
@@ -345,6 +407,7 @@ def available_leads():
             <td>{lead['urgency']}</td>
             <td>Score: {lead['qualification_score']}</td>
             <td>${lead['price']:.0f}</td>
+            <td title="{lead['details'][:80]}...">{lead['details'][:40]}...</td>
             <td><form method="post" action="/claim/{lead['id']}"><button class="green">Claim Lead</button></form></td>
         </tr>"""
     if not rows:
@@ -353,7 +416,9 @@ def available_leads():
 <html lang="en"><head><title>Available Leads</title>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
-<div class="header"><h1>Available Exclusive Leads</h1><p>One contractor per job. Contact info hidden until accepted.</p></div>
+<div class="header" style="background: linear-gradient(160deg, rgba(15,23,42,0.85), rgba(14,116,144,0.75)), url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1600&q=80') center/cover;">
+  <h1>Available Exclusive Leads</h1><p>One contractor per job. Contact info hidden until accepted.</p>
+</div>
 <div class="nav"><a href="/">Home</a> <a href="/my_assignments">My Assignments</a> <a href="/logout">Logout</a></div>
 <div class="container">
   <div class="note">No shared leads. Contact information is revealed only after you accept the assignment.</div>
@@ -361,7 +426,7 @@ def available_leads():
   <div class="card">
     <p>Welcome {session.get('contractor_name', 'Contractor')}</p>
     <table>
-      <tr><th>Service</th><th>Zip</th><th>Urgency</th><th>Quality</th><th>Price</th><th>Action</th></tr>
+      <tr><th>Service</th><th>Zip</th><th>Urgency</th><th>Quality</th><th>Price</th><th>Details</th><th>Action</th></tr>
       {rows}
     </table>
   </div>
@@ -423,7 +488,9 @@ def my_assignments():
 <html lang="en"><head><title>My Assignments</title>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
-<div class="header"><h1>My Pending Assignments</h1><p>Accept within 60 minutes or the lead is released. No charge until you accept.</p></div>
+<div class="header" style="background: linear-gradient(160deg, rgba(15,23,42,0.85), rgba(14,116,144,0.75)), url('https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1600&q=80') center/cover;">
+  <h1>My Pending Assignments</h1><p>Accept within 60 minutes or the lead is released. No charge until you accept.</p>
+</div>
 <div class="nav"><a href="/available_leads">Available Leads</a> <a href="/logout">Logout</a></div>
 <div class="container">
   <div class="red-note">Contact information is revealed only after you accept. You are not charged until acceptance.</div>
@@ -506,7 +573,9 @@ def my_leads():
 <html lang="en"><head><title>My Accepted Leads</title>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
-<div class="header"><h1>My Accepted Leads</h1><p>Contact information is shown only for leads you have accepted.</p></div>
+<div class="header" style="background: linear-gradient(160deg, rgba(15,23,42,0.85), rgba(14,116,144,0.75)), url('https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1600&q=80') center/cover;">
+  <h1>My Accepted Leads</h1><p>Contact information is shown only for leads you have accepted.</p>
+</div>
 <div class="nav"><a href="/available_leads">Available Leads</a> <a href="/my_assignments">Pending</a> <a href="/logout">Logout</a></div>
 <div class="container">
   <div class="card">
