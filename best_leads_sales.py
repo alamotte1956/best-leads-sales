@@ -1,4 +1,4 @@
-# COMPLETE_ATTRACTIVE_CONTRACTOR_SITE_V5_SERVICES_DROPDOWN_2026_10_22
+# COMPLETE_ATTRACTIVE_CONTRACTOR_SITE_V6_DETAILED_LEGAL_2026_10_22
 from flask import Flask, request, redirect, url_for, session, flash, jsonify
 import sqlite3, os, random
 from datetime import datetime, timedelta
@@ -112,6 +112,9 @@ button.green { background: var(--green); }
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
 select[multiple] { height: 140px; }
+.legal { font-size: 15px; line-height: 1.6; }
+.legal h2 { margin-top: 24px; font-size: 1.3rem; }
+.legal h3 { margin-top: 16px; font-size: 1.1rem; }
 """
 
 @app.route("/")
@@ -348,26 +351,104 @@ def admin_login():
 @app.route("/privacy")
 def privacy():
     return f"""<!DOCTYPE html>
-<html><head><title>Privacy</title>
+<html><head><title>Privacy Policy</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
 <div class="header"><h1>Privacy Policy</h1></div>
-<div class="container"><div class="card">
-<p>We collect contractor and lead information solely to operate the exclusive lead matching service. We do not share leads with multiple contractors. SMS and email notifications are sent only for lead assignment and account purposes.</p>
-<p><a href="/">Back</a></p>
+<div class="container"><div class="card legal">
+<p><strong>Last Updated:</strong> October 22, 2026</p>
+<p>This Privacy Policy describes how Albert R LaMotte dba Restoration Contractors MN (“we,” “us,” or “our”) collects, uses, and protects information in connection with the Best Leads exclusive contractor lead platform.</p>
+
+<h2>1. Information We Collect</h2>
+<ul>
+<li><strong>Account Information:</strong> Name, email, phone number, company name, services offered, license number, and insurance information provided during contractor signup.</li>
+<li><strong>Lead Data:</strong> Homeowner name, phone, email, ZIP code, service type, project details, and urgency when a lead is submitted or purchased.</li>
+<li><strong>Usage Data:</strong> Login activity, lead purchases, acceptance/rejection of leads, and pages visited.</li>
+<li><strong>Communications:</strong> SMS and email messages sent for lead notifications, account updates, and support.</li>
+</ul>
+
+<h2>2. How We Use Information</h2>
+<ul>
+<li>To operate the exclusive lead matching service and deliver leads to the single contractor who purchases them.</li>
+<li>To send SMS and email notifications about available leads, assignment status, and account activity (you may opt out of non-essential messages).</li>
+<li>To process payments and maintain account records.</li>
+<li>To improve the platform, prevent fraud, and enforce our Terms & Conditions and Contractor Agreement.</li>
+<li>To comply with applicable Minnesota law.</li>
+</ul>
+
+<h2>3. Sharing of Information</h2>
+<p>We do <strong>not</strong> share leads with multiple contractors. Once a contractor purchases a lead, only that contractor receives the homeowner’s contact information. We do not sell contractor or homeowner personal information to third parties for marketing. We may share information with:</p>
+<ul>
+<li>Payment processors (when Stripe or similar is enabled) solely to process transactions.</li>
+<li>Service providers who host the platform or send SMS/email on our behalf, under confidentiality obligations.</li>
+<li>Law enforcement or regulatory authorities if required by law.</li>
+</ul>
+
+<h2>4. SMS and Email Consent</h2>
+<p>By providing your phone number and email and completing signup, you consent to receive transactional SMS and email messages related to lead notifications, account status, and platform updates. Message and data rates may apply. You may opt out of SMS by replying STOP and of email by using the unsubscribe link or contacting us. Opting out of transactional messages may limit your ability to receive timely lead notifications.</p>
+
+<h2>5. Data Retention</h2>
+<p>We retain contractor account information and lead records for as long as your account is active and for a reasonable period thereafter to comply with legal obligations, resolve disputes, and enforce agreements. You may request deletion of your account data subject to our legal retention requirements.</p>
+
+<h2>6. Security</h2>
+<p>We use reasonable administrative and technical measures to protect information. No method of transmission or storage is 100% secure. You are responsible for maintaining the confidentiality of your login credentials.</p>
+
+<h2>7. Your Rights</h2>
+<p>You may request access to, correction of, or deletion of your personal information by contacting us. Minnesota residents may have additional rights under applicable state law.</p>
+
+<h2>8. Contact</h2>
+<p>Albert R LaMotte dba Restoration Contractors MN<br>
+Email: alamotte1956@gmail.com</p>
+<p><a href="/">Back to Home</a></p>
 </div></div>
 </body></html>"""
 
 @app.route("/terms")
 def terms():
     return f"""<!DOCTYPE html>
-<html><head><title>Terms</title>
+<html><head><title>Terms & Conditions</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{STYLE}</style></head><body>
 <div class="header"><h1>Terms & Conditions</h1></div>
-<div class="container"><div class="card">
-<p>Exclusive leads only. Minnesota law governs. Independent contractors are responsible for their own licensing, insurance, and compliance with the Minnesota Home Solicitation Sales Act (Minn. Stat. §§ 325G.06–325G.10). Leads expire after 24 hours if not accepted.</p>
-<p><a href="/">Back</a></p>
+<div class="container"><div class="card legal">
+<p><strong>Last Updated:</strong> October 22, 2026</p>
+<p>These Terms & Conditions govern your use of the Best Leads platform operated by Albert R LaMotte dba Restoration Contractors MN (“we,” “us”). By creating an account or purchasing a lead, you agree to these Terms and the Contractor Agreement presented at signup.</p>
+
+<h2>1. Exclusive Leads</h2>
+<p>Leads sold through this platform are exclusive. Only the contractor who purchases a lead receives the homeowner’s contact information for that job. We do not share the same lead with multiple contractors. Leads expire after 24 hours if not accepted.</p>
+
+<h2>2. Independent Contractor Status</h2>
+<p>You are an independent contractor, not an employee, agent, or partner of Restoration Contractors MN. You are solely responsible for your own taxes, insurance, licensing, workers’ compensation, and compliance with all applicable laws.</p>
+
+<h2>3. Licensing and Insurance</h2>
+<p>You represent that you hold all licenses required by Minnesota law for the services you offer and that you will maintain them in good standing. You are solely responsible for carrying adequate liability and workers’ compensation insurance. We do not verify licenses or insurance.</p>
+
+<h2>4. Minnesota Home Solicitation Sales Act</h2>
+<p>If you visit a homeowner as a result of a lead obtained through this platform, you are solely responsible for complying with the Minnesota Home Solicitation Sales Act (Minn. Stat. §§ 325G.06–325G.10), including providing any required written notice of the right to cancel. We are not a party to any contract between you and a homeowner.</p>
+
+<h2>5. Payment</h2>
+<p>You agree to pay the stated price for each lead you accept. The first five leads for new accounts are offered at 50% off until November 30, 2026. Prices are subject to change. Failure to pay may result in suspension of your account.</p>
+
+<h2>6. Prohibited Conduct</h2>
+<ul>
+<li>You will not share, resell, or distribute any lead obtained through this platform.</li>
+<li>You will not contact a homeowner for a lead you did not purchase.</li>
+<li>You will not misrepresent your licensing, insurance, or qualifications.</li>
+</ul>
+
+<h2>7. Limitation of Liability</h2>
+<p>We provide the platform “as is.” We are not liable for the quality of leads, homeowner behavior, or any dispute between you and a homeowner. To the fullest extent permitted by Minnesota law, our total liability arising out of your use of the platform shall not exceed the amount you paid for the specific lead giving rise to the claim.</p>
+
+<h2>8. Governing Law</h2>
+<p>These Terms are governed by the laws of the State of Minnesota, without regard to conflict-of-law principles. Any dispute shall be resolved in the state or federal courts located in Minnesota.</p>
+
+<h2>9. Changes</h2>
+<p>We may update these Terms from time to time. Continued use of the platform after changes constitutes acceptance of the updated Terms.</p>
+
+<h2>10. Contact</h2>
+<p>Albert R LaMotte dba Restoration Contractors MN<br>
+Email: alamotte1956@gmail.com</p>
+<p><a href="/">Back to Home</a></p>
 </div></div>
 </body></html>"""
 
