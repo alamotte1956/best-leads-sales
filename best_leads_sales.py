@@ -1,7 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, request, redirect, url_for, session, flash
 import sqlite3
 import os
-from datetime import datetime
 from functools import wraps
 
 app = Flask(__name__)
@@ -55,6 +54,10 @@ def init_db():
 
 init_db()
 
+# Admin credentials
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "alamotte1956@gmail.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "PeggySmith1$")
+
 # Login required decorator
 def login_required(f):
     @wraps(f)
@@ -64,32 +67,71 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
-# Routes
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("is_admin"):
+            return redirect(url_for("admin_login"))
+        return f(*args, **kwargs)
+    return decorated
+
+# ============================================================
+# HOME / HUB PAGE
+# ============================================================
 @app.route("/")
 def home():
     return """
     <!DOCTYPE html>
-    <html>
-    <head><title>Best Leads Sales</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
-        a { display: inline-block; margin: 10px; padding: 12px 20px; background: #0ea5e9; color: white; text-decoration: none; border-radius: 6px; }
-        a:hover { background: #0284c7; }
-    </style>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Best Leads — Exclusive Twin Cities Leads</title>
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #f8fafc; color: #0f172a; }
+        .nav { background: #0f172a; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: 700; font-size: 1.3rem; }
+        .hero { text-align: center; padding: 70px 20px 50px; background: linear-gradient(160deg, #0f172a 0%, #1e3a8a 100%); color: white; }
+        .hero h1 { font-size: 2.5rem; margin-bottom: 12px; letter-spacing: -0.02em; }
+        .hero p { font-size: 1.15rem; opacity: 0.92; max-width: 640px; margin: 0 auto; }
+        .links { max-width: 720px; margin: 40px auto; padding: 0 20px; display: grid; gap: 14px; }
+        .link { display: block; background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 22px; text-decoration: none; color: #0f172a; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: all 0.15s; }
+        .link:hover { border-color: #0ea5e9; box-shadow: 0 4px 14px rgba(14,165,233,0.15); transform: translateY(-1px); }
+        .link small { display: block; font-weight: 400; color: #64748b; margin-top: 5px; font-size: 0.95rem; }
+        .footer { text-align: center; padding: 40px 20px; color: #64748b; font-size: 0.9rem; }
+        .badge { display: inline-block; background: #0ea5e9; color: white; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; margin-left: 8px; }
+      </style>
     </head>
     <body>
-        <h1>Best Leads Sales to Contractors</h1>
-        <p>Exclusive leads for Twin Cities contractors. No shared leads.</p>
-        <a href="/signup">Contractor Signup</a>
-        <a href="/contractor_login">Contractor Login</a>
-        <a href="/available_leads">Available Leads</a>
-        <a href="/admin">Admin Dashboard</a>
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/terms">Terms & Conditions</a>
+      <div class="nav">
+        <div class="logo">Best Leads</div>
+        <div>Exclusive Twin Cities Leads</div>
+      </div>
+      <div class="hero">
+        <h1>Exclusive Leads for Contractors</h1>
+        <p>One contractor per job. No shared leads. High-quality Twin Cities projects.</p>
+      </div>
+      <div class="links">
+        <a class="link" href="/signup">Contractor Signup <small>Create your account and start receiving exclusive leads</small></a>
+        <a class="link" href="/contractor_login">Contractor Login <small>Access your dashboard and purchased leads</small></a>
+        <a class="link" href="/available_leads">Available Leads <small>Browse exclusive leads currently available</small></a>
+        <a class="link" href="/admin">Admin Dashboard <small>Manage contractors, leads, and pricing</small></a>
+        <a class="link" href="/privacy">Privacy Policy</a>
+        <a class="link" href="/terms">Terms & Conditions</a>
+        <a class="link" href="/seed">Seed Demo Data <small>Add sample contractors and leads for testing</small></a>
+      </div>
+      <div class="footer">
+        Best Leads · Exclusive Twin Cities Leads · No shared leads<br>
+        Albert R LaMotte dba Restoration Contractors MN
+      </div>
     </body>
     </html>
     """
 
+# ============================================================
+# CONTRACTOR SIGNUP
+# ============================================================
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -114,26 +156,38 @@ def signup():
     return """
     <!DOCTYPE html>
     <html>
-    <head><title>Contractor Signup</title>
-    <style>body{font-family:Arial;max-width:600px;margin:40px auto;padding:20px;} input,textarea{width:100%;padding:10px;margin:8px 0;border:1px solid #ccc;border-radius:4px;} button{background:#0ea5e9;color:white;padding:12px 24px;border:none;border-radius:6px;cursor:pointer;}</style>
+    <head>
+      <title>Contractor Signup</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
+        button { background: #0ea5e9; color: white; padding: 14px 28px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 10px; }
+        button:hover { background: #0284c7; }
+        a { color: #0ea5e9; }
+      </style>
     </head>
     <body>
-        <h1>Contractor Signup</h1>
-        <form method="post">
-            <input name="name" placeholder="Full Name" required><br>
-            <input name="email" type="email" placeholder="Email" required><br>
-            <input name="phone" placeholder="Phone" required><br>
-            <input name="company" placeholder="Company Name"><br>
-            <textarea name="services" placeholder="Services offered (e.g. water damage, mold, roofing)"></textarea><br>
-            <input name="license_number" placeholder="License Number"><br>
-            <input name="insurance" placeholder="Insurance info"><br>
-            <button type="submit">Sign Up</button>
-        </form>
-        <p><a href="/">Back to Home</a></p>
+      <h1>Contractor Signup</h1>
+      <p>Join to receive exclusive Twin Cities leads. No shared leads.</p>
+      <form method="post">
+        <input name="name" placeholder="Full Name" required>
+        <input name="email" type="email" placeholder="Email" required>
+        <input name="phone" placeholder="Phone" required>
+        <input name="company" placeholder="Company Name">
+        <textarea name="services" placeholder="Services offered (e.g. water damage, mold, roofing)" rows="3"></textarea>
+        <input name="license_number" placeholder="License Number">
+        <input name="insurance" placeholder="Insurance info">
+        <button type="submit">Sign Up</button>
+      </form>
+      <p style="margin-top:20px;"><a href="/">← Back to Home</a></p>
     </body>
     </html>
     """
 
+# ============================================================
+# CONTRACTOR LOGIN
+# ============================================================
 @app.route("/contractor_login", methods=["GET", "POST"])
 def contractor_login():
     if request.method == "POST":
@@ -153,16 +207,24 @@ def contractor_login():
     return """
     <!DOCTYPE html>
     <html>
-    <head><title>Contractor Login</title>
-    <style>body{font-family:Arial;max-width:500px;margin:40px auto;padding:20px;} input{width:100%;padding:10px;margin:8px 0;border:1px solid #ccc;border-radius:4px;} button{background:#0ea5e9;color:white;padding:12px 24px;border:none;border-radius:6px;}</style>
+    <head>
+      <title>Contractor Login</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        body { font-family: system-ui, sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
+        button { background: #0ea5e9; color: white; padding: 14px 28px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; width: 100%; }
+        button:hover { background: #0284c7; }
+        a { color: #0ea5e9; }
+      </style>
     </head>
     <body>
-        <h1>Contractor Login</h1>
-        <form method="post">
-            <input name="email" type="email" placeholder="Email" required><br>
-            <button type="submit">Login</button>
-        </form>
-        <p><a href="/signup">Need an account? Sign up</a> | <a href="/">Home</a></p>
+      <h1>Contractor Login</h1>
+      <form method="post">
+        <input name="email" type="email" placeholder="Email" required>
+        <button type="submit">Login</button>
+      </form>
+      <p style="margin-top:20px;"><a href="/signup">Need an account? Sign up</a> | <a href="/">Home</a></p>
     </body>
     </html>
     """
@@ -172,6 +234,9 @@ def logout():
     session.clear()
     return redirect(url_for("home"))
 
+# ============================================================
+# LEADS DASHBOARD (logged-in contractors)
+# ============================================================
 @app.route("/leads")
 @login_required
 def leads():
@@ -181,22 +246,31 @@ def leads():
     html = f"""
     <!DOCTYPE html>
     <html>
-    <head><title>Available Leads</title>
-    <style>body{{font-family:Arial;max-width:900px;margin:40px auto;padding:20px;}} table{{width:100%;border-collapse:collapse;}} th,td{{border:1px solid #ddd;padding:8px;text-align:left;}} .btn{{background:#0ea5e9;color:white;padding:6px 12px;text-decoration:none;border-radius:4px;}}</style>
+    <head>
+      <title>My Leads</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        body {{ font-family: system-ui, sans-serif; max-width: 960px; margin: 40px auto; padding: 20px; }}
+        table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+        th, td {{ border: 1px solid #ddd; padding: 10px; text-align: left; }}
+        .btn {{ background: #0ea5e9; color: white; padding: 8px 14px; text-decoration: none; border-radius: 6px; font-size: 0.9rem; }}
+        .btn:hover {{ background: #0284c7; }}
+        a {{ color: #0ea5e9; }}
+      </style>
     </head>
     <body>
-        <h1>Available Exclusive Leads</h1>
-        <p>Welcome, {session.get('contractor_name', 'Contractor')} | <a href="/logout">Logout</a></p>
-        <h2>Available Leads</h2>
-        <table>
-            <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Price</th><th>Action</th></tr>
+      <h1>Exclusive Leads</h1>
+      <p>Welcome, {session.get('contractor_name', 'Contractor')} | <a href="/logout">Logout</a> | <a href="/">Home</a></p>
+      <h2>Available Leads</h2>
+      <table>
+        <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Price</th><th>Action</th></tr>
     """
     for lead in available:
         html += f"<tr><td>{lead['id']}</td><td>{lead['service_type']}</td><td>{lead['zip']}</td><td>${lead['price']}</td><td><a class='btn' href='/buy/{lead['id']}'>Buy Exclusive Lead</a></td></tr>"
     html += "</table><h2>My Assigned Leads</h2><table><tr><th>ID</th><th>Service</th><th>ZIP</th><th>Status</th></tr>"
     for lead in my_leads:
         html += f"<tr><td>{lead['id']}</td><td>{lead['service_type']}</td><td>{lead['zip']}</td><td>{lead['status']}</td></tr>"
-    html += "</table><p><a href='/'>Home</a></p></body></html>"
+    html += "</table></body></html>"
     return html
 
 @app.route("/buy/<int:lead_id>")
@@ -208,11 +282,14 @@ def buy_lead(lead_id):
             db.execute("UPDATE leads SET status = 'sold', assigned_to = ? WHERE id = ?", (session["contractor_id"], lead_id))
             db.execute("INSERT INTO assignments (lead_id, contractor_id, status) VALUES (?, ?, 'accepted')", (lead_id, session["contractor_id"]))
             db.commit()
-            flash(f"Lead #{lead_id} purchased successfully! Contact info is now available.")
+            flash(f"Lead #{lead_id} purchased successfully!")
         else:
             flash("Lead not available.")
     return redirect(url_for("leads"))
 
+# ============================================================
+# PUBLIC AVAILABLE LEADS
+# ============================================================
 @app.route("/available_leads")
 def available_leads():
     with get_db() as db:
@@ -223,30 +300,34 @@ def available_leads():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Available Exclusive Leads</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        </style>
+      <title>Available Exclusive Leads</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        a { color: #0ea5e9; }
+      </style>
     </head>
     <body>
-        <h1>Available Exclusive Leads</h1>
-        <p>No shared leads. Contact info is hidden until a contractor purchases the lead.</p>
-        <table>
-            <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Price</th><th>Posted</th></tr>
+      <h1>Available Exclusive Leads</h1>
+      <p>No shared leads. Contact info is hidden until a contractor purchases the lead.</p>
+      <table>
+        <tr><th>ID</th><th>Service</th><th>ZIP</th><th>Price</th><th>Posted</th></tr>
     """
     for lead in available:
         html += f"<tr><td>{lead['id']}</td><td>{lead['service_type']}</td><td>{lead['zip']}</td><td>${lead['price']}</td><td>{lead['created']}</td></tr>"
     html += """
-        </table>
-        <p><a href="/signup">Contractor Signup</a> | <a href="/contractor_login">Login</a> | <a href="/">Home</a></p>
+      </table>
+      <p style="margin-top:20px;"><a href="/signup">Contractor Signup</a> | <a href="/contractor_login">Login</a> | <a href="/">Home</a></p>
     </body>
     </html>
     """
     return html
 
+# ============================================================
+# SEED DEMO DATA
+# ============================================================
 @app.route("/seed")
 def seed_demo():
     with get_db() as db:
@@ -286,23 +367,27 @@ def seed_demo():
     <p><a href="/available_leads">View Available Leads</a> | <a href="/">Home</a></p>
     """
 
+# ============================================================
+# PRIVACY & TERMS
+# ============================================================
 @app.route("/privacy")
 def privacy():
     return """
     <!DOCTYPE html>
     <html>
     <head><title>Privacy Policy</title>
-    <style>body{font-family:Arial;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;}</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>body{font-family:system-ui,sans-serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;}</style>
     </head>
     <body>
-        <h1>Privacy Policy</h1>
-        <p><strong>Last updated:</strong> October 22, 2026</p>
-        <p>This site collects contact information (name, phone, email, address) from homeowners and contractors for the purpose of connecting exclusive leads with independent contractors in the Twin Cities area.</p>
-        <p>We do not sell or share personal data with third parties beyond the specific contractor who purchases an exclusive lead.</p>
-        <p>SMS notifications are optional. By providing your phone number and checking the consent box, you agree to receive transactional messages. You may opt out at any time by replying STOP.</p>
-        <p>Data is stored securely and retained only as long as necessary for the service.</p>
-        <p>Subject to Minnesota law.</p>
-        <p><a href="/">Back to Home</a></p>
+      <h1>Privacy Policy</h1>
+      <p><strong>Last updated:</strong> October 24, 2026</p>
+      <p>This site collects contact information (name, phone, email, address) from homeowners and contractors for the purpose of connecting exclusive leads with independent contractors in the Twin Cities area.</p>
+      <p>We do not sell or share personal data with third parties beyond the specific contractor who purchases an exclusive lead.</p>
+      <p>SMS notifications are optional. By providing your phone number and checking the consent box, you agree to receive transactional messages. You may opt out at any time by replying STOP.</p>
+      <p>Data is stored securely and retained only as long as necessary for the service.</p>
+      <p>Subject to Minnesota law.</p>
+      <p><a href="/">← Back to Home</a></p>
     </body>
     </html>
     """
@@ -313,37 +398,29 @@ def terms():
     <!DOCTYPE html>
     <html>
     <head><title>Terms & Conditions</title>
-    <style>body{font-family:Arial;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;}</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>body{font-family:system-ui,sans-serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;}</style>
     </head>
     <body>
-        <h1>Terms & Conditions</h1>
-        <p><strong>Last updated:</strong> October 22, 2026</p>
-        <p>By using this platform you agree to the following:</p>
-        <ul>
-            <li>Leads are exclusive — only one contractor receives the homeowner contact information.</li>
-            <li>Contractors are independent and responsible for their own licensing, insurance, and work quality.</li>
-            <li>Homeowners understand they are connecting with independent contractors, not employees of this platform.</li>
-            <li>Payment for leads is due upon purchase. Refunds are not available once contact information is revealed.</li>
-            <li>All parties agree that Minnesota law governs this agreement.</li>
-        </ul>
-        <p>This platform acts solely as a lead marketplace and is not responsible for the work performed by contractors.</p>
-        <p><a href="/">Back to Home</a></p>
+      <h1>Terms & Conditions</h1>
+      <p><strong>Last updated:</strong> October 24, 2026</p>
+      <p>By using this platform you agree to the following:</p>
+      <ul>
+        <li>Leads are exclusive — only one contractor receives the homeowner contact information.</li>
+        <li>Contractors are independent and responsible for their own licensing, insurance, and work quality.</li>
+        <li>Homeowners understand they are connecting with independent contractors, not employees of this platform.</li>
+        <li>Payment for leads is due upon purchase. Refunds are not available once contact information is revealed.</li>
+        <li>All parties agree that Minnesota law governs this agreement.</li>
+      </ul>
+      <p>This platform acts solely as a lead marketplace and is not responsible for the work performed by contractors.</p>
+      <p><a href="/">← Back to Home</a></p>
     </body>
     </html>
     """
 
-# Admin credentials
-ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "alamotte1956@gmail.com")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "PeggySmith1$")
-
-def admin_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not session.get("is_admin"):
-            return redirect(url_for("admin_login"))
-        return f(*args, **kwargs)
-    return decorated
-
+# ============================================================
+# ADMIN
+# ============================================================
 @app.route("/admin_login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
@@ -357,16 +434,23 @@ def admin_login():
     <!DOCTYPE html>
     <html>
     <head><title>Admin Login</title>
-    <style>body{font-family:Arial;max-width:500px;margin:40px auto;padding:20px;} input{width:100%;padding:10px;margin:8px 0;border:1px solid #ccc;border-radius:4px;} button{background:#0ea5e9;color:white;padding:12px 24px;border:none;border-radius:6px;}</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; }
+      input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
+      button { background: #0ea5e9; color: white; padding: 14px 28px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; width: 100%; }
+      button:hover { background: #0284c7; }
+      a { color: #0ea5e9; }
+    </style>
     </head>
     <body>
-        <h1>Admin Login</h1>
-        <form method="post">
-            <input name="email" type="email" placeholder="Admin Email" required><br>
-            <input name="password" type="password" placeholder="Password" required><br>
-            <button type="submit">Login</button>
-        </form>
-        <p><a href="/">Home</a></p>
+      <h1>Admin Login</h1>
+      <form method="post">
+        <input name="email" type="email" placeholder="Admin Email" required>
+        <input name="password" type="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+      </form>
+      <p style="margin-top:20px;"><a href="/">← Home</a></p>
     </body>
     </html>
     """
@@ -385,18 +469,25 @@ def admin():
     html = """
     <!DOCTYPE html>
     <html>
-    <head><title>Admin Dashboard</title>
-    <style>body{font-family:Arial;max-width:1000px;margin:40px auto;padding:20px;} table{width:100%;border-collapse:collapse;margin:20px 0;} th,td{border:1px solid #ddd;padding:8px;} a{color:#0ea5e9;}</style>
+    <head>
+      <title>Admin Dashboard</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 40px auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        a { color: #0ea5e9; }
+      </style>
     </head>
     <body>
-        <h1>Admin Dashboard</h1>
-        <p><a href="/admin_logout">Logout</a> | <a href="/">Home</a> | <a href="/seed">Seed Demo Data</a></p>
-        <h2>Contractors</h2>
-        <table>
-            <tr><th>ID</th><th>Name</th><th>Email</th><th>Company</th><th>Active</th></tr>
+      <h1>Admin Dashboard</h1>
+      <p><a href="/admin_logout">Logout</a> | <a href="/">Home</a> | <a href="/seed">Seed Demo Data</a></p>
+      <h2>Contractors</h2>
+      <table>
+        <tr><th>ID</th><th>Name</th><th>Email</th><th>Company</th><th>Active</th></tr>
     """
     for c in contractors:
-        html += f"<tr><td>{c['id']}</td><td>{c['name']}</td><td>{c['email']}</td><td>{c['company']}</td><td>{c['active']}</td></tr>"
+        html += f"<tr><td>{c['id']}</td><td>{c['name']}</td><td>{c['email']}</td><td>{c['company']}</td><td>{'Yes' if c['active'] else 'No'}</td></tr>"
     html += "</table><h2>Leads</h2><table><tr><th>ID</th><th>Service</th><th>ZIP</th><th>Status</th><th>Price</th></tr>"
     for l in leads:
         html += f"<tr><td>{l['id']}</td><td>{l['service_type']}</td><td>{l['zip']}</td><td>{l['status']}</td><td>${l['price']}</td></tr>"
@@ -404,5 +495,5 @@ def admin():
     return html
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5001))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    port = int(os.getenv("PORT", 8080))
+    app.run(host="0.0.0.0", port=port, debug=False)
